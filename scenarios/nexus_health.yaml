@@ -1,0 +1,69 @@
+version: 1
+mode: black
+
+target:
+  base_url: http://localhost:8080
+  headers:
+    X-NEXUS-GATEWAY-KEY: nexus-tower-local-key
+    X-NEXUS-ACTOR: toolab-runner
+    X-NEXUS-ROLE: admin
+  auth:
+    type: none
+
+workload:
+  requests:
+    - id: healthz
+      method: GET
+      path: /healthz
+      body: ""
+      weight: 3
+    - id: readyz
+      method: GET
+      path: /readyz
+      body: ""
+      weight: 2
+    - id: list_tools
+      method: GET
+      path: /v1/tools
+      body: ""
+      weight: 2
+    - id: audit_feed
+      method: GET
+      path: /v1/audit
+      query:
+        limit: "10"
+      body: ""
+      weight: 1
+  concurrency: 4
+  duration_s: 10
+  schedule_mode: closed_loop
+
+chaos:
+  latency:
+    mode: uniform
+    min_ms: 5
+    max_ms: 50
+  error_rate: 0.05
+  error_statuses: [503]
+  error_mode: abort
+
+expectations:
+  max_error_rate: 0.15
+  max_p95_ms: 500
+  invariants:
+    - type: no_5xx_allowed
+    - type: max_4xx_rate
+      max: 0.1
+
+seeds:
+  run_seed: "42"
+  chaos_seed: "7"
+
+redaction:
+  headers:
+    - authorization
+    - cookie
+    - set-cookie
+    - x-api-key
+    - x-nexus-gateway-key
+    - date

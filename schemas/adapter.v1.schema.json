@@ -1,0 +1,43 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://toolab.dev/schemas/adapter.v1.schema.json",
+  "title": "Toolab Adapter Manifest v1",
+  "description": "Schema for the GET /_toolab/manifest response",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["adapter_version", "app_name", "app_version", "capabilities"],
+  "properties": {
+    "adapter_version": {
+      "type": "string",
+      "const": "1"
+    },
+    "app_name": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 100,
+      "pattern": "^[a-zA-Z0-9._-]+$"
+    },
+    "app_version": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 50
+    },
+    "capabilities": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "enum": [
+          "state.fingerprint",
+          "state.snapshot",
+          "state.restore",
+          "state.reset",
+          "seed",
+          "metrics",
+          "traces",
+          "logs"
+        ]
+      }
+    }
+  }
+}

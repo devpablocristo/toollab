@@ -12,6 +12,7 @@ import (
 
 	"github.com/santhosh-tekuri/jsonschema/v5"
 
+	"toolab-core/internal/adapter"
 	"toolab-core/internal/assertions"
 	"toolab-core/internal/chaos"
 	"toolab-core/internal/determinism"
@@ -42,6 +43,19 @@ func RunScenario(ctx context.Context, scenarioPath, outBase string) (*RunResult,
 		return nil, err
 	}
 
+	// --- Adapter auto-discovery ---
+	adapterInfo := adapter.Discover(ctx, scn.Target.BaseURL)
+	var adapterClient *adapter.Client
+	if adapterInfo != nil {
+		adapterClient = adapter.NewClient(adapterInfo.BaseURL)
+
+		// Propagate deterministic seed to the target if supported.
+		if adapterInfo.HasCapability("seed") {
+			_ = adapterClient.SeedApply(ctx, scn.Seeds.RunSeed, []string{"uuid", "timestamp", "jitter"})
+			defer func() { _ = adapterClient.SeedClear(ctx) }()
+		}
+	}
+
 	tape := determinism.NewTapeRecorder()
 	runDecider, err := determinism.NewEngine(scn.Seeds.RunSeed, "run_seed", tape)
 	if err != nil {
@@ -70,6 +84,9 @@ func RunScenario(ctx context.Context, scenarioPath, outBase string) (*RunResult,
 	}
 
 	obs, unknowns = collectObservabilityEnd(ctx, scn.Observability, obs, unknowns)
+
+	// --- Adapter-sourced observability ---
+	obs, unknowns = collectAdapterObservability(ctx, adapterInfo, adapterClient, obs, unknowns)
 
 	tapeHash, err := tape.Hash()
 	if err != nil {
@@ -363,6 +380,77 @@ func parseLogLines(raw string, maxLines int) []evidence.LogLine {
 		out = append(out, entry)
 	}
 	return out
+}
+
+func collectAdapterObservability(ctx context.Context, info *adapter.Info, client *adapter.Client, obs *evidence.Observability, unknowns []string) (*evidence.Observability, []string) {
+	if info == nil || client == nil {
+		return obs, unknowns
+	}
+	if obs == nil {
+		obs = &evidence.Observability{}
+	}
+	if obs.MetricsSnapshot == nil {
+		obs.MetricsSnapshot = map[string]any{}
+	}
+
+	obs.MetricsSnapshot["adapter"] = map[string]any{
+		"app_name":       info.AppName,
+		"app_version":    info.AppVersion,
+		"capabilities":   info.Capabilities,
+		"adapter_version": info.AdapterVersion,
+	}
+
+	if info.HasCapability("state.fingerprint") {
+		fp, err := client.StateFingerprint(ctx)
+		if err == nil {
+			obs.MetricsSnapshot["adapter_post_fingerprint"] = fp
+		} else {
+			unknowns = append(unknowns, "adapter state.fingerprint failed: "+err.Error())
+		}
+	}
+
+	if info.HasCapability("metrics") {
+		metrics, err := client.Metrics(ctx)
+		if err == nil {
+			obs.MetricsSnapshot["adapter_metrics"] = metrics
+		} else {
+			unknowns = append(unknowns, "adapter metrics collection failed: "+err.Error())
+		}
+	}
+
+	if info.HasCapability("logs") {
+		logs, err := client.Logs(ctx, time.Now().UTC().Add(-10*time.Minute), 500)
+		if err == nil {
+			for _, l := range logs {
+				ts, _ := l["timestamp"].(string)
+				level, _ := l["level"].(string)
+				msg, _ := l["message"].(string)
+				obs.LogsExcerpt = append(obs.LogsExcerpt, evidence.LogLine{
+					Timestamp: ts,
+					Level:     level,
+					Message:   msg,
+					Attrs:     l,
+				})
+			}
+		} else {
+			unknowns = append(unknowns, "adapter logs collection failed: "+err.Error())
+		}
+	}
+
+	if info.HasCapability("traces") {
+		traces, err := client.Traces(ctx, time.Now().UTC().Add(-10*time.Minute), 100)
+		if err == nil {
+			for _, tr := range traces {
+				if tid, ok := tr["trace_id"].(string); ok {
+					obs.TraceRefs = append(obs.TraceRefs, tid)
+				}
+			}
+		} else {
+			unknowns = append(unknowns, "adapter traces collection failed: "+err.Error())
+		}
+	}
+
+	return obs, unknowns
 }
 
 func cloneStrings(in []string) []string {

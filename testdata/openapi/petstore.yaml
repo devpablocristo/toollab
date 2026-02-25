@@ -1,0 +1,142 @@
+openapi: "3.0.3"
+info:
+  title: Petstore API
+  version: "1.0.0"
+servers:
+  - url: http://localhost:3000
+paths:
+  /healthz:
+    get:
+      operationId: healthCheck
+      tags: [Health]
+      summary: Liveness probe
+      parameters: []
+      responses:
+        "200":
+          description: OK
+  /v1/pets:
+    get:
+      operationId: listPets
+      tags: [Pets]
+      summary: List all pets
+      parameters:
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+          example: 10
+      responses:
+        "200":
+          description: List of pets
+    post:
+      operationId: createPet
+      tags: [Pets]
+      summary: Create a pet
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreatePetRequest"
+      responses:
+        "201":
+          description: Pet created
+  /v1/pets/{petId}:
+    get:
+      operationId: getPet
+      tags: [Pets]
+      summary: Get a pet by ID
+      parameters:
+        - name: petId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Pet details
+    put:
+      operationId: updatePet
+      tags: [Pets]
+      summary: Update a pet
+      parameters:
+        - name: petId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdatePetRequest"
+      responses:
+        "200":
+          description: Pet updated
+    delete:
+      operationId: deletePet
+      tags: [Pets]
+      summary: Delete a pet
+      parameters:
+        - name: petId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: Pet deleted
+  /v1/admin/stats:
+    get:
+      operationId: adminStats
+      tags: [Admin]
+      summary: Admin statistics
+      parameters:
+        - name: X-Admin-Token
+          in: header
+          required: true
+          schema:
+            type: string
+          example: admin-secret
+      responses:
+        "200":
+          description: Stats
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    CreatePetRequest:
+      type: object
+      required:
+        - name
+        - species
+      properties:
+        name:
+          type: string
+          example: Buddy
+        species:
+          type: string
+          enum: [dog, cat, bird, fish]
+        age:
+          type: integer
+        tags:
+          type: array
+          items:
+            type: string
+    UpdatePetRequest:
+      type: object
+      required:
+        - name
+      properties:
+        name:
+          type: string
+        species:
+          type: string
+          enum: [dog, cat, bird, fish]
+        age:
+          type: integer

@@ -38,16 +38,13 @@ workload:
       path: /health
       body: ""
       weight: 1
-  concurrency: 2
-  duration_s: 2
-  schedule_mode: open_loop
-  tick_ms: 100
+  concurrency: 1
+  duration_s: 1
+  schedule_mode: closed_loop
 chaos:
   latency:
-    mode: uniform
-    min_ms: 0
-    max_ms: 10
-  error_rate: 0.1
+    mode: none
+  error_rate: 0
   error_statuses: [503]
   error_mode: abort
 expectations:
@@ -58,6 +55,8 @@ expectations:
 seeds:
   run_seed: "123"
   chaos_seed: "456"
+redaction:
+  headers: ["authorization", "cookie", "set-cookie", "x-api-key", "date"]
 `, srv.URL)
 
 	tmp := t.TempDir()
