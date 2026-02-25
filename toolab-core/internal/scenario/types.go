@@ -141,19 +141,19 @@ type Fingerprint struct {
 }
 
 type rawScenario struct {
-	Version       int             `yaml:"version"`
-	Mode          string          `yaml:"mode"`
-	Target        Target          `yaml:"target"`
-	Workload      Workload        `yaml:"workload"`
-	Chaos         Chaos           `yaml:"chaos"`
-	Expectations  Expectations    `yaml:"expectations"`
-	Seeds         rawSeeds        `yaml:"seeds"`
-	Observability *Observability  `yaml:"observability"`
-	Redaction     RedactionConfig `yaml:"redaction"`
+	Version       int             `yaml:"version" json:"version"`
+	Mode          string          `yaml:"mode" json:"mode"`
+	Target        Target          `yaml:"target" json:"target"`
+	Workload      Workload        `yaml:"workload" json:"workload"`
+	Chaos         Chaos           `yaml:"chaos" json:"chaos"`
+	Expectations  Expectations    `yaml:"expectations" json:"expectations"`
+	Seeds         rawSeeds        `yaml:"seeds" json:"seeds"`
+	Observability *Observability  `yaml:"observability" json:"observability"`
+	Redaction     RedactionConfig `yaml:"redaction" json:"redaction"`
 }
 
 type rawSeeds struct {
-	RunSeed         any    `yaml:"run_seed"`
-	ChaosSeed       any    `yaml:"chaos_seed"`
-	DBSeedReference string `yaml:"db_seed_reference"`
+	RunSeed         any    `yaml:"run_seed" json:"run_seed"`
+	ChaosSeed       any    `yaml:"chaos_seed" json:"chaos_seed"`
+	DBSeedReference string `yaml:"db_seed_reference" json:"db_seed_reference"`
 }

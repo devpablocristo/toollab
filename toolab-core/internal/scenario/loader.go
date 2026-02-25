@@ -23,8 +23,16 @@ func Load(path string) (*Scenario, *Fingerprint, error) {
 	}
 
 	var parsed rawScenario
-	if err := yaml.Unmarshal(raw, &parsed); err != nil {
+	var yamlDoc any
+	if err := yaml.Unmarshal(raw, &yamlDoc); err != nil {
 		return nil, nil, fmt.Errorf("unmarshal scenario yaml: %w", err)
+	}
+	jsonRaw, err := json.Marshal(yamlDoc)
+	if err != nil {
+		return nil, nil, fmt.Errorf("convert scenario yaml to json: %w", err)
+	}
+	if err := json.Unmarshal(jsonRaw, &parsed); err != nil {
+		return nil, nil, fmt.Errorf("unmarshal scenario json model: %w", err)
 	}
 
 	normalized, err := normalizeScenario(parsed)
