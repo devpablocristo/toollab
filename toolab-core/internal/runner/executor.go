@@ -17,17 +17,19 @@ import (
 	"sync"
 	"time"
 
+	"toolab-core/internal/chaos"
 	"toolab-core/internal/scenario"
 	"toolab-core/pkg/utils"
 )
 
 type BaseExecutor struct {
-	Scenario *scenario.Scenario
-	Plan     *Plan
-	Client   *http.Client
+	Scenario    *scenario.Scenario
+	Plan        *Plan
+	ChaosEngine *chaos.Engine
+	Client      *http.Client
 }
 
-func NewBaseExecutor(s *scenario.Scenario, p *Plan) *BaseExecutor {
+func NewBaseExecutor(s *scenario.Scenario, p *Plan, chaosEngine *chaos.Engine) *BaseExecutor {
 	transport := &http.Transport{
 		Proxy:                 http.ProxyFromEnvironment,
 		DialContext:           (&net.Dialer{Timeout: 5 * time.Second}).DialContext,
@@ -41,7 +43,7 @@ func NewBaseExecutor(s *scenario.Scenario, p *Plan) *BaseExecutor {
 			return http.ErrUseLastResponse
 		},
 	}
-	return &BaseExecutor{Scenario: s, Plan: p, Client: client}
+	return &BaseExecutor{Scenario: s, Plan: p, ChaosEngine: chaosEngine, Client: client}
 }
 
 func (e *BaseExecutor) Execute(ctx context.Context) ([]Outcome, error) {
@@ -93,6 +95,10 @@ func (e *BaseExecutor) Execute(ctx context.Context) ([]Outcome, error) {
 func (e *BaseExecutor) executeOne(ctx context.Context, p PlannedRequest) Outcome {
 	reqSpec := e.Scenario.Workload.Requests[p.RequestIdx]
 	bodyBytes := requestBody(reqSpec)
+	chaosDecision := chaos.Decision{DriftMutations: []string{}}
+	if e.ChaosEngine != nil {
+		chaosDecision, bodyBytes = e.ChaosEngine.Apply(reqSpec, p.Seq, bodyBytes)
+	}
 	requestURL := buildURL(e.Scenario.Target.BaseURL, reqSpec.Path, reqSpec.Query)
 	requestHeaders := mergeHeaders(e.Scenario.Target.Headers, reqSpec.Headers)
 
@@ -106,6 +112,9 @@ func (e *BaseExecutor) executeOne(ctx context.Context, p PlannedRequest) Outcome
 	applyAuth(requestHeaders, e.Scenario.Target.Auth, &requestURL)
 
 	start := time.Now()
+	if chaosDecision.LatencyMS > 0 {
+		time.Sleep(time.Duration(chaosDecision.LatencyMS) * time.Millisecond)
+	}
 	out := Outcome{
 		Seq:             p.Seq,
 		RequestID:       reqSpec.ID,
@@ -119,12 +128,19 @@ func (e *BaseExecutor) executeOne(ctx context.Context, p PlannedRequest) Outcome
 		ResponseHeaders: map[string]string{},
 		IdempotencyKey:  idempotencyKey,
 		ChaosApplied: ChaosApplied{
-			LatencyInjectedMS: 0,
-			ErrorInjected:     false,
+			LatencyInjectedMS: chaosDecision.LatencyMS,
+			ErrorInjected:     chaosDecision.ErrorInjected,
 			ErrorMode:         "abort",
-			PayloadDrift:      false,
-			PayloadMutations:  []string{},
+			PayloadDrift:      chaosDecision.DriftApplied,
+			PayloadMutations:  append([]string(nil), chaosDecision.DriftMutations...),
 		},
+	}
+
+	if chaosDecision.Abort {
+		out.ErrorKind = "chaos_abort"
+		out.LatencyMS = int(time.Since(start).Milliseconds())
+		out.OccurredAt = time.Now().UTC()
+		return out
 	}
 
 	reqCtx, cancel := context.WithTimeout(ctx, time.Duration(reqSpec.TimeoutMS)*time.Millisecond)

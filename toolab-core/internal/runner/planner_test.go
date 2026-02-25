@@ -4,6 +4,7 @@ import (
 	"path/filepath"
 	"testing"
 
+	"toolab-core/internal/determinism"
 	"toolab-core/internal/scenario"
 )
 
@@ -13,11 +14,20 @@ func TestBuildPlanOpenLoopDeterministic(t *testing.T) {
 		t.Fatalf("load scenario: %v", err)
 	}
 
-	planA, err := BuildPlan(s)
+	deciderA, err := determinism.NewEngine(s.Seeds.RunSeed, "run_seed", nil)
+	if err != nil {
+		t.Fatalf("new decider A: %v", err)
+	}
+	deciderB, err := determinism.NewEngine(s.Seeds.RunSeed, "run_seed", nil)
+	if err != nil {
+		t.Fatalf("new decider B: %v", err)
+	}
+
+	planA, err := BuildPlan(s, deciderA)
 	if err != nil {
 		t.Fatalf("build plan A: %v", err)
 	}
-	planB, err := BuildPlan(s)
+	planB, err := BuildPlan(s, deciderB)
 	if err != nil {
 		t.Fatalf("build plan B: %v", err)
 	}

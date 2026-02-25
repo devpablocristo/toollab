@@ -7,6 +7,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"toolab-core/internal/determinism"
 	"toolab-core/internal/scenario"
 )
 
@@ -46,17 +47,26 @@ func TestBaseExecutor_DeterministicOutcomesBySeq(t *testing.T) {
 		Redaction:    scenario.RedactionConfig{Headers: []string{"authorization"}, JSONPaths: []string{}, Mask: "***", MaxBodyPreviewBytes: 1024, MaxSamples: 10},
 	}
 
-	planA, err := BuildPlan(s)
+	deciderA, err := determinism.NewEngine(s.Seeds.RunSeed, "run_seed", nil)
+	if err != nil {
+		t.Fatalf("new decider A: %v", err)
+	}
+	deciderB, err := determinism.NewEngine(s.Seeds.RunSeed, "run_seed", nil)
+	if err != nil {
+		t.Fatalf("new decider B: %v", err)
+	}
+
+	planA, err := BuildPlan(s, deciderA)
 	if err != nil {
 		t.Fatalf("build plan A: %v", err)
 	}
-	planB, err := BuildPlan(s)
+	planB, err := BuildPlan(s, deciderB)
 	if err != nil {
 		t.Fatalf("build plan B: %v", err)
 	}
 
-	execA := NewBaseExecutor(s, planA)
-	execB := NewBaseExecutor(s, planB)
+	execA := NewBaseExecutor(s, planA, nil)
+	execB := NewBaseExecutor(s, planB, nil)
 	outA, err := execA.Execute(context.Background())
 	if err != nil {
 		t.Fatalf("execute A: %v", err)
