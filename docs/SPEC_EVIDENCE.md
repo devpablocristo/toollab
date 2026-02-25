@@ -1,8 +1,8 @@
 # Toolab Evidence Spec (V1)
 
-Authoritative schema: `schemas/evidence.v1.schema.json`.
+Canonical schema: `schemas/evidence.v1.schema.json`.
 
-## Required deterministic anchors
+## Required anchors
 
 - `metadata.run_seed`
 - `metadata.chaos_seed`
@@ -13,11 +13,29 @@ Authoritative schema: `schemas/evidence.v1.schema.json`.
 
 ## Deterministic fingerprint
 
-Computed over a canonical subset of evidence excluding non-deterministic informational fields.
+`deterministic_fingerprint` is SHA256 over a canonical deterministic subset of evidence.
 
-## Redaction policy
+Included subset includes:
 
-Samples are redacted before persistence.
+- scenario fingerprint
+- execution (including decision tape hash)
+- stats
+- outcomes
+- samples (already redacted)
+- assertions and violated rules
+- unknowns
+- redaction summary
+- repro command
+
+Excluded fields include informational non-deterministic data:
+
+- timestamps
+- `environment`
+- `observability`
+
+## Redaction
+
+Redaction is applied before sample persistence.
 
 Default sensitive headers:
 

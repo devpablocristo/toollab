@@ -1,33 +1,33 @@
 # Decisions Log
 
-## D-001: Runtime language
+## D-001 Runtime
 
 - Status: accepted
-- Decision: implement Toolab core in Go 1.22+
-- Rationale: single static binary, predictable concurrency model, strong test tooling
+- Decision: core runtime implemented in Go 1.22+.
 
-## D-002: V1 chaos error mode
+## D-002 Naming
 
 - Status: accepted
-- Decision: `chaos.error_mode` is fixed to `abort` in v1
-- Rationale: deterministic client-side fault injection without synthetic upstream responses
+- Decision: product and CLI naming is `toolab` (single `l`).
 
-## D-003: Deterministic scheduling
+## D-003 Chaos error mode v1
+
+- Status: accepted
+- Decision: `chaos.error_mode` fixed to `abort` in v1.
+
+## D-004 Scheduling determinism
 
 - Status: accepted
 - Decision:
-  - `open_loop`: exactly one planned request per tick
-  - `closed_loop`: deterministic pre-planned stream independent of goroutine completion order
-- Rationale: reproducibility under concurrency
+  - `open_loop` plans one request per tick.
+  - `closed_loop` uses deterministic pre-planned stream independent of goroutine completion order.
 
-## D-004: Deterministic hashing subset
-
-- Status: accepted
-- Decision: timestamps/environment/observability are excluded from deterministic fingerprint
-- Rationale: avoid non-deterministic noise in reproducibility checks
-
-## D-005: Body contract in scenario requests
+## D-005 Fingerprint subset
 
 - Status: accepted
-- Decision: request must contain exactly one of `body` or `json_body`
-- Rationale: remove ambiguity and force explicit payload semantics in v1
+- Decision: deterministic fingerprint excludes informational fields (`timestamps`, `environment`, `observability`).
+
+## D-006 Body contract
+
+- Status: accepted
+- Decision: each request must include exactly one of `body` or `json_body`.
