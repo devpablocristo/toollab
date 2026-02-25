@@ -1,0 +1,32 @@
+version: 1
+mode: black
+target:
+  base_url: http://localhost:8080
+  headers: {}
+  auth:
+    type: none
+workload:
+  requests:
+    - id: get_health
+      method: GET
+      path: /health
+      body: ""
+      weight: 1
+  concurrency: 1
+  duration_s: 1
+  schedule_mode: open_loop
+  tick_ms: 100
+chaos:
+  latency:
+    mode: none
+  error_rate: 0
+  error_statuses: [503]
+  error_mode: abort
+expectations:
+  max_error_rate: 0.1
+  max_p95_ms: 500
+  invariants:
+    - type: no_5xx_allowed
+seeds:
+  run_seed: "100"
+  chaos_seed: "200"

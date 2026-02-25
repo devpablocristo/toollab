@@ -103,7 +103,7 @@ func toOutcomes(in []OutcomeInput) []Outcome {
 				ErrorInjected:       o.ChaosApplied.ErrorInjected,
 				ErrorMode:           o.ChaosApplied.ErrorMode,
 				PayloadDriftApplied: o.ChaosApplied.PayloadDriftApplied,
-				PayloadMutations:    append([]string(nil), o.ChaosApplied.PayloadMutations...),
+				PayloadMutations:    cloneStrings(o.ChaosApplied.PayloadMutations),
 			},
 		})
 	}
@@ -135,4 +135,13 @@ func buildSample(o OutcomeInput, redaction RedactionSummary) Sample {
 			Redacted:    true,
 		},
 	}
+}
+
+func cloneStrings(in []string) []string {
+	if len(in) == 0 {
+		return []string{}
+	}
+	out := make([]string, len(in))
+	copy(out, in)
+	return out
 }
