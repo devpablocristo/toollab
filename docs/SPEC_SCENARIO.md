@@ -1,4 +1,4 @@
-# ToolLab Scenario Spec (V1)
+# Toolab Scenario Spec (V1)
 
 Authoritative schema: `schemas/scenario.v1.schema.json`.
 

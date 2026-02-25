@@ -1,6 +1,6 @@
-# ToolLab
+# Toolab
 
-ToolLab v1 (black mode) is a deterministic behavior lab for HTTP APIs.
+Toolab v1 (black mode) is a deterministic behavior lab for HTTP APIs.
 
 ## Scope
 
@@ -15,7 +15,7 @@ ToolLab v1 (black mode) is a deterministic behavior lab for HTTP APIs.
 - `docs/`: specs, determinism policy, architecture decisions
 - `schemas/`: JSON Schemas for scenario and evidence
 - `testdata/`: schema fixtures and integration scenarios
-- `toollab-core/`: Go CLI and runtime implementation
+- `toolab-core/`: Go CLI and runtime implementation
 
 ## Current Status
 

@@ -1,4 +1,4 @@
-# ToolLab Evidence Spec (V1)
+# Toolab Evidence Spec (V1)
 
 Authoritative schema: `schemas/evidence.v1.schema.json`.
 

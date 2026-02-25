@@ -3,7 +3,7 @@
 ## D-001: Runtime language
 
 - Status: accepted
-- Decision: implement ToolLab core in Go 1.22+
+- Decision: implement Toolab core in Go 1.22+
 - Rationale: single static binary, predictable concurrency model, strong test tooling
 
 ## D-002: V1 chaos error mode

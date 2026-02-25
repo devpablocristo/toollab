@@ -6,4 +6,4 @@ test:
 	go test ./...
 
 run:
-	go run ./cmd/toollab run ../testdata/e2e/scenario.yaml
+	go run ./cmd/toolab run ../testdata/e2e/scenario.yaml

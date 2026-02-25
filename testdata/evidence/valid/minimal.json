@@ -1,0 +1,93 @@
+{
+  "schema_version": 1,
+  "metadata": {
+    "toolab_version": "0.1.0",
+    "mode": "black",
+    "run_id": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "run_seed": "123",
+    "chaos_seed": "456"
+  },
+  "scenario_fingerprint": {
+    "scenario_path": "scenario.yaml",
+    "scenario_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    "scenario_schema_version": 1
+  },
+  "execution": {
+    "schedule_mode": "open_loop",
+    "tick_ms": 100,
+    "concurrency": 1,
+    "duration_s": 1,
+    "planned_requests": 1,
+    "completed_requests": 1,
+    "decision_engine_version": "v1",
+    "decision_tape_hash": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+  },
+  "stats": {
+    "total_requests": 1,
+    "success_rate": 1,
+    "error_rate": 0,
+    "p50_ms": 10,
+    "p95_ms": 10,
+    "p99_ms": 10,
+    "status_histogram": { "200": 1 }
+  },
+  "outcomes": [
+    {
+      "seq": 0,
+      "request_id": "get_health",
+      "method": "GET",
+      "path": "/health",
+      "status_code": 200,
+      "error_kind": "none",
+      "latency_ms": 10,
+      "response_hash": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+      "chaos_applied": {
+        "latency_injected_ms": 0,
+        "error_injected": false,
+        "error_mode": "abort",
+        "payload_drift_applied": false,
+        "payload_mutations": []
+      }
+    }
+  ],
+  "samples": [
+    {
+      "seq": 0,
+      "request": {
+        "method": "GET",
+        "url": "http://localhost/health",
+        "headers": {},
+        "body_preview": "",
+        "body_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "redacted": true
+      },
+      "response": {
+        "status_code": 200,
+        "error_kind": "none",
+        "headers": {},
+        "body_preview": "ok",
+        "body_sha256": "2689367b205c16ce32a57f23d4ce361ec30c7df1f0a32074982e41af7c8fc84f",
+        "redacted": true
+      }
+    }
+  ],
+  "assertions": {
+    "overall": "PASS",
+    "rules": [],
+    "violated_rules": []
+  },
+  "unknowns": [],
+  "redaction_summary": {
+    "headers_redacted": ["authorization", "cookie", "set-cookie", "x-api-key"],
+    "json_paths_redacted": [],
+    "mask": "***REDACTED***",
+    "max_body_preview_bytes": 4096,
+    "max_samples": 50
+  },
+  "repro": {
+    "command": "toolab run scenario.yaml",
+    "script_path": "./repro.sh",
+    "expected_deterministic_fingerprint": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+  },
+  "deterministic_fingerprint": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+}
