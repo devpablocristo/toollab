@@ -20,6 +20,8 @@ import (
 	"toolab-core/internal/report"
 	"toolab-core/internal/runner"
 	"toolab-core/internal/scenario"
+	explainmodel "toolab-core/internal/understanding/explain"
+	mapmodel "toolab-core/internal/understanding/map"
 )
 
 const defaultToolabVersion = "0.1.0"
@@ -175,11 +177,45 @@ func RunScenario(ctx context.Context, scenarioPath, outBase string) (*RunResult,
 		return nil, err
 	}
 
+	// Generate partial system map and evidence-driven understanding by default.
+	if err := emitUnderstandingArtifacts(runDir, bundle); err != nil {
+		return nil, err
+	}
+
 	if err := validateEvidenceSchema(bundle); err != nil {
 		return nil, err
 	}
 
 	return &RunResult{RunDir: runDir, Bundle: bundle, Artifacts: artifacts}, nil
+}
+
+func emitUnderstandingArtifacts(runDir string, bundle *evidence.Bundle) error {
+	systemMap := mapmodel.FromEvidence(bundle)
+	mapJSON, _, err := mapmodel.WriteCanonical(systemMap)
+	if err != nil {
+		return err
+	}
+	mapMD := renderMapMD(systemMap)
+	if err := os.WriteFile(filepath.Join(runDir, "system_map.json"), mapJSON, 0o644); err != nil {
+		return err
+	}
+	if err := os.WriteFile(filepath.Join(runDir, "system_map.md"), mapMD, 0o644); err != nil {
+		return err
+	}
+
+	explainDoc := explainmodel.Build(bundle, systemMap, filepath.Join(runDir, "evidence.json"))
+	understandingJSON, _, err := explainmodel.WriteCanonical(explainDoc)
+	if err != nil {
+		return err
+	}
+	understandingMD := explainmodel.RenderMD(explainDoc)
+	if err := os.WriteFile(filepath.Join(runDir, "understanding.json"), understandingJSON, 0o644); err != nil {
+		return err
+	}
+	if err := os.WriteFile(filepath.Join(runDir, "understanding.md"), understandingMD, 0o644); err != nil {
+		return err
+	}
+	return nil
 }
 
 func validateEvidenceSchema(bundle *evidence.Bundle) error {
@@ -394,9 +430,9 @@ func collectAdapterObservability(ctx context.Context, info *adapter.Info, client
 	}
 
 	obs.MetricsSnapshot["adapter"] = map[string]any{
-		"app_name":       info.AppName,
-		"app_version":    info.AppVersion,
-		"capabilities":   info.Capabilities,
+		"app_name":        info.AppName,
+		"app_version":     info.AppVersion,
+		"capabilities":    info.Capabilities,
 		"adapter_version": info.AdapterVersion,
 	}
 
