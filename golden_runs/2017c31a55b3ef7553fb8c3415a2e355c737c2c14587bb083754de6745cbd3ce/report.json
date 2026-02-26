@@ -1,0 +1,21 @@
+{
+  "decision_tape_hash": "74234e98afe7498fb5daf1f36ac2d78acc339464f950703b8c019892f982b90b",
+  "deterministic_fingerprint": "5deef5b7c84e8a65c66837f5f10525c4f0d71b62a42291476daccfbf51c68d98",
+  "overall": "FAIL",
+  "run_id": "2017c31a55b3ef7553fb8c3415a2e355c737c2c14587bb083754de6745cbd3ce",
+  "scenario_sha256": "59790cc1a9b15d1ac2faa9ffcb002b1bc8ed3050ef5a153ac7d9f8573fc81647",
+  "stats": {
+    "total_requests": 10,
+    "success_rate": 0,
+    "error_rate": 1,
+    "p50_ms": 0,
+    "p95_ms": 0,
+    "p99_ms": 0,
+    "status_histogram": {
+      "404": 10
+    }
+  },
+  "violated_rules": [
+    "threshold_error_rate"
+  ]
+}

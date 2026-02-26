@@ -1,0 +1,2519 @@
+{
+  "schema_version": 1,
+  "metadata": {
+    "toolab_version": "0.1.0",
+    "mode": "black",
+    "run_id": "2017c31a55b3ef7553fb8c3415a2e355c737c2c14587bb083754de6745cbd3ce",
+    "run_seed": "100",
+    "chaos_seed": "200",
+    "started_utc": "2026-02-26T01:53:44Z",
+    "finished_utc": "2026-02-26T01:53:44Z"
+  },
+  "scenario_fingerprint": {
+    "scenario_path": "../testdata/e2e/scenario.yaml",
+    "scenario_sha256": "59790cc1a9b15d1ac2faa9ffcb002b1bc8ed3050ef5a153ac7d9f8573fc81647",
+    "scenario_schema_version": 1
+  },
+  "execution": {
+    "schedule_mode": "open_loop",
+    "tick_ms": 100,
+    "concurrency": 1,
+    "duration_s": 1,
+    "planned_requests": 10,
+    "completed_requests": 10,
+    "decision_engine_version": "splitmix64+xoshiro256ss-v1",
+    "decision_tape_hash": "74234e98afe7498fb5daf1f36ac2d78acc339464f950703b8c019892f982b90b"
+  },
+  "stats": {
+    "total_requests": 10,
+    "success_rate": 0,
+    "error_rate": 1,
+    "p50_ms": 0,
+    "p95_ms": 0,
+    "p99_ms": 0,
+    "status_histogram": {
+      "404": 10
+    }
+  },
+  "outcomes": [
+    {
+      "seq": 0,
+      "request_id": "get_health",
+      "method": "GET",
+      "path": "/health",
+      "status_code": 404,
+      "error_kind": "http_status_error",
+      "latency_ms": 0,
+      "response_hash": "99eb12f2ab3c4866a353e098ffa3cb7a967e617c49b98480394ec5d8ea92b094",
+      "chaos_applied": {
+        "latency_injected_ms": 0,
+        "error_injected": false,
+        "error_mode": "abort",
+        "payload_drift_applied": false,
+        "payload_mutations": []
+      }
+    },
+    {
+      "seq": 1,
+      "request_id": "get_health",
+      "method": "GET",
+      "path": "/health",
+      "status_code": 404,
+      "error_kind": "http_status_error",
+      "latency_ms": 0,
+      "response_hash": "99eb12f2ab3c4866a353e098ffa3cb7a967e617c49b98480394ec5d8ea92b094",
+      "chaos_applied": {
+        "latency_injected_ms": 0,
+        "error_injected": false,
+        "error_mode": "abort",
+        "payload_drift_applied": false,
+        "payload_mutations": []
+      }
+    },
+    {
+      "seq": 2,
+      "request_id": "get_health",
+      "method": "GET",
+      "path": "/health",
+      "status_code": 404,
+      "error_kind": "http_status_error",
+      "latency_ms": 0,
+      "response_hash": "99eb12f2ab3c4866a353e098ffa3cb7a967e617c49b98480394ec5d8ea92b094",
+      "chaos_applied": {
+        "latency_injected_ms": 0,
+        "error_injected": false,
+        "error_mode": "abort",
+        "payload_drift_applied": false,
+        "payload_mutations": []
+      }
+    },
+    {
+      "seq": 3,
+      "request_id": "get_health",
+      "method": "GET",
+      "path": "/health",
+      "status_code": 404,
+      "error_kind": "http_status_error",
+      "latency_ms": 0,
+      "response_hash": "99eb12f2ab3c4866a353e098ffa3cb7a967e617c49b98480394ec5d8ea92b094",
+      "chaos_applied": {
+        "latency_injected_ms": 0,
+        "error_injected": false,
+        "error_mode": "abort",
+        "payload_drift_applied": false,
+        "payload_mutations": []
+      }
+    },
+    {
+      "seq": 4,
+      "request_id": "get_health",
+      "method": "GET",
+      "path": "/health",
+      "status_code": 404,
+      "error_kind": "http_status_error",
+      "latency_ms": 0,
+      "response_hash": "99eb12f2ab3c4866a353e098ffa3cb7a967e617c49b98480394ec5d8ea92b094",
+      "chaos_applied": {
+        "latency_injected_ms": 0,
+        "error_injected": false,
+        "error_mode": "abort",
+        "payload_drift_applied": false,
+        "payload_mutations": []
+      }
+    },
+    {
+      "seq": 5,
+      "request_id": "get_health",
+      "method": "GET",
+      "path": "/health",
+      "status_code": 404,
+      "error_kind": "http_status_error",
+      "latency_ms": 0,
+      "response_hash": "99eb12f2ab3c4866a353e098ffa3cb7a967e617c49b98480394ec5d8ea92b094",
+      "chaos_applied": {
+        "latency_injected_ms": 0,
+        "error_injected": false,
+        "error_mode": "abort",
+        "payload_drift_applied": false,
+        "payload_mutations": []
+      }
+    },
+    {
+      "seq": 6,
+      "request_id": "get_health",
+      "method": "GET",
+      "path": "/health",
+      "status_code": 404,
+      "error_kind": "http_status_error",
+      "latency_ms": 0,
+      "response_hash": "99eb12f2ab3c4866a353e098ffa3cb7a967e617c49b98480394ec5d8ea92b094",
+      "chaos_applied": {
+        "latency_injected_ms": 0,
+        "error_injected": false,
+        "error_mode": "abort",
+        "payload_drift_applied": false,
+        "payload_mutations": []
+      }
+    },
+    {
+      "seq": 7,
+      "request_id": "get_health",
+      "method": "GET",
+      "path": "/health",
+      "status_code": 404,
+      "error_kind": "http_status_error",
+      "latency_ms": 0,
+      "response_hash": "99eb12f2ab3c4866a353e098ffa3cb7a967e617c49b98480394ec5d8ea92b094",
+      "chaos_applied": {
+        "latency_injected_ms": 0,
+        "error_injected": false,
+        "error_mode": "abort",
+        "payload_drift_applied": false,
+        "payload_mutations": []
+      }
+    },
+    {
+      "seq": 8,
+      "request_id": "get_health",
+      "method": "GET",
+      "path": "/health",
+      "status_code": 404,
+      "error_kind": "http_status_error",
+      "latency_ms": 0,
+      "response_hash": "99eb12f2ab3c4866a353e098ffa3cb7a967e617c49b98480394ec5d8ea92b094",
+      "chaos_applied": {
+        "latency_injected_ms": 0,
+        "error_injected": false,
+        "error_mode": "abort",
+        "payload_drift_applied": false,
+        "payload_mutations": []
+      }
+    },
+    {
+      "seq": 9,
+      "request_id": "get_health",
+      "method": "GET",
+      "path": "/health",
+      "status_code": 404,
+      "error_kind": "http_status_error",
+      "latency_ms": 0,
+      "response_hash": "99eb12f2ab3c4866a353e098ffa3cb7a967e617c49b98480394ec5d8ea92b094",
+      "chaos_applied": {
+        "latency_injected_ms": 0,
+        "error_injected": false,
+        "error_mode": "abort",
+        "payload_drift_applied": false,
+        "payload_mutations": []
+      }
+    }
+  ],
+  "samples": [
+    {
+      "seq": 0,
+      "request": {
+        "method": "GET",
+        "url": "http://localhost:8080/health",
+        "headers": {},
+        "body_preview": "",
+        "body_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "redacted": true
+      },
+      "response": {
+        "status_code": 404,
+        "error_kind": "http_status_error",
+        "headers": {
+          "Content-Length": "18",
+          "Content-Type": "text/plain",
+          "Date": "Thu, 26 Feb 2026 01:53:44 GMT",
+          "X-Request-Id": "9fce8f60-6daa-4b46-8849-60a8bd1bb882"
+        },
+        "body_preview": "404 page not found",
+        "body_sha256": "99eb12f2ab3c4866a353e098ffa3cb7a967e617c49b98480394ec5d8ea92b094",
+        "redacted": true
+      }
+    },
+    {
+      "seq": 1,
+      "request": {
+        "method": "GET",
+        "url": "http://localhost:8080/health",
+        "headers": {},
+        "body_preview": "",
+        "body_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "redacted": true
+      },
+      "response": {
+        "status_code": 404,
+        "error_kind": "http_status_error",
+        "headers": {
+          "Content-Length": "18",
+          "Content-Type": "text/plain",
+          "Date": "Thu, 26 Feb 2026 01:53:44 GMT",
+          "X-Request-Id": "4aa401d9-902f-4067-8214-b10fb7406d5d"
+        },
+        "body_preview": "404 page not found",
+        "body_sha256": "99eb12f2ab3c4866a353e098ffa3cb7a967e617c49b98480394ec5d8ea92b094",
+        "redacted": true
+      }
+    },
+    {
+      "seq": 2,
+      "request": {
+        "method": "GET",
+        "url": "http://localhost:8080/health",
+        "headers": {},
+        "body_preview": "",
+        "body_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "redacted": true
+      },
+      "response": {
+        "status_code": 404,
+        "error_kind": "http_status_error",
+        "headers": {
+          "Content-Length": "18",
+          "Content-Type": "text/plain",
+          "Date": "Thu, 26 Feb 2026 01:53:44 GMT",
+          "X-Request-Id": "7c963dfc-b566-4225-866f-e80d2f427086"
+        },
+        "body_preview": "404 page not found",
+        "body_sha256": "99eb12f2ab3c4866a353e098ffa3cb7a967e617c49b98480394ec5d8ea92b094",
+        "redacted": true
+      }
+    },
+    {
+      "seq": 3,
+      "request": {
+        "method": "GET",
+        "url": "http://localhost:8080/health",
+        "headers": {},
+        "body_preview": "",
+        "body_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "redacted": true
+      },
+      "response": {
+        "status_code": 404,
+        "error_kind": "http_status_error",
+        "headers": {
+          "Content-Length": "18",
+          "Content-Type": "text/plain",
+          "Date": "Thu, 26 Feb 2026 01:53:44 GMT",
+          "X-Request-Id": "d424ea17-a64a-4750-bd89-d3bc796b80a8"
+        },
+        "body_preview": "404 page not found",
+        "body_sha256": "99eb12f2ab3c4866a353e098ffa3cb7a967e617c49b98480394ec5d8ea92b094",
+        "redacted": true
+      }
+    },
+    {
+      "seq": 4,
+      "request": {
+        "method": "GET",
+        "url": "http://localhost:8080/health",
+        "headers": {},
+        "body_preview": "",
+        "body_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "redacted": true
+      },
+      "response": {
+        "status_code": 404,
+        "error_kind": "http_status_error",
+        "headers": {
+          "Content-Length": "18",
+          "Content-Type": "text/plain",
+          "Date": "Thu, 26 Feb 2026 01:53:44 GMT",
+          "X-Request-Id": "6d044f67-b4ea-4a57-8dae-44670a4e03ae"
+        },
+        "body_preview": "404 page not found",
+        "body_sha256": "99eb12f2ab3c4866a353e098ffa3cb7a967e617c49b98480394ec5d8ea92b094",
+        "redacted": true
+      }
+    },
+    {
+      "seq": 5,
+      "request": {
+        "method": "GET",
+        "url": "http://localhost:8080/health",
+        "headers": {},
+        "body_preview": "",
+        "body_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "redacted": true
+      },
+      "response": {
+        "status_code": 404,
+        "error_kind": "http_status_error",
+        "headers": {
+          "Content-Length": "18",
+          "Content-Type": "text/plain",
+          "Date": "Thu, 26 Feb 2026 01:53:44 GMT",
+          "X-Request-Id": "b5a6805b-9ab0-4932-b808-f4344b2b6855"
+        },
+        "body_preview": "404 page not found",
+        "body_sha256": "99eb12f2ab3c4866a353e098ffa3cb7a967e617c49b98480394ec5d8ea92b094",
+        "redacted": true
+      }
+    },
+    {
+      "seq": 6,
+      "request": {
+        "method": "GET",
+        "url": "http://localhost:8080/health",
+        "headers": {},
+        "body_preview": "",
+        "body_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "redacted": true
+      },
+      "response": {
+        "status_code": 404,
+        "error_kind": "http_status_error",
+        "headers": {
+          "Content-Length": "18",
+          "Content-Type": "text/plain",
+          "Date": "Thu, 26 Feb 2026 01:53:44 GMT",
+          "X-Request-Id": "b2f1f3f7-ff89-49e2-970a-5301e38f3a76"
+        },
+        "body_preview": "404 page not found",
+        "body_sha256": "99eb12f2ab3c4866a353e098ffa3cb7a967e617c49b98480394ec5d8ea92b094",
+        "redacted": true
+      }
+    },
+    {
+      "seq": 7,
+      "request": {
+        "method": "GET",
+        "url": "http://localhost:8080/health",
+        "headers": {},
+        "body_preview": "",
+        "body_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "redacted": true
+      },
+      "response": {
+        "status_code": 404,
+        "error_kind": "http_status_error",
+        "headers": {
+          "Content-Length": "18",
+          "Content-Type": "text/plain",
+          "Date": "Thu, 26 Feb 2026 01:53:44 GMT",
+          "X-Request-Id": "27ec95e8-c461-42a4-8afb-ee7b0e6a6cf6"
+        },
+        "body_preview": "404 page not found",
+        "body_sha256": "99eb12f2ab3c4866a353e098ffa3cb7a967e617c49b98480394ec5d8ea92b094",
+        "redacted": true
+      }
+    },
+    {
+      "seq": 8,
+      "request": {
+        "method": "GET",
+        "url": "http://localhost:8080/health",
+        "headers": {},
+        "body_preview": "",
+        "body_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "redacted": true
+      },
+      "response": {
+        "status_code": 404,
+        "error_kind": "http_status_error",
+        "headers": {
+          "Content-Length": "18",
+          "Content-Type": "text/plain",
+          "Date": "Thu, 26 Feb 2026 01:53:44 GMT",
+          "X-Request-Id": "76272e0b-9815-46df-b85a-392c97b4c80d"
+        },
+        "body_preview": "404 page not found",
+        "body_sha256": "99eb12f2ab3c4866a353e098ffa3cb7a967e617c49b98480394ec5d8ea92b094",
+        "redacted": true
+      }
+    },
+    {
+      "seq": 9,
+      "request": {
+        "method": "GET",
+        "url": "http://localhost:8080/health",
+        "headers": {},
+        "body_preview": "",
+        "body_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "redacted": true
+      },
+      "response": {
+        "status_code": 404,
+        "error_kind": "http_status_error",
+        "headers": {
+          "Content-Length": "18",
+          "Content-Type": "text/plain",
+          "Date": "Thu, 26 Feb 2026 01:53:44 GMT",
+          "X-Request-Id": "dd4c14d7-489c-44a2-8f37-ddc779150163"
+        },
+        "body_preview": "404 page not found",
+        "body_sha256": "99eb12f2ab3c4866a353e098ffa3cb7a967e617c49b98480394ec5d8ea92b094",
+        "redacted": true
+      }
+    }
+  ],
+  "observability": {
+    "metrics_snapshot": {
+      "adapter": {
+        "adapter_version": "1",
+        "app_name": "nexus",
+        "app_version": "1.0.0",
+        "capabilities": [
+          "state.fingerprint",
+          "state.snapshot",
+          "state.restore",
+          "state.reset",
+          "metrics"
+        ]
+      },
+      "adapter_metrics": [
+        {
+          "labels": {},
+          "name": "go_gc_duration_seconds",
+          "type": "summary",
+          "value": {
+            "count": 730,
+            "quantiles": [
+              {
+                "quantile": 0,
+                "value": 0.00002513
+              },
+              {
+                "quantile": 0.25,
+                "value": 0.000033309
+              },
+              {
+                "quantile": 0.5,
+                "value": 0.000038188
+              },
+              {
+                "quantile": 0.75,
+                "value": 0.000055658
+              },
+              {
+                "quantile": 1,
+                "value": 0.002341332
+              }
+            ],
+            "sum": 0.042448965
+          }
+        },
+        {
+          "labels": {},
+          "name": "go_gc_gogc_percent",
+          "type": "gauge",
+          "value": 100
+        },
+        {
+          "labels": {},
+          "name": "go_gc_gomemlimit_bytes",
+          "type": "gauge",
+          "value": 9223372036854776000
+        },
+        {
+          "labels": {},
+          "name": "go_goroutines",
+          "type": "gauge",
+          "value": 17
+        },
+        {
+          "labels": {
+            "version": "go1.24.13"
+          },
+          "name": "go_info",
+          "type": "gauge",
+          "value": 1
+        },
+        {
+          "labels": {},
+          "name": "go_memstats_alloc_bytes",
+          "type": "gauge",
+          "value": 8158152
+        },
+        {
+          "labels": {},
+          "name": "go_memstats_alloc_bytes_total",
+          "type": "counter",
+          "value": 1732510832
+        },
+        {
+          "labels": {},
+          "name": "go_memstats_buck_hash_sys_bytes",
+          "type": "gauge",
+          "value": 5762
+        },
+        {
+          "labels": {},
+          "name": "go_memstats_frees_total",
+          "type": "counter",
+          "value": 14715384
+        },
+        {
+          "labels": {},
+          "name": "go_memstats_gc_sys_bytes",
+          "type": "gauge",
+          "value": 3383120
+        },
+        {
+          "labels": {},
+          "name": "go_memstats_heap_alloc_bytes",
+          "type": "gauge",
+          "value": 8158152
+        },
+        {
+          "labels": {},
+          "name": "go_memstats_heap_idle_bytes",
+          "type": "gauge",
+          "value": 8273920
+        },
+        {
+          "labels": {},
+          "name": "go_memstats_heap_inuse_bytes",
+          "type": "gauge",
+          "value": 11223040
+        },
+        {
+          "labels": {},
+          "name": "go_memstats_heap_objects",
+          "type": "gauge",
+          "value": 24100
+        },
+        {
+          "labels": {},
+          "name": "go_memstats_heap_released_bytes",
+          "type": "gauge",
+          "value": 4816896
+        },
+        {
+          "labels": {},
+          "name": "go_memstats_heap_sys_bytes",
+          "type": "gauge",
+          "value": 19496960
+        },
+        {
+          "labels": {},
+          "name": "go_memstats_last_gc_time_seconds",
+          "type": "gauge",
+          "value": 1772070760.33896
+        },
+        {
+          "labels": {},
+          "name": "go_memstats_mallocs_total",
+          "type": "counter",
+          "value": 14739484
+        },
+        {
+          "labels": {},
+          "name": "go_memstats_mcache_inuse_bytes",
+          "type": "gauge",
+          "value": 9664
+        },
+        {
+          "labels": {},
+          "name": "go_memstats_mcache_sys_bytes",
+          "type": "gauge",
+          "value": 15704
+        },
+        {
+          "labels": {},
+          "name": "go_memstats_mspan_inuse_bytes",
+          "type": "gauge",
+          "value": 209440
+        },
+        {
+          "labels": {},
+          "name": "go_memstats_mspan_sys_bytes",
+          "type": "gauge",
+          "value": 244800
+        },
+        {
+          "labels": {},
+          "name": "go_memstats_next_gc_bytes",
+          "type": "gauge",
+          "value": 12739554
+        },
+        {
+          "labels": {},
+          "name": "go_memstats_other_sys_bytes",
+          "type": "gauge",
+          "value": 1551526
+        },
+        {
+          "labels": {},
+          "name": "go_memstats_stack_inuse_bytes",
+          "type": "gauge",
+          "value": 1474560
+        },
+        {
+          "labels": {},
+          "name": "go_memstats_stack_sys_bytes",
+          "type": "gauge",
+          "value": 1474560
+        },
+        {
+          "labels": {},
+          "name": "go_memstats_sys_bytes",
+          "type": "gauge",
+          "value": 26172432
+        },
+        {
+          "labels": {},
+          "name": "go_sched_gomaxprocs_threads",
+          "type": "gauge",
+          "value": 8
+        },
+        {
+          "labels": {},
+          "name": "go_threads",
+          "type": "gauge",
+          "value": 14
+        },
+        {
+          "labels": {
+            "code": "200",
+            "method": "GET",
+            "url": "/_toolab/manifest"
+          },
+          "name": "nexus_gateway_request_duration_seconds",
+          "type": "histogram",
+          "value": {
+            "buckets": [
+              {
+                "cumulative_count": 5,
+                "upper_bound": 0.005
+              },
+              {
+                "cumulative_count": 5,
+                "upper_bound": 0.01
+              },
+              {
+                "cumulative_count": 5,
+                "upper_bound": 0.025
+              },
+              {
+                "cumulative_count": 5,
+                "upper_bound": 0.05
+              },
+              {
+                "cumulative_count": 5,
+                "upper_bound": 0.1
+              },
+              {
+                "cumulative_count": 5,
+                "upper_bound": 0.25
+              },
+              {
+                "cumulative_count": 5,
+                "upper_bound": 0.5
+              },
+              {
+                "cumulative_count": 5,
+                "upper_bound": 1
+              },
+              {
+                "cumulative_count": 5,
+                "upper_bound": 2.5
+              },
+              {
+                "cumulative_count": 5,
+                "upper_bound": 5
+              },
+              {
+                "cumulative_count": 5,
+                "upper_bound": 10
+              }
+            ],
+            "count": 5,
+            "sum": 0.00025615100000000003
+          }
+        },
+        {
+          "labels": {
+            "code": "200",
+            "method": "GET",
+            "url": "/_toolab/metrics"
+          },
+          "name": "nexus_gateway_request_duration_seconds",
+          "type": "histogram",
+          "value": {
+            "buckets": [
+              {
+                "cumulative_count": 3,
+                "upper_bound": 0.005
+              },
+              {
+                "cumulative_count": 3,
+                "upper_bound": 0.01
+              },
+              {
+                "cumulative_count": 3,
+                "upper_bound": 0.025
+              },
+              {
+                "cumulative_count": 3,
+                "upper_bound": 0.05
+              },
+              {
+                "cumulative_count": 3,
+                "upper_bound": 0.1
+              },
+              {
+                "cumulative_count": 3,
+                "upper_bound": 0.25
+              },
+              {
+                "cumulative_count": 3,
+                "upper_bound": 0.5
+              },
+              {
+                "cumulative_count": 3,
+                "upper_bound": 1
+              },
+              {
+                "cumulative_count": 3,
+                "upper_bound": 2.5
+              },
+              {
+                "cumulative_count": 3,
+                "upper_bound": 5
+              },
+              {
+                "cumulative_count": 3,
+                "upper_bound": 10
+              }
+            ],
+            "count": 3,
+            "sum": 0.002604617
+          }
+        },
+        {
+          "labels": {
+            "code": "200",
+            "method": "GET",
+            "url": "/_toolab/state/fingerprint"
+          },
+          "name": "nexus_gateway_request_duration_seconds",
+          "type": "histogram",
+          "value": {
+            "buckets": [
+              {
+                "cumulative_count": 2,
+                "upper_bound": 0.005
+              },
+              {
+                "cumulative_count": 2,
+                "upper_bound": 0.01
+              },
+              {
+                "cumulative_count": 4,
+                "upper_bound": 0.025
+              },
+              {
+                "cumulative_count": 4,
+                "upper_bound": 0.05
+              },
+              {
+                "cumulative_count": 4,
+                "upper_bound": 0.1
+              },
+              {
+                "cumulative_count": 4,
+                "upper_bound": 0.25
+              },
+              {
+                "cumulative_count": 4,
+                "upper_bound": 0.5
+              },
+              {
+                "cumulative_count": 4,
+                "upper_bound": 1
+              },
+              {
+                "cumulative_count": 4,
+                "upper_bound": 2.5
+              },
+              {
+                "cumulative_count": 4,
+                "upper_bound": 5
+              },
+              {
+                "cumulative_count": 4,
+                "upper_bound": 10
+              }
+            ],
+            "count": 4,
+            "sum": 0.034300259
+          }
+        },
+        {
+          "labels": {
+            "code": "200",
+            "method": "GET",
+            "url": "/healthz"
+          },
+          "name": "nexus_gateway_request_duration_seconds",
+          "type": "histogram",
+          "value": {
+            "buckets": [
+              {
+                "cumulative_count": 54,
+                "upper_bound": 0.005
+              },
+              {
+                "cumulative_count": 54,
+                "upper_bound": 0.01
+              },
+              {
+                "cumulative_count": 54,
+                "upper_bound": 0.025
+              },
+              {
+                "cumulative_count": 54,
+                "upper_bound": 0.05
+              },
+              {
+                "cumulative_count": 54,
+                "upper_bound": 0.1
+              },
+              {
+                "cumulative_count": 54,
+                "upper_bound": 0.25
+              },
+              {
+                "cumulative_count": 54,
+                "upper_bound": 0.5
+              },
+              {
+                "cumulative_count": 54,
+                "upper_bound": 1
+              },
+              {
+                "cumulative_count": 54,
+                "upper_bound": 2.5
+              },
+              {
+                "cumulative_count": 54,
+                "upper_bound": 5
+              },
+              {
+                "cumulative_count": 54,
+                "upper_bound": 10
+              }
+            ],
+            "count": 54,
+            "sum": 0.0006246559999999998
+          }
+        },
+        {
+          "labels": {
+            "code": "200",
+            "method": "GET",
+            "url": "/readyz"
+          },
+          "name": "nexus_gateway_request_duration_seconds",
+          "type": "histogram",
+          "value": {
+            "buckets": [
+              {
+                "cumulative_count": 9206,
+                "upper_bound": 0.005
+              },
+              {
+                "cumulative_count": 9207,
+                "upper_bound": 0.01
+              },
+              {
+                "cumulative_count": 9207,
+                "upper_bound": 0.025
+              },
+              {
+                "cumulative_count": 9207,
+                "upper_bound": 0.05
+              },
+              {
+                "cumulative_count": 9207,
+                "upper_bound": 0.1
+              },
+              {
+                "cumulative_count": 9207,
+                "upper_bound": 0.25
+              },
+              {
+                "cumulative_count": 9207,
+                "upper_bound": 0.5
+              },
+              {
+                "cumulative_count": 9207,
+                "upper_bound": 1
+              },
+              {
+                "cumulative_count": 9207,
+                "upper_bound": 2.5
+              },
+              {
+                "cumulative_count": 9207,
+                "upper_bound": 5
+              },
+              {
+                "cumulative_count": 9207,
+                "upper_bound": 10
+              }
+            ],
+            "count": 9207,
+            "sum": 2.04800091000001
+          }
+        },
+        {
+          "labels": {
+            "code": "200",
+            "method": "GET",
+            "url": "/v1/audit"
+          },
+          "name": "nexus_gateway_request_duration_seconds",
+          "type": "histogram",
+          "value": {
+            "buckets": [
+              {
+                "cumulative_count": 15,
+                "upper_bound": 0.005
+              },
+              {
+                "cumulative_count": 15,
+                "upper_bound": 0.01
+              },
+              {
+                "cumulative_count": 15,
+                "upper_bound": 0.025
+              },
+              {
+                "cumulative_count": 15,
+                "upper_bound": 0.05
+              },
+              {
+                "cumulative_count": 15,
+                "upper_bound": 0.1
+              },
+              {
+                "cumulative_count": 15,
+                "upper_bound": 0.25
+              },
+              {
+                "cumulative_count": 15,
+                "upper_bound": 0.5
+              },
+              {
+                "cumulative_count": 15,
+                "upper_bound": 1
+              },
+              {
+                "cumulative_count": 15,
+                "upper_bound": 2.5
+              },
+              {
+                "cumulative_count": 15,
+                "upper_bound": 5
+              },
+              {
+                "cumulative_count": 15,
+                "upper_bound": 10
+              }
+            ],
+            "count": 15,
+            "sum": 0.018852088
+          }
+        },
+        {
+          "labels": {
+            "code": "200",
+            "method": "GET",
+            "url": "/v1/events"
+          },
+          "name": "nexus_gateway_request_duration_seconds",
+          "type": "histogram",
+          "value": {
+            "buckets": [
+              {
+                "cumulative_count": 1861,
+                "upper_bound": 0.005
+              },
+              {
+                "cumulative_count": 1861,
+                "upper_bound": 0.01
+              },
+              {
+                "cumulative_count": 1861,
+                "upper_bound": 0.025
+              },
+              {
+                "cumulative_count": 1861,
+                "upper_bound": 0.05
+              },
+              {
+                "cumulative_count": 1861,
+                "upper_bound": 0.1
+              },
+              {
+                "cumulative_count": 1861,
+                "upper_bound": 0.25
+              },
+              {
+                "cumulative_count": 1861,
+                "upper_bound": 0.5
+              },
+              {
+                "cumulative_count": 1861,
+                "upper_bound": 1
+              },
+              {
+                "cumulative_count": 1861,
+                "upper_bound": 2.5
+              },
+              {
+                "cumulative_count": 1861,
+                "upper_bound": 5
+              },
+              {
+                "cumulative_count": 1861,
+                "upper_bound": 10
+              }
+            ],
+            "count": 1861,
+            "sum": 1.2544938129999992
+          }
+        },
+        {
+          "labels": {
+            "code": "200",
+            "method": "GET",
+            "url": "/v1/tools"
+          },
+          "name": "nexus_gateway_request_duration_seconds",
+          "type": "histogram",
+          "value": {
+            "buckets": [
+              {
+                "cumulative_count": 9,
+                "upper_bound": 0.005
+              },
+              {
+                "cumulative_count": 9,
+                "upper_bound": 0.01
+              },
+              {
+                "cumulative_count": 9,
+                "upper_bound": 0.025
+              },
+              {
+                "cumulative_count": 9,
+                "upper_bound": 0.05
+              },
+              {
+                "cumulative_count": 9,
+                "upper_bound": 0.1
+              },
+              {
+                "cumulative_count": 9,
+                "upper_bound": 0.25
+              },
+              {
+                "cumulative_count": 9,
+                "upper_bound": 0.5
+              },
+              {
+                "cumulative_count": 9,
+                "upper_bound": 1
+              },
+              {
+                "cumulative_count": 9,
+                "upper_bound": 2.5
+              },
+              {
+                "cumulative_count": 9,
+                "upper_bound": 5
+              },
+              {
+                "cumulative_count": 9,
+                "upper_bound": 10
+              }
+            ],
+            "count": 9,
+            "sum": 0.007463882000000001
+          }
+        },
+        {
+          "labels": {
+            "code": "200",
+            "method": "GET",
+            "url": "/v1/world/events"
+          },
+          "name": "nexus_gateway_request_duration_seconds",
+          "type": "histogram",
+          "value": {
+            "buckets": [
+              {
+                "cumulative_count": 2,
+                "upper_bound": 0.005
+              },
+              {
+                "cumulative_count": 41,
+                "upper_bound": 0.01
+              },
+              {
+                "cumulative_count": 47,
+                "upper_bound": 0.025
+              },
+              {
+                "cumulative_count": 47,
+                "upper_bound": 0.05
+              },
+              {
+                "cumulative_count": 47,
+                "upper_bound": 0.1
+              },
+              {
+                "cumulative_count": 47,
+                "upper_bound": 0.25
+              },
+              {
+                "cumulative_count": 47,
+                "upper_bound": 0.5
+              },
+              {
+                "cumulative_count": 47,
+                "upper_bound": 1
+              },
+              {
+                "cumulative_count": 47,
+                "upper_bound": 2.5
+              },
+              {
+                "cumulative_count": 47,
+                "upper_bound": 5
+              },
+              {
+                "cumulative_count": 47,
+                "upper_bound": 10
+              }
+            ],
+            "count": 47,
+            "sum": 0.441084158
+          }
+        },
+        {
+          "labels": {
+            "code": "200",
+            "method": "GET",
+            "url": "/v1/world/runs"
+          },
+          "name": "nexus_gateway_request_duration_seconds",
+          "type": "histogram",
+          "value": {
+            "buckets": [
+              {
+                "cumulative_count": 2,
+                "upper_bound": 0.005
+              },
+              {
+                "cumulative_count": 2,
+                "upper_bound": 0.01
+              },
+              {
+                "cumulative_count": 2,
+                "upper_bound": 0.025
+              },
+              {
+                "cumulative_count": 2,
+                "upper_bound": 0.05
+              },
+              {
+                "cumulative_count": 2,
+                "upper_bound": 0.1
+              },
+              {
+                "cumulative_count": 2,
+                "upper_bound": 0.25
+              },
+              {
+                "cumulative_count": 2,
+                "upper_bound": 0.5
+              },
+              {
+                "cumulative_count": 2,
+                "upper_bound": 1
+              },
+              {
+                "cumulative_count": 2,
+                "upper_bound": 2.5
+              },
+              {
+                "cumulative_count": 2,
+                "upper_bound": 5
+              },
+              {
+                "cumulative_count": 2,
+                "upper_bound": 10
+              }
+            ],
+            "count": 2,
+            "sum": 0.001535807
+          }
+        },
+        {
+          "labels": {
+            "code": "200",
+            "method": "GET",
+            "url": "/v1/world/state"
+          },
+          "name": "nexus_gateway_request_duration_seconds",
+          "type": "histogram",
+          "value": {
+            "buckets": [
+              {
+                "cumulative_count": 10,
+                "upper_bound": 0.005
+              },
+              {
+                "cumulative_count": 10,
+                "upper_bound": 0.01
+              },
+              {
+                "cumulative_count": 10,
+                "upper_bound": 0.025
+              },
+              {
+                "cumulative_count": 10,
+                "upper_bound": 0.05
+              },
+              {
+                "cumulative_count": 10,
+                "upper_bound": 0.1
+              },
+              {
+                "cumulative_count": 10,
+                "upper_bound": 0.25
+              },
+              {
+                "cumulative_count": 10,
+                "upper_bound": 0.5
+              },
+              {
+                "cumulative_count": 10,
+                "upper_bound": 1
+              },
+              {
+                "cumulative_count": 10,
+                "upper_bound": 2.5
+              },
+              {
+                "cumulative_count": 10,
+                "upper_bound": 5
+              },
+              {
+                "cumulative_count": 10,
+                "upper_bound": 10
+              }
+            ],
+            "count": 10,
+            "sum": 0.010896053
+          }
+        },
+        {
+          "labels": {
+            "code": "200",
+            "method": "POST",
+            "url": "/v1/run"
+          },
+          "name": "nexus_gateway_request_duration_seconds",
+          "type": "histogram",
+          "value": {
+            "buckets": [
+              {
+                "cumulative_count": 1501,
+                "upper_bound": 0.005
+              },
+              {
+                "cumulative_count": 2988,
+                "upper_bound": 0.01
+              },
+              {
+                "cumulative_count": 2997,
+                "upper_bound": 0.025
+              },
+              {
+                "cumulative_count": 2998,
+                "upper_bound": 0.05
+              },
+              {
+                "cumulative_count": 3000,
+                "upper_bound": 0.1
+              },
+              {
+                "cumulative_count": 3000,
+                "upper_bound": 0.25
+              },
+              {
+                "cumulative_count": 3000,
+                "upper_bound": 0.5
+              },
+              {
+                "cumulative_count": 3000,
+                "upper_bound": 1
+              },
+              {
+                "cumulative_count": 3000,
+                "upper_bound": 2.5
+              },
+              {
+                "cumulative_count": 3000,
+                "upper_bound": 5
+              },
+              {
+                "cumulative_count": 3000,
+                "upper_bound": 10
+              }
+            ],
+            "count": 3000,
+            "sum": 15.630103293000028
+          }
+        },
+        {
+          "labels": {
+            "code": "200",
+            "method": "POST",
+            "url": "/v1/world/replay"
+          },
+          "name": "nexus_gateway_request_duration_seconds",
+          "type": "histogram",
+          "value": {
+            "buckets": [
+              {
+                "cumulative_count": 0,
+                "upper_bound": 0.005
+              },
+              {
+                "cumulative_count": 0,
+                "upper_bound": 0.01
+              },
+              {
+                "cumulative_count": 0,
+                "upper_bound": 0.025
+              },
+              {
+                "cumulative_count": 0,
+                "upper_bound": 0.05
+              },
+              {
+                "cumulative_count": 0,
+                "upper_bound": 0.1
+              },
+              {
+                "cumulative_count": 0,
+                "upper_bound": 0.25
+              },
+              {
+                "cumulative_count": 1,
+                "upper_bound": 0.5
+              },
+              {
+                "cumulative_count": 1,
+                "upper_bound": 1
+              },
+              {
+                "cumulative_count": 2,
+                "upper_bound": 2.5
+              },
+              {
+                "cumulative_count": 2,
+                "upper_bound": 5
+              },
+              {
+                "cumulative_count": 2,
+                "upper_bound": 10
+              }
+            ],
+            "count": 2,
+            "sum": 2.428528756
+          }
+        },
+        {
+          "labels": {
+            "code": "200",
+            "method": "POST",
+            "url": "/v1/world/run/create"
+          },
+          "name": "nexus_gateway_request_duration_seconds",
+          "type": "histogram",
+          "value": {
+            "buckets": [
+              {
+                "cumulative_count": 0,
+                "upper_bound": 0.005
+              },
+              {
+                "cumulative_count": 0,
+                "upper_bound": 0.01
+              },
+              {
+                "cumulative_count": 0,
+                "upper_bound": 0.025
+              },
+              {
+                "cumulative_count": 2,
+                "upper_bound": 0.05
+              },
+              {
+                "cumulative_count": 2,
+                "upper_bound": 0.1
+              },
+              {
+                "cumulative_count": 2,
+                "upper_bound": 0.25
+              },
+              {
+                "cumulative_count": 2,
+                "upper_bound": 0.5
+              },
+              {
+                "cumulative_count": 2,
+                "upper_bound": 1
+              },
+              {
+                "cumulative_count": 2,
+                "upper_bound": 2.5
+              },
+              {
+                "cumulative_count": 2,
+                "upper_bound": 5
+              },
+              {
+                "cumulative_count": 2,
+                "upper_bound": 10
+              }
+            ],
+            "count": 2,
+            "sum": 0.052830903
+          }
+        },
+        {
+          "labels": {
+            "code": "201",
+            "method": "POST",
+            "url": "/v1/actions/apply"
+          },
+          "name": "nexus_gateway_request_duration_seconds",
+          "type": "histogram",
+          "value": {
+            "buckets": [
+              {
+                "cumulative_count": 0,
+                "upper_bound": 0.005
+              },
+              {
+                "cumulative_count": 1,
+                "upper_bound": 0.01
+              },
+              {
+                "cumulative_count": 1,
+                "upper_bound": 0.025
+              },
+              {
+                "cumulative_count": 1,
+                "upper_bound": 0.05
+              },
+              {
+                "cumulative_count": 1,
+                "upper_bound": 0.1
+              },
+              {
+                "cumulative_count": 1,
+                "upper_bound": 0.25
+              },
+              {
+                "cumulative_count": 1,
+                "upper_bound": 0.5
+              },
+              {
+                "cumulative_count": 1,
+                "upper_bound": 1
+              },
+              {
+                "cumulative_count": 1,
+                "upper_bound": 2.5
+              },
+              {
+                "cumulative_count": 1,
+                "upper_bound": 5
+              },
+              {
+                "cumulative_count": 1,
+                "upper_bound": 10
+              }
+            ],
+            "count": 1,
+            "sum": 0.005808081
+          }
+        },
+        {
+          "labels": {
+            "code": "201",
+            "method": "POST",
+            "url": "/v1/incidents"
+          },
+          "name": "nexus_gateway_request_duration_seconds",
+          "type": "histogram",
+          "value": {
+            "buckets": [
+              {
+                "cumulative_count": 1,
+                "upper_bound": 0.005
+              },
+              {
+                "cumulative_count": 1,
+                "upper_bound": 0.01
+              },
+              {
+                "cumulative_count": 1,
+                "upper_bound": 0.025
+              },
+              {
+                "cumulative_count": 1,
+                "upper_bound": 0.05
+              },
+              {
+                "cumulative_count": 1,
+                "upper_bound": 0.1
+              },
+              {
+                "cumulative_count": 1,
+                "upper_bound": 0.25
+              },
+              {
+                "cumulative_count": 1,
+                "upper_bound": 0.5
+              },
+              {
+                "cumulative_count": 1,
+                "upper_bound": 1
+              },
+              {
+                "cumulative_count": 1,
+                "upper_bound": 2.5
+              },
+              {
+                "cumulative_count": 1,
+                "upper_bound": 5
+              },
+              {
+                "cumulative_count": 1,
+                "upper_bound": 10
+              }
+            ],
+            "count": 1,
+            "sum": 0.002044432
+          }
+        },
+        {
+          "labels": {
+            "code": "201",
+            "method": "POST",
+            "url": "/v1/policy-proposals"
+          },
+          "name": "nexus_gateway_request_duration_seconds",
+          "type": "histogram",
+          "value": {
+            "buckets": [
+              {
+                "cumulative_count": 1,
+                "upper_bound": 0.005
+              },
+              {
+                "cumulative_count": 1,
+                "upper_bound": 0.01
+              },
+              {
+                "cumulative_count": 1,
+                "upper_bound": 0.025
+              },
+              {
+                "cumulative_count": 1,
+                "upper_bound": 0.05
+              },
+              {
+                "cumulative_count": 1,
+                "upper_bound": 0.1
+              },
+              {
+                "cumulative_count": 1,
+                "upper_bound": 0.25
+              },
+              {
+                "cumulative_count": 1,
+                "upper_bound": 0.5
+              },
+              {
+                "cumulative_count": 1,
+                "upper_bound": 1
+              },
+              {
+                "cumulative_count": 1,
+                "upper_bound": 2.5
+              },
+              {
+                "cumulative_count": 1,
+                "upper_bound": 5
+              },
+              {
+                "cumulative_count": 1,
+                "upper_bound": 10
+              }
+            ],
+            "count": 1,
+            "sum": 0.00163701
+          }
+        },
+        {
+          "labels": {
+            "code": "401",
+            "method": "GET",
+            "url": "/v1/events"
+          },
+          "name": "nexus_gateway_request_duration_seconds",
+          "type": "histogram",
+          "value": {
+            "buckets": [
+              {
+                "cumulative_count": 1,
+                "upper_bound": 0.005
+              },
+              {
+                "cumulative_count": 1,
+                "upper_bound": 0.01
+              },
+              {
+                "cumulative_count": 1,
+                "upper_bound": 0.025
+              },
+              {
+                "cumulative_count": 1,
+                "upper_bound": 0.05
+              },
+              {
+                "cumulative_count": 1,
+                "upper_bound": 0.1
+              },
+              {
+                "cumulative_count": 1,
+                "upper_bound": 0.25
+              },
+              {
+                "cumulative_count": 1,
+                "upper_bound": 0.5
+              },
+              {
+                "cumulative_count": 1,
+                "upper_bound": 1
+              },
+              {
+                "cumulative_count": 1,
+                "upper_bound": 2.5
+              },
+              {
+                "cumulative_count": 1,
+                "upper_bound": 5
+              },
+              {
+                "cumulative_count": 1,
+                "upper_bound": 10
+              }
+            ],
+            "count": 1,
+            "sum": 0.001253291
+          }
+        },
+        {
+          "labels": {
+            "code": "403",
+            "method": "POST",
+            "url": "/v1/run"
+          },
+          "name": "nexus_gateway_request_duration_seconds",
+          "type": "histogram",
+          "value": {
+            "buckets": [
+              {
+                "cumulative_count": 218,
+                "upper_bound": 0.005
+              },
+              {
+                "cumulative_count": 220,
+                "upper_bound": 0.01
+              },
+              {
+                "cumulative_count": 220,
+                "upper_bound": 0.025
+              },
+              {
+                "cumulative_count": 220,
+                "upper_bound": 0.05
+              },
+              {
+                "cumulative_count": 220,
+                "upper_bound": 0.1
+              },
+              {
+                "cumulative_count": 220,
+                "upper_bound": 0.25
+              },
+              {
+                "cumulative_count": 220,
+                "upper_bound": 0.5
+              },
+              {
+                "cumulative_count": 220,
+                "upper_bound": 1
+              },
+              {
+                "cumulative_count": 220,
+                "upper_bound": 2.5
+              },
+              {
+                "cumulative_count": 220,
+                "upper_bound": 5
+              },
+              {
+                "cumulative_count": 220,
+                "upper_bound": 10
+              }
+            ],
+            "count": 220,
+            "sum": 0.5868069079999999
+          }
+        },
+        {
+          "labels": {
+            "code": "404",
+            "method": "GET",
+            "url": "/health"
+          },
+          "name": "nexus_gateway_request_duration_seconds",
+          "type": "histogram",
+          "value": {
+            "buckets": [
+              {
+                "cumulative_count": 10,
+                "upper_bound": 0.005
+              },
+              {
+                "cumulative_count": 10,
+                "upper_bound": 0.01
+              },
+              {
+                "cumulative_count": 10,
+                "upper_bound": 0.025
+              },
+              {
+                "cumulative_count": 10,
+                "upper_bound": 0.05
+              },
+              {
+                "cumulative_count": 10,
+                "upper_bound": 0.1
+              },
+              {
+                "cumulative_count": 10,
+                "upper_bound": 0.25
+              },
+              {
+                "cumulative_count": 10,
+                "upper_bound": 0.5
+              },
+              {
+                "cumulative_count": 10,
+                "upper_bound": 1
+              },
+              {
+                "cumulative_count": 10,
+                "upper_bound": 2.5
+              },
+              {
+                "cumulative_count": 10,
+                "upper_bound": 5
+              },
+              {
+                "cumulative_count": 10,
+                "upper_bound": 10
+              }
+            ],
+            "count": 10,
+            "sum": 0.000010774999999999998
+          }
+        },
+        {
+          "labels": {},
+          "name": "nexus_gateway_request_size_bytes",
+          "type": "summary",
+          "value": {
+            "count": 14455,
+            "quantiles": [],
+            "sum": 3449288
+          }
+        },
+        {
+          "labels": {
+            "code": "200",
+            "handler": "nexus-core/internal/audit.(*Handler).query-fm",
+            "host": "localhost:8080",
+            "method": "GET",
+            "url": "/v1/audit"
+          },
+          "name": "nexus_gateway_requests_total",
+          "type": "counter",
+          "value": 15
+        },
+        {
+          "labels": {
+            "code": "200",
+            "handler": "nexus-core/internal/events.(*Handler).list-fm",
+            "host": "nexus-core:8080",
+            "method": "GET",
+            "url": "/v1/events"
+          },
+          "name": "nexus_gateway_requests_total",
+          "type": "counter",
+          "value": 1861
+        },
+        {
+          "labels": {
+            "code": "200",
+            "handler": "nexus-core/internal/gateway.(*Handler).run-fm",
+            "host": "localhost:8080",
+            "method": "POST",
+            "url": "/v1/run"
+          },
+          "name": "nexus_gateway_requests_total",
+          "type": "counter",
+          "value": 3000
+        },
+        {
+          "labels": {
+            "code": "200",
+            "handler": "nexus-core/internal/tool.(*Handler).list-fm",
+            "host": "localhost:8080",
+            "method": "GET",
+            "url": "/v1/tools"
+          },
+          "name": "nexus_gateway_requests_total",
+          "type": "counter",
+          "value": 9
+        },
+        {
+          "labels": {
+            "code": "200",
+            "handler": "nexus-core/internal/toolab.(*Handler).manifest-fm",
+            "host": "localhost:8080",
+            "method": "GET",
+            "url": "/_toolab/manifest"
+          },
+          "name": "nexus_gateway_requests_total",
+          "type": "counter",
+          "value": 5
+        },
+        {
+          "labels": {
+            "code": "200",
+            "handler": "nexus-core/internal/toolab.(*Handler).metrics-fm",
+            "host": "localhost:8080",
+            "method": "GET",
+            "url": "/_toolab/metrics"
+          },
+          "name": "nexus_gateway_requests_total",
+          "type": "counter",
+          "value": 3
+        },
+        {
+          "labels": {
+            "code": "200",
+            "handler": "nexus-core/internal/toolab.(*Handler).stateFingerprint-fm",
+            "host": "localhost:8080",
+            "method": "GET",
+            "url": "/_toolab/state/fingerprint"
+          },
+          "name": "nexus_gateway_requests_total",
+          "type": "counter",
+          "value": 4
+        },
+        {
+          "labels": {
+            "code": "200",
+            "handler": "nexus-core/internal/world.(*Handler).createRun-fm",
+            "host": "localhost:8080",
+            "method": "POST",
+            "url": "/v1/world/run/create"
+          },
+          "name": "nexus_gateway_requests_total",
+          "type": "counter",
+          "value": 2
+        },
+        {
+          "labels": {
+            "code": "200",
+            "handler": "nexus-core/internal/world.(*Handler).events-fm",
+            "host": "localhost:8080",
+            "method": "GET",
+            "url": "/v1/world/events"
+          },
+          "name": "nexus_gateway_requests_total",
+          "type": "counter",
+          "value": 47
+        },
+        {
+          "labels": {
+            "code": "200",
+            "handler": "nexus-core/internal/world.(*Handler).listRuns-fm",
+            "host": "localhost:8080",
+            "method": "GET",
+            "url": "/v1/world/runs"
+          },
+          "name": "nexus_gateway_requests_total",
+          "type": "counter",
+          "value": 2
+        },
+        {
+          "labels": {
+            "code": "200",
+            "handler": "nexus-core/internal/world.(*Handler).replay-fm",
+            "host": "localhost:8080",
+            "method": "POST",
+            "url": "/v1/world/replay"
+          },
+          "name": "nexus_gateway_requests_total",
+          "type": "counter",
+          "value": 2
+        },
+        {
+          "labels": {
+            "code": "200",
+            "handler": "nexus-core/internal/world.(*Handler).state-fm",
+            "host": "localhost:8080",
+            "method": "GET",
+            "url": "/v1/world/state"
+          },
+          "name": "nexus_gateway_requests_total",
+          "type": "counter",
+          "value": 10
+        },
+        {
+          "labels": {
+            "code": "200",
+            "handler": "nexus-core/wire.NewRouter.func1",
+            "host": "localhost:8080",
+            "method": "GET",
+            "url": "/healthz"
+          },
+          "name": "nexus_gateway_requests_total",
+          "type": "counter",
+          "value": 54
+        },
+        {
+          "labels": {
+            "code": "200",
+            "handler": "nexus-core/wire.NewRouter.func2",
+            "host": "localhost:8080",
+            "method": "GET",
+            "url": "/readyz"
+          },
+          "name": "nexus_gateway_requests_total",
+          "type": "counter",
+          "value": 9207
+        },
+        {
+          "labels": {
+            "code": "201",
+            "handler": "nexus-core/internal/actions.(*Handler).apply-fm",
+            "host": "nexus-core:8080",
+            "method": "POST",
+            "url": "/v1/actions/apply"
+          },
+          "name": "nexus_gateway_requests_total",
+          "type": "counter",
+          "value": 1
+        },
+        {
+          "labels": {
+            "code": "201",
+            "handler": "nexus-core/internal/incidents.(*Handler).create-fm",
+            "host": "nexus-core:8080",
+            "method": "POST",
+            "url": "/v1/incidents"
+          },
+          "name": "nexus_gateway_requests_total",
+          "type": "counter",
+          "value": 1
+        },
+        {
+          "labels": {
+            "code": "201",
+            "handler": "nexus-core/internal/policyproposal.(*Handler).create-fm",
+            "host": "nexus-core:8080",
+            "method": "POST",
+            "url": "/v1/policy-proposals"
+          },
+          "name": "nexus_gateway_requests_total",
+          "type": "counter",
+          "value": 1
+        },
+        {
+          "labels": {
+            "code": "401",
+            "handler": "nexus-core/internal/events.(*Handler).list-fm",
+            "host": "nexus-core:8080",
+            "method": "GET",
+            "url": "/v1/events"
+          },
+          "name": "nexus_gateway_requests_total",
+          "type": "counter",
+          "value": 1
+        },
+        {
+          "labels": {
+            "code": "403",
+            "handler": "nexus-core/internal/gateway.(*Handler).run-fm",
+            "host": "localhost:8080",
+            "method": "POST",
+            "url": "/v1/run"
+          },
+          "name": "nexus_gateway_requests_total",
+          "type": "counter",
+          "value": 220
+        },
+        {
+          "labels": {
+            "code": "404",
+            "handler": "github.com/zsais/go-gin-prometheus.(*Prometheus).Use.(*Prometheus).HandlerFunc.func1",
+            "host": "localhost:8080",
+            "method": "GET",
+            "url": "/health"
+          },
+          "name": "nexus_gateway_requests_total",
+          "type": "counter",
+          "value": 10
+        },
+        {
+          "labels": {},
+          "name": "nexus_gateway_response_size_bytes",
+          "type": "summary",
+          "value": {
+            "count": 14455,
+            "quantiles": [],
+            "sum": 11150314
+          }
+        },
+        {
+          "labels": {
+            "decision": "allow",
+            "status": "success",
+            "tool_name": "world.move"
+          },
+          "name": "nexus_run_latency_ms_prom",
+          "type": "histogram",
+          "value": {
+            "buckets": [
+              {
+                "cumulative_count": 2938,
+                "upper_bound": 10
+              },
+              {
+                "cumulative_count": 2938,
+                "upper_bound": 25
+              },
+              {
+                "cumulative_count": 2939,
+                "upper_bound": 50
+              },
+              {
+                "cumulative_count": 2940,
+                "upper_bound": 100
+              },
+              {
+                "cumulative_count": 2940,
+                "upper_bound": 250
+              },
+              {
+                "cumulative_count": 2940,
+                "upper_bound": 500
+              },
+              {
+                "cumulative_count": 2940,
+                "upper_bound": 1000
+              },
+              {
+                "cumulative_count": 2940,
+                "upper_bound": 2500
+              },
+              {
+                "cumulative_count": 2940,
+                "upper_bound": 5000
+              },
+              {
+                "cumulative_count": 2940,
+                "upper_bound": 10000
+              }
+            ],
+            "count": 2940,
+            "sum": 10083
+          }
+        },
+        {
+          "labels": {
+            "decision": "allow",
+            "status": "success",
+            "tool_name": "world.observe"
+          },
+          "name": "nexus_run_latency_ms_prom",
+          "type": "histogram",
+          "value": {
+            "buckets": [
+              {
+                "cumulative_count": 60,
+                "upper_bound": 10
+              },
+              {
+                "cumulative_count": 60,
+                "upper_bound": 25
+              },
+              {
+                "cumulative_count": 60,
+                "upper_bound": 50
+              },
+              {
+                "cumulative_count": 60,
+                "upper_bound": 100
+              },
+              {
+                "cumulative_count": 60,
+                "upper_bound": 250
+              },
+              {
+                "cumulative_count": 60,
+                "upper_bound": 500
+              },
+              {
+                "cumulative_count": 60,
+                "upper_bound": 1000
+              },
+              {
+                "cumulative_count": 60,
+                "upper_bound": 2500
+              },
+              {
+                "cumulative_count": 60,
+                "upper_bound": 5000
+              },
+              {
+                "cumulative_count": 60,
+                "upper_bound": 10000
+              }
+            ],
+            "count": 60,
+            "sum": 125
+          }
+        },
+        {
+          "labels": {
+            "decision": "deny",
+            "status": "blocked",
+            "tool_name": "world.move"
+          },
+          "name": "nexus_run_latency_ms_prom",
+          "type": "histogram",
+          "value": {
+            "buckets": [
+              {
+                "cumulative_count": 60,
+                "upper_bound": 10
+              },
+              {
+                "cumulative_count": 60,
+                "upper_bound": 25
+              },
+              {
+                "cumulative_count": 60,
+                "upper_bound": 50
+              },
+              {
+                "cumulative_count": 60,
+                "upper_bound": 100
+              },
+              {
+                "cumulative_count": 60,
+                "upper_bound": 250
+              },
+              {
+                "cumulative_count": 60,
+                "upper_bound": 500
+              },
+              {
+                "cumulative_count": 60,
+                "upper_bound": 1000
+              },
+              {
+                "cumulative_count": 60,
+                "upper_bound": 2500
+              },
+              {
+                "cumulative_count": 60,
+                "upper_bound": 5000
+              },
+              {
+                "cumulative_count": 60,
+                "upper_bound": 10000
+              }
+            ],
+            "count": 60,
+            "sum": 1
+          }
+        },
+        {
+          "labels": {
+            "decision": "deny",
+            "status": "blocked",
+            "tool_name": "world.observe"
+          },
+          "name": "nexus_run_latency_ms_prom",
+          "type": "histogram",
+          "value": {
+            "buckets": [
+              {
+                "cumulative_count": 160,
+                "upper_bound": 10
+              },
+              {
+                "cumulative_count": 160,
+                "upper_bound": 25
+              },
+              {
+                "cumulative_count": 160,
+                "upper_bound": 50
+              },
+              {
+                "cumulative_count": 160,
+                "upper_bound": 100
+              },
+              {
+                "cumulative_count": 160,
+                "upper_bound": 250
+              },
+              {
+                "cumulative_count": 160,
+                "upper_bound": 500
+              },
+              {
+                "cumulative_count": 160,
+                "upper_bound": 1000
+              },
+              {
+                "cumulative_count": 160,
+                "upper_bound": 2500
+              },
+              {
+                "cumulative_count": 160,
+                "upper_bound": 5000
+              },
+              {
+                "cumulative_count": 160,
+                "upper_bound": 10000
+              }
+            ],
+            "count": 160,
+            "sum": 0
+          }
+        },
+        {
+          "labels": {
+            "decision": "allow",
+            "status": "success",
+            "tool_name": "world.move"
+          },
+          "name": "nexus_run_total_prom",
+          "type": "counter",
+          "value": 2940
+        },
+        {
+          "labels": {
+            "decision": "allow",
+            "status": "success",
+            "tool_name": "world.observe"
+          },
+          "name": "nexus_run_total_prom",
+          "type": "counter",
+          "value": 60
+        },
+        {
+          "labels": {
+            "decision": "deny",
+            "status": "blocked",
+            "tool_name": "world.move"
+          },
+          "name": "nexus_run_total_prom",
+          "type": "counter",
+          "value": 60
+        },
+        {
+          "labels": {
+            "decision": "deny",
+            "status": "blocked",
+            "tool_name": "world.observe"
+          },
+          "name": "nexus_run_total_prom",
+          "type": "counter",
+          "value": 160
+        },
+        {
+          "labels": {},
+          "name": "process_cpu_seconds_total",
+          "type": "counter",
+          "value": 15.63
+        },
+        {
+          "labels": {},
+          "name": "process_max_fds",
+          "type": "gauge",
+          "value": 1048576
+        },
+        {
+          "labels": {},
+          "name": "process_network_receive_bytes_total",
+          "type": "counter",
+          "value": 35744377
+        },
+        {
+          "labels": {},
+          "name": "process_network_transmit_bytes_total",
+          "type": "counter",
+          "value": 38244022
+        },
+        {
+          "labels": {},
+          "name": "process_open_fds",
+          "type": "gauge",
+          "value": 12
+        },
+        {
+          "labels": {},
+          "name": "process_resident_memory_bytes",
+          "type": "gauge",
+          "value": 35377152
+        },
+        {
+          "labels": {},
+          "name": "process_start_time_seconds",
+          "type": "gauge",
+          "value": 1772052194.67
+        },
+        {
+          "labels": {},
+          "name": "process_virtual_memory_bytes",
+          "type": "gauge",
+          "value": 1295884288
+        },
+        {
+          "labels": {},
+          "name": "process_virtual_memory_max_bytes",
+          "type": "gauge",
+          "value": 18446744073709552000
+        },
+        {
+          "labels": {},
+          "name": "promhttp_metric_handler_requests_in_flight",
+          "type": "gauge",
+          "value": 0
+        },
+        {
+          "labels": {
+            "code": "200"
+          },
+          "name": "promhttp_metric_handler_requests_total",
+          "type": "counter",
+          "value": 1242
+        },
+        {
+          "labels": {
+            "code": "500"
+          },
+          "name": "promhttp_metric_handler_requests_total",
+          "type": "counter",
+          "value": 0
+        },
+        {
+          "labels": {
+            "code": "503"
+          },
+          "name": "promhttp_metric_handler_requests_total",
+          "type": "counter",
+          "value": 0
+        }
+      ],
+      "adapter_post_fingerprint": "sha256:41ee2047e8e72d278753cb4a0baae21ae2a01290cebde0a8c029b32ca650f516"
+    }
+  },
+  "assertions": {
+    "overall": "FAIL",
+    "rules": [
+      {
+        "id": "threshold_error_rate",
+        "type": "threshold_error_rate",
+        "passed": false,
+        "observed": 1,
+        "expected": 0.1,
+        "message": "error_rate 1.000000 \u003c= 0.100000"
+      },
+      {
+        "id": "threshold_p95_ms",
+        "type": "threshold_p95_ms",
+        "passed": true,
+        "observed": 0,
+        "expected": 500,
+        "message": "p95_ms 0 \u003c= 500"
+      },
+      {
+        "id": "invariant_00_no_5xx_allowed",
+        "type": "no_5xx_allowed",
+        "passed": true,
+        "observed": 0,
+        "expected": 0,
+        "message": "5xx_count=0"
+      }
+    ],
+    "violated_rules": [
+      "threshold_error_rate"
+    ]
+  },
+  "unknowns": [
+    "metrics_snapshot unavailable: not configured",
+    "trace_refs unavailable: not configured",
+    "logs_excerpt unavailable: not configured"
+  ],
+  "redaction_summary": {
+    "headers_redacted": [
+      "authorization",
+      "cookie",
+      "set-cookie",
+      "x-api-key"
+    ],
+    "json_paths_redacted": [],
+    "mask": "***REDACTED***",
+    "max_body_preview_bytes": 4096,
+    "max_samples": 50
+  },
+  "repro": {
+    "command": "toolab run ../testdata/e2e/scenario.yaml --out ../golden_runs",
+    "script_path": "../golden_runs/2017c31a55b3ef7553fb8c3415a2e355c737c2c14587bb083754de6745cbd3ce/repro.sh",
+    "expected_deterministic_fingerprint": "5deef5b7c84e8a65c66837f5f10525c4f0d71b62a42291476daccfbf51c68d98"
+  },
+  "environment": {
+    "go_version": "go1.25.7",
+    "os": "linux",
+    "arch": "amd64",
+    "http_client": {
+      "redirects": "disabled"
+    }
+  },
+  "deterministic_fingerprint": "5deef5b7c84e8a65c66837f5f10525c4f0d71b62a42291476daccfbf51c68d98"
+}

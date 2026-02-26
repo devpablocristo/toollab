@@ -1,0 +1,3831 @@
+{
+  "schema_version": 1,
+  "metadata": {
+    "toolab_version": "0.1.0",
+    "mode": "black",
+    "run_id": "903a4a67bfbb4a2597716ab8cc476c818da842bfc09405fef81d6e186c8808f9",
+    "run_seed": "42",
+    "chaos_seed": "7",
+    "started_utc": "2026-02-25T21:02:48Z",
+    "finished_utc": "2026-02-25T21:02:48Z"
+  },
+  "scenario_fingerprint": {
+    "scenario_path": "../scenarios/nexus_health.yaml",
+    "scenario_sha256": "dcb08f4269edf4d2bc03ed0faa5ea2dc1e1ef045e13538c4c9118dc48e8a987e",
+    "scenario_schema_version": 1
+  },
+  "execution": {
+    "schedule_mode": "closed_loop",
+    "concurrency": 4,
+    "duration_s": 10,
+    "planned_requests": 40,
+    "completed_requests": 40,
+    "decision_engine_version": "splitmix64+xoshiro256ss-v1",
+    "decision_tape_hash": "7dc801a69c8cea64c978f6668beb7aeb91b79152e293382a8480a24b6fe7794a"
+  },
+  "stats": {
+    "total_requests": 40,
+    "success_rate": 0.975,
+    "error_rate": 0.025000000000000022,
+    "p50_ms": 25,
+    "p95_ms": 50,
+    "p99_ms": 51,
+    "status_histogram": {
+      "200": 39
+    }
+  },
+  "outcomes": [
+    {
+      "seq": 0,
+      "request_id": "readyz",
+      "method": "GET",
+      "path": "/readyz",
+      "status_code": 200,
+      "error_kind": "none",
+      "latency_ms": 29,
+      "response_hash": "4062edaf750fb8074e7e83e0c9028c94e32468a8b6f1614774328ef045150f93",
+      "chaos_applied": {
+        "latency_injected_ms": 29,
+        "error_injected": false,
+        "error_mode": "abort",
+        "payload_drift_applied": false,
+        "payload_mutations": []
+      }
+    },
+    {
+      "seq": 1,
+      "request_id": "readyz",
+      "method": "GET",
+      "path": "/readyz",
+      "status_code": 200,
+      "error_kind": "none",
+      "latency_ms": 34,
+      "response_hash": "4062edaf750fb8074e7e83e0c9028c94e32468a8b6f1614774328ef045150f93",
+      "chaos_applied": {
+        "latency_injected_ms": 33,
+        "error_injected": false,
+        "error_mode": "abort",
+        "payload_drift_applied": false,
+        "payload_mutations": []
+      }
+    },
+    {
+      "seq": 2,
+      "request_id": "list_tools",
+      "method": "GET",
+      "path": "/v1/tools",
+      "status_code": 200,
+      "error_kind": "none",
+      "latency_ms": 21,
+      "response_hash": "e938b159f6886267b6a5747015f3b1ceea3e1e1254684a7cc62a7f9e0c7000d5",
+      "chaos_applied": {
+        "latency_injected_ms": 19,
+        "error_injected": false,
+        "error_mode": "abort",
+        "payload_drift_applied": false,
+        "payload_mutations": []
+      }
+    },
+    {
+      "seq": 3,
+      "request_id": "healthz",
+      "method": "GET",
+      "path": "/healthz",
+      "status_code": 200,
+      "error_kind": "none",
+      "latency_ms": 41,
+      "response_hash": "4062edaf750fb8074e7e83e0c9028c94e32468a8b6f1614774328ef045150f93",
+      "chaos_applied": {
+        "latency_injected_ms": 41,
+        "error_injected": false,
+        "error_mode": "abort",
+        "payload_drift_applied": false,
+        "payload_mutations": []
+      }
+    },
+    {
+      "seq": 4,
+      "request_id": "audit_feed",
+      "method": "GET",
+      "path": "/v1/audit",
+      "status_code": 200,
+      "error_kind": "none",
+      "latency_ms": 16,
+      "response_hash": "54fb99db88222488d9d9cfda6995037615f8ad6fa251fc616e42cd8e29a06af6",
+      "chaos_applied": {
+        "latency_injected_ms": 14,
+        "error_injected": false,
+        "error_mode": "abort",
+        "payload_drift_applied": false,
+        "payload_mutations": []
+      }
+    },
+    {
+      "seq": 5,
+      "request_id": "readyz",
+      "method": "GET",
+      "path": "/readyz",
+      "status_code": 200,
+      "error_kind": "none",
+      "latency_ms": 10,
+      "response_hash": "4062edaf750fb8074e7e83e0c9028c94e32468a8b6f1614774328ef045150f93",
+      "chaos_applied": {
+        "latency_injected_ms": 10,
+        "error_injected": false,
+        "error_mode": "abort",
+        "payload_drift_applied": false,
+        "payload_mutations": []
+      }
+    },
+    {
+      "seq": 6,
+      "request_id": "healthz",
+      "method": "GET",
+      "path": "/healthz",
+      "status_code": 200,
+      "error_kind": "none",
+      "latency_ms": 25,
+      "response_hash": "4062edaf750fb8074e7e83e0c9028c94e32468a8b6f1614774328ef045150f93",
+      "chaos_applied": {
+        "latency_injected_ms": 24,
+        "error_injected": false,
+        "error_mode": "abort",
+        "payload_drift_applied": false,
+        "payload_mutations": []
+      }
+    },
+    {
+      "seq": 7,
+      "request_id": "healthz",
+      "method": "GET",
+      "path": "/healthz",
+      "status_code": 200,
+      "error_kind": "none",
+      "latency_ms": 51,
+      "response_hash": "4062edaf750fb8074e7e83e0c9028c94e32468a8b6f1614774328ef045150f93",
+      "chaos_applied": {
+        "latency_injected_ms": 50,
+        "error_injected": false,
+        "error_mode": "abort",
+        "payload_drift_applied": false,
+        "payload_mutations": []
+      }
+    },
+    {
+      "seq": 8,
+      "request_id": "list_tools",
+      "method": "GET",
+      "path": "/v1/tools",
+      "status_code": 200,
+      "error_kind": "none",
+      "latency_ms": 38,
+      "response_hash": "e938b159f6886267b6a5747015f3b1ceea3e1e1254684a7cc62a7f9e0c7000d5",
+      "chaos_applied": {
+        "latency_injected_ms": 37,
+        "error_injected": false,
+        "error_mode": "abort",
+        "payload_drift_applied": false,
+        "payload_mutations": []
+      }
+    },
+    {
+      "seq": 9,
+      "request_id": "healthz",
+      "method": "GET",
+      "path": "/healthz",
+      "status_code": 200,
+      "error_kind": "none",
+      "latency_ms": 19,
+      "response_hash": "4062edaf750fb8074e7e83e0c9028c94e32468a8b6f1614774328ef045150f93",
+      "chaos_applied": {
+        "latency_injected_ms": 19,
+        "error_injected": false,
+        "error_mode": "abort",
+        "payload_drift_applied": false,
+        "payload_mutations": []
+      }
+    },
+    {
+      "seq": 10,
+      "request_id": "readyz",
+      "method": "GET",
+      "path": "/readyz",
+      "status_code": 200,
+      "error_kind": "none",
+      "latency_ms": 7,
+      "response_hash": "4062edaf750fb8074e7e83e0c9028c94e32468a8b6f1614774328ef045150f93",
+      "chaos_applied": {
+        "latency_injected_ms": 7,
+        "error_injected": false,
+        "error_mode": "abort",
+        "payload_drift_applied": false,
+        "payload_mutations": []
+      }
+    },
+    {
+      "seq": 11,
+      "request_id": "readyz",
+      "method": "GET",
+      "path": "/readyz",
+      "status_code": 200,
+      "error_kind": "none",
+      "latency_ms": 37,
+      "response_hash": "4062edaf750fb8074e7e83e0c9028c94e32468a8b6f1614774328ef045150f93",
+      "chaos_applied": {
+        "latency_injected_ms": 37,
+        "error_injected": false,
+        "error_mode": "abort",
+        "payload_drift_applied": false,
+        "payload_mutations": []
+      }
+    },
+    {
+      "seq": 12,
+      "request_id": "healthz",
+      "method": "GET",
+      "path": "/healthz",
+      "status_code": 200,
+      "error_kind": "none",
+      "latency_ms": 41,
+      "response_hash": "4062edaf750fb8074e7e83e0c9028c94e32468a8b6f1614774328ef045150f93",
+      "chaos_applied": {
+        "latency_injected_ms": 41,
+        "error_injected": false,
+        "error_mode": "abort",
+        "payload_drift_applied": false,
+        "payload_mutations": []
+      }
+    },
+    {
+      "seq": 13,
+      "request_id": "healthz",
+      "method": "GET",
+      "path": "/healthz",
+      "status_code": 200,
+      "error_kind": "none",
+      "latency_ms": 28,
+      "response_hash": "4062edaf750fb8074e7e83e0c9028c94e32468a8b6f1614774328ef045150f93",
+      "chaos_applied": {
+        "latency_injected_ms": 27,
+        "error_injected": false,
+        "error_mode": "abort",
+        "payload_drift_applied": false,
+        "payload_mutations": []
+      }
+    },
+    {
+      "seq": 14,
+      "request_id": "healthz",
+      "method": "GET",
+      "path": "/healthz",
+      "status_code": 200,
+      "error_kind": "none",
+      "latency_ms": 48,
+      "response_hash": "4062edaf750fb8074e7e83e0c9028c94e32468a8b6f1614774328ef045150f93",
+      "chaos_applied": {
+        "latency_injected_ms": 48,
+        "error_injected": false,
+        "error_mode": "abort",
+        "payload_drift_applied": false,
+        "payload_mutations": []
+      }
+    },
+    {
+      "seq": 15,
+      "request_id": "audit_feed",
+      "method": "GET",
+      "path": "/v1/audit",
+      "status_code": 200,
+      "error_kind": "none",
+      "latency_ms": 6,
+      "response_hash": "54fb99db88222488d9d9cfda6995037615f8ad6fa251fc616e42cd8e29a06af6",
+      "chaos_applied": {
+        "latency_injected_ms": 5,
+        "error_injected": false,
+        "error_mode": "abort",
+        "payload_drift_applied": false,
+        "payload_mutations": []
+      }
+    },
+    {
+      "seq": 16,
+      "request_id": "readyz",
+      "method": "GET",
+      "path": "/readyz",
+      "status_code": 200,
+      "error_kind": "none",
+      "latency_ms": 29,
+      "response_hash": "4062edaf750fb8074e7e83e0c9028c94e32468a8b6f1614774328ef045150f93",
+      "chaos_applied": {
+        "latency_injected_ms": 29,
+        "error_injected": false,
+        "error_mode": "abort",
+        "payload_drift_applied": false,
+        "payload_mutations": []
+      }
+    },
+    {
+      "seq": 17,
+      "request_id": "readyz",
+      "method": "GET",
+      "path": "/readyz",
+      "status_code": 200,
+      "error_kind": "none",
+      "latency_ms": 13,
+      "response_hash": "4062edaf750fb8074e7e83e0c9028c94e32468a8b6f1614774328ef045150f93",
+      "chaos_applied": {
+        "latency_injected_ms": 12,
+        "error_injected": false,
+        "error_mode": "abort",
+        "payload_drift_applied": false,
+        "payload_mutations": []
+      }
+    },
+    {
+      "seq": 18,
+      "request_id": "audit_feed",
+      "method": "GET",
+      "path": "/v1/audit",
+      "status_code": 200,
+      "error_kind": "none",
+      "latency_ms": 21,
+      "response_hash": "54fb99db88222488d9d9cfda6995037615f8ad6fa251fc616e42cd8e29a06af6",
+      "chaos_applied": {
+        "latency_injected_ms": 19,
+        "error_injected": false,
+        "error_mode": "abort",
+        "payload_drift_applied": false,
+        "payload_mutations": []
+      }
+    },
+    {
+      "seq": 19,
+      "request_id": "healthz",
+      "method": "GET",
+      "path": "/healthz",
+      "status_code": 200,
+      "error_kind": "none",
+      "latency_ms": 33,
+      "response_hash": "4062edaf750fb8074e7e83e0c9028c94e32468a8b6f1614774328ef045150f93",
+      "chaos_applied": {
+        "latency_injected_ms": 33,
+        "error_injected": false,
+        "error_mode": "abort",
+        "payload_drift_applied": false,
+        "payload_mutations": []
+      }
+    },
+    {
+      "seq": 20,
+      "request_id": "audit_feed",
+      "method": "GET",
+      "path": "/v1/audit",
+      "status_code": 200,
+      "error_kind": "none",
+      "latency_ms": 41,
+      "response_hash": "54fb99db88222488d9d9cfda6995037615f8ad6fa251fc616e42cd8e29a06af6",
+      "chaos_applied": {
+        "latency_injected_ms": 39,
+        "error_injected": false,
+        "error_mode": "abort",
+        "payload_drift_applied": false,
+        "payload_mutations": []
+      }
+    },
+    {
+      "seq": 21,
+      "request_id": "readyz",
+      "method": "GET",
+      "path": "/readyz",
+      "status_code": 200,
+      "error_kind": "none",
+      "latency_ms": 40,
+      "response_hash": "4062edaf750fb8074e7e83e0c9028c94e32468a8b6f1614774328ef045150f93",
+      "chaos_applied": {
+        "latency_injected_ms": 40,
+        "error_injected": false,
+        "error_mode": "abort",
+        "payload_drift_applied": false,
+        "payload_mutations": []
+      }
+    },
+    {
+      "seq": 22,
+      "request_id": "healthz",
+      "method": "GET",
+      "path": "/healthz",
+      "status_code": 200,
+      "error_kind": "none",
+      "latency_ms": 14,
+      "response_hash": "4062edaf750fb8074e7e83e0c9028c94e32468a8b6f1614774328ef045150f93",
+      "chaos_applied": {
+        "latency_injected_ms": 14,
+        "error_injected": false,
+        "error_mode": "abort",
+        "payload_drift_applied": false,
+        "payload_mutations": []
+      }
+    },
+    {
+      "seq": 23,
+      "request_id": "readyz",
+      "method": "GET",
+      "path": "/readyz",
+      "status_code": 200,
+      "error_kind": "none",
+      "latency_ms": 48,
+      "response_hash": "4062edaf750fb8074e7e83e0c9028c94e32468a8b6f1614774328ef045150f93",
+      "chaos_applied": {
+        "latency_injected_ms": 48,
+        "error_injected": false,
+        "error_mode": "abort",
+        "payload_drift_applied": false,
+        "payload_mutations": []
+      }
+    },
+    {
+      "seq": 24,
+      "request_id": "healthz",
+      "method": "GET",
+      "path": "/healthz",
+      "status_code": 200,
+      "error_kind": "none",
+      "latency_ms": 42,
+      "response_hash": "4062edaf750fb8074e7e83e0c9028c94e32468a8b6f1614774328ef045150f93",
+      "chaos_applied": {
+        "latency_injected_ms": 42,
+        "error_injected": false,
+        "error_mode": "abort",
+        "payload_drift_applied": false,
+        "payload_mutations": []
+      }
+    },
+    {
+      "seq": 25,
+      "request_id": "list_tools",
+      "method": "GET",
+      "path": "/v1/tools",
+      "status_code": 200,
+      "error_kind": "none",
+      "latency_ms": 17,
+      "response_hash": "e938b159f6886267b6a5747015f3b1ceea3e1e1254684a7cc62a7f9e0c7000d5",
+      "chaos_applied": {
+        "latency_injected_ms": 16,
+        "error_injected": false,
+        "error_mode": "abort",
+        "payload_drift_applied": false,
+        "payload_mutations": []
+      }
+    },
+    {
+      "seq": 26,
+      "request_id": "list_tools",
+      "method": "GET",
+      "path": "/v1/tools",
+      "error_kind": "chaos_abort",
+      "latency_ms": 19,
+      "response_hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "chaos_applied": {
+        "latency_injected_ms": 19,
+        "error_injected": true,
+        "error_mode": "abort",
+        "payload_drift_applied": false,
+        "payload_mutations": []
+      }
+    },
+    {
+      "seq": 27,
+      "request_id": "healthz",
+      "method": "GET",
+      "path": "/healthz",
+      "status_code": 200,
+      "error_kind": "none",
+      "latency_ms": 50,
+      "response_hash": "4062edaf750fb8074e7e83e0c9028c94e32468a8b6f1614774328ef045150f93",
+      "chaos_applied": {
+        "latency_injected_ms": 50,
+        "error_injected": false,
+        "error_mode": "abort",
+        "payload_drift_applied": false,
+        "payload_mutations": []
+      }
+    },
+    {
+      "seq": 28,
+      "request_id": "readyz",
+      "method": "GET",
+      "path": "/readyz",
+      "status_code": 200,
+      "error_kind": "none",
+      "latency_ms": 50,
+      "response_hash": "4062edaf750fb8074e7e83e0c9028c94e32468a8b6f1614774328ef045150f93",
+      "chaos_applied": {
+        "latency_injected_ms": 50,
+        "error_injected": false,
+        "error_mode": "abort",
+        "payload_drift_applied": false,
+        "payload_mutations": []
+      }
+    },
+    {
+      "seq": 29,
+      "request_id": "healthz",
+      "method": "GET",
+      "path": "/healthz",
+      "status_code": 200,
+      "error_kind": "none",
+      "latency_ms": 47,
+      "response_hash": "4062edaf750fb8074e7e83e0c9028c94e32468a8b6f1614774328ef045150f93",
+      "chaos_applied": {
+        "latency_injected_ms": 47,
+        "error_injected": false,
+        "error_mode": "abort",
+        "payload_drift_applied": false,
+        "payload_mutations": []
+      }
+    },
+    {
+      "seq": 30,
+      "request_id": "healthz",
+      "method": "GET",
+      "path": "/healthz",
+      "status_code": 200,
+      "error_kind": "none",
+      "latency_ms": 15,
+      "response_hash": "4062edaf750fb8074e7e83e0c9028c94e32468a8b6f1614774328ef045150f93",
+      "chaos_applied": {
+        "latency_injected_ms": 15,
+        "error_injected": false,
+        "error_mode": "abort",
+        "payload_drift_applied": false,
+        "payload_mutations": []
+      }
+    },
+    {
+      "seq": 31,
+      "request_id": "healthz",
+      "method": "GET",
+      "path": "/healthz",
+      "status_code": 200,
+      "error_kind": "none",
+      "latency_ms": 18,
+      "response_hash": "4062edaf750fb8074e7e83e0c9028c94e32468a8b6f1614774328ef045150f93",
+      "chaos_applied": {
+        "latency_injected_ms": 18,
+        "error_injected": false,
+        "error_mode": "abort",
+        "payload_drift_applied": false,
+        "payload_mutations": []
+      }
+    },
+    {
+      "seq": 32,
+      "request_id": "healthz",
+      "method": "GET",
+      "path": "/healthz",
+      "status_code": 200,
+      "error_kind": "none",
+      "latency_ms": 11,
+      "response_hash": "4062edaf750fb8074e7e83e0c9028c94e32468a8b6f1614774328ef045150f93",
+      "chaos_applied": {
+        "latency_injected_ms": 11,
+        "error_injected": false,
+        "error_mode": "abort",
+        "payload_drift_applied": false,
+        "payload_mutations": []
+      }
+    },
+    {
+      "seq": 33,
+      "request_id": "healthz",
+      "method": "GET",
+      "path": "/healthz",
+      "status_code": 200,
+      "error_kind": "none",
+      "latency_ms": 35,
+      "response_hash": "4062edaf750fb8074e7e83e0c9028c94e32468a8b6f1614774328ef045150f93",
+      "chaos_applied": {
+        "latency_injected_ms": 35,
+        "error_injected": false,
+        "error_mode": "abort",
+        "payload_drift_applied": false,
+        "payload_mutations": []
+      }
+    },
+    {
+      "seq": 34,
+      "request_id": "readyz",
+      "method": "GET",
+      "path": "/readyz",
+      "status_code": 200,
+      "error_kind": "none",
+      "latency_ms": 19,
+      "response_hash": "4062edaf750fb8074e7e83e0c9028c94e32468a8b6f1614774328ef045150f93",
+      "chaos_applied": {
+        "latency_injected_ms": 19,
+        "error_injected": false,
+        "error_mode": "abort",
+        "payload_drift_applied": false,
+        "payload_mutations": []
+      }
+    },
+    {
+      "seq": 35,
+      "request_id": "healthz",
+      "method": "GET",
+      "path": "/healthz",
+      "status_code": 200,
+      "error_kind": "none",
+      "latency_ms": 8,
+      "response_hash": "4062edaf750fb8074e7e83e0c9028c94e32468a8b6f1614774328ef045150f93",
+      "chaos_applied": {
+        "latency_injected_ms": 8,
+        "error_injected": false,
+        "error_mode": "abort",
+        "payload_drift_applied": false,
+        "payload_mutations": []
+      }
+    },
+    {
+      "seq": 36,
+      "request_id": "readyz",
+      "method": "GET",
+      "path": "/readyz",
+      "status_code": 200,
+      "error_kind": "none",
+      "latency_ms": 21,
+      "response_hash": "4062edaf750fb8074e7e83e0c9028c94e32468a8b6f1614774328ef045150f93",
+      "chaos_applied": {
+        "latency_injected_ms": 21,
+        "error_injected": false,
+        "error_mode": "abort",
+        "payload_drift_applied": false,
+        "payload_mutations": []
+      }
+    },
+    {
+      "seq": 37,
+      "request_id": "healthz",
+      "method": "GET",
+      "path": "/healthz",
+      "status_code": 200,
+      "error_kind": "none",
+      "latency_ms": 24,
+      "response_hash": "4062edaf750fb8074e7e83e0c9028c94e32468a8b6f1614774328ef045150f93",
+      "chaos_applied": {
+        "latency_injected_ms": 23,
+        "error_injected": false,
+        "error_mode": "abort",
+        "payload_drift_applied": false,
+        "payload_mutations": []
+      }
+    },
+    {
+      "seq": 38,
+      "request_id": "readyz",
+      "method": "GET",
+      "path": "/readyz",
+      "status_code": 200,
+      "error_kind": "none",
+      "latency_ms": 14,
+      "response_hash": "4062edaf750fb8074e7e83e0c9028c94e32468a8b6f1614774328ef045150f93",
+      "chaos_applied": {
+        "latency_injected_ms": 14,
+        "error_injected": false,
+        "error_mode": "abort",
+        "payload_drift_applied": false,
+        "payload_mutations": []
+      }
+    },
+    {
+      "seq": 39,
+      "request_id": "audit_feed",
+      "method": "GET",
+      "path": "/v1/audit",
+      "status_code": 200,
+      "error_kind": "none",
+      "latency_ms": 27,
+      "response_hash": "54fb99db88222488d9d9cfda6995037615f8ad6fa251fc616e42cd8e29a06af6",
+      "chaos_applied": {
+        "latency_injected_ms": 26,
+        "error_injected": false,
+        "error_mode": "abort",
+        "payload_drift_applied": false,
+        "payload_mutations": []
+      }
+    }
+  ],
+  "samples": [
+    {
+      "seq": 0,
+      "request": {
+        "method": "GET",
+        "url": "http://localhost:8080/readyz",
+        "headers": {
+          "X-NEXUS-ACTOR": "toolab-runner",
+          "X-NEXUS-GATEWAY-KEY": "***REDACTED***",
+          "X-NEXUS-ROLE": "admin"
+        },
+        "body_preview": "",
+        "body_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "redacted": true
+      },
+      "response": {
+        "status_code": 200,
+        "error_kind": "none",
+        "headers": {
+          "Content-Length": "11",
+          "Content-Type": "application/json; charset=utf-8",
+          "Date": "***REDACTED***",
+          "X-Request-Id": "6643c362-9729-44f8-a4b4-d2b676ce060d"
+        },
+        "body_preview": "{\"ok\":true}",
+        "body_sha256": "4062edaf750fb8074e7e83e0c9028c94e32468a8b6f1614774328ef045150f93",
+        "redacted": true
+      }
+    },
+    {
+      "seq": 1,
+      "request": {
+        "method": "GET",
+        "url": "http://localhost:8080/readyz",
+        "headers": {
+          "X-NEXUS-ACTOR": "toolab-runner",
+          "X-NEXUS-GATEWAY-KEY": "***REDACTED***",
+          "X-NEXUS-ROLE": "admin"
+        },
+        "body_preview": "",
+        "body_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "redacted": true
+      },
+      "response": {
+        "status_code": 200,
+        "error_kind": "none",
+        "headers": {
+          "Content-Length": "11",
+          "Content-Type": "application/json; charset=utf-8",
+          "Date": "***REDACTED***",
+          "X-Request-Id": "f4e9a3de-95b4-48ef-a009-e16d6d8a332d"
+        },
+        "body_preview": "{\"ok\":true}",
+        "body_sha256": "4062edaf750fb8074e7e83e0c9028c94e32468a8b6f1614774328ef045150f93",
+        "redacted": true
+      }
+    },
+    {
+      "seq": 2,
+      "request": {
+        "method": "GET",
+        "url": "http://localhost:8080/v1/tools",
+        "headers": {
+          "X-NEXUS-ACTOR": "toolab-runner",
+          "X-NEXUS-GATEWAY-KEY": "***REDACTED***",
+          "X-NEXUS-ROLE": "admin"
+        },
+        "body_preview": "",
+        "body_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "redacted": true
+      },
+      "response": {
+        "status_code": 200,
+        "error_kind": "none",
+        "headers": {
+          "Content-Type": "application/json; charset=utf-8",
+          "Date": "***REDACTED***",
+          "X-Request-Id": "d2be0c9e-089c-4c1a-a63b-403e5dd927e8"
+        },
+        "body_preview": "{\"items\":[{\"action_type\":\"read\",\"classification\":\"internal\",\"created_at\":\"2026-02-25T20:43:22.713656Z\",\"description\":\"demo echo tool\",\"enabled\":true,\"id\":\"b62178b3-220c-4e50-9b2c-8a0ea8a6dd62\",\"input_schema\":{\"type\":\"object\"},\"kind\":\"http\",\"method\":\"POST\",\"name\":\"echo\",\"risk_level\":1,\"sensitivity\":\"low\",\"updated_at\":\"2026-02-25T20:43:27.214664Z\",\"url\":\"http://mock-tools:8081/echo\"},{\"action_type\":\"write\",\"classification\":\"external\",\"created_at\":\"2026-02-25T20:43:22.713656Z\",\"description\":\"demo transfer tool\",\"enabled\":true,\"id\":\"4a963ba8-f4af-49f1-948c-1feaa8549e68\",\"input_schema\":{\"additionalProperties\":true,\"properties\":{\"amount\":{\"type\":\"number\"}},\"required\":[\"amount\"],\"type\":\"object\"},\"kind\":\"http\",\"method\":\"POST\",\"name\":\"transfer\",\"risk_level\":3,\"sensitivity\":\"high\",\"updated_at\":\"2026-02-25T20:43:27.214664Z\",\"url\":\"http://mock-tools:8081/transfer\"},{\"action_type\":\"write\",\"classification\":\"internal\",\"created_at\":\"2026-02-25T20:43:27.64909Z\",\"description\":\"Sim Engine deterministic move tool\",\"enabled\":true,\"id\":\"43c8e356-2b5c-42b6-80bb-d51f71cae78f\",\"input_schema\":{\"additionalProperties\":true,\"properties\":{\"agent_id\":{\"type\":\"string\"},\"direction\":{\"additionalProperties\":false,\"properties\":{\"x\":{\"type\":\"number\"},\"y\":{\"type\":\"number\"}},\"type\":\"object\"},\"org_id\":{\"type\":\"string\"},\"request_id\":{\"type\":\"string\"},\"run_id\":{\"type\":\"string\"},\"speed\":{\"type\":\"number\"},\"step_id\":{\"type\":\"integer\"},\"target\":{\"additionalProperties\":false,\"properties\":{\"x\":{\"type\":\"number\"},\"y\":{\"type\":\"number\"}},\"type\":\"object\"}},\"required\":[\"org_id\",\"agent_id\",\"run_id\",\"step_id\"],\"type\":\"object\"},\"kind\":\"http\",\"method\":\"POST\",\"name\":\"world.move\",\"output_schema\":{\"additionalProperties\":true,\"properties\":{\"data\":{\"type\":\"object\"},\"error\":{\"type\":[\"object\",\"null\"]},\"request_id\":{\"type\":\"string\"},\"status\":{\"type\":\"string\"}},\"required\":[\"request_id\",\"status\"],\"type\":\"object\"},\"risk_level\":2,\"sensitivity\":\"low\",\"updated_at\":\"2026-02-25T20:43:27.64909Z\",\"url\":\"http://sim-engine:8087/tools/world.move\"},{\"action_type\":\"read\",\"classification\":\"internal\",\"created_at\":\"2026-02-25T20:43:27.64909Z\",\"description\":\"Sim Engine deterministic observe tool\",\"enabled\":true,\"id\":\"a76df9e5-4dad-4831-aa9e-d3c10364cfab\",\"input_schema\":{\"additionalProperties\":true,\"properties\":{\"agent_id\":{\"type\":\"string\"},\"org_id\":{\"type\":\"string\"},\"request_id\":{\"type\":\"string\"},\"run_id\":{\"type\":\"string\"},\"step_id\":{\"type\":\"integer\"}},\"required\":[\"org_id\",\"agent_id\",\"run_id\",\"step_id\"],\"type\":\"object\"},\"kind\":\"http\",\"method\":\"POST\",\"name\":\"world.observe\",\"output_schema\":{\"additionalProperties\":true,\"properties\":{\"data\":{\"type\":\"object\"},\"error\":{\"type\":[\"object\",\"null\"]},\"request_id\":{\"type\":\"string\"},\"status\":{\"type\":\"string\"}},\"required\":[\"request_id\",\"status\"],\"type\":\"object\"},\"risk_level\":1,\"sensitivity\":\"low\",\"updated_at\":\"2026-02-25T20:43:27.64909Z\",\"url\":\"http://sim-engine:8087/tools/world.observe\"}]}",
+        "body_sha256": "e938b159f6886267b6a5747015f3b1ceea3e1e1254684a7cc62a7f9e0c7000d5",
+        "redacted": true
+      }
+    },
+    {
+      "seq": 3,
+      "request": {
+        "method": "GET",
+        "url": "http://localhost:8080/healthz",
+        "headers": {
+          "X-NEXUS-ACTOR": "toolab-runner",
+          "X-NEXUS-GATEWAY-KEY": "***REDACTED***",
+          "X-NEXUS-ROLE": "admin"
+        },
+        "body_preview": "",
+        "body_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "redacted": true
+      },
+      "response": {
+        "status_code": 200,
+        "error_kind": "none",
+        "headers": {
+          "Content-Length": "11",
+          "Content-Type": "application/json; charset=utf-8",
+          "Date": "***REDACTED***",
+          "X-Request-Id": "f2f7fffa-cbd2-42d8-af59-8f4961985de5"
+        },
+        "body_preview": "{\"ok\":true}",
+        "body_sha256": "4062edaf750fb8074e7e83e0c9028c94e32468a8b6f1614774328ef045150f93",
+        "redacted": true
+      }
+    },
+    {
+      "seq": 4,
+      "request": {
+        "method": "GET",
+        "url": "http://localhost:8080/v1/audit?limit=10",
+        "headers": {
+          "X-NEXUS-ACTOR": "toolab-runner",
+          "X-NEXUS-GATEWAY-KEY": "***REDACTED***",
+          "X-NEXUS-ROLE": "admin"
+        },
+        "body_preview": "",
+        "body_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "redacted": true
+      },
+      "response": {
+        "status_code": 200,
+        "error_kind": "none",
+        "headers": {
+          "Content-Type": "application/json; charset=utf-8",
+          "Date": "***REDACTED***",
+          "X-Request-Id": "9ee5cc66-861a-4502-880a-df42dcdd15ce"
+        },
+        "body_preview": "{\"items\":[{\"request_id\":\"99cd5d49-d608-4805-baff-c6d4fa42747b\",\"org_id\":\"b07bce0f-708f-4fd3-bf76-0630b0fbb4ba\",\"tool_name\":\"world.observe\",\"actor\":\"tower/doorjam-demo\",\"scopes\":[\"gateway:run\",\"admin:console:read\",\"admin:console:write\",\"audit:read\",\"tools:read\",\"tools:write\",\"policy:read\",\"policy:write\",\"egress:read\",\"egress:write\"],\"decision\":\"deny\",\"status\":\"blocked\",\"reason\":\"rate limit exceeded (bucket=org+tool limit_per_minute=60)\",\"latency_ms\":0,\"idempotency_outcome\":\"SKIPPED_NOT_WRITE\",\"timeout_ms\":10000,\"budget_remaining_ms_at_execute\":10000,\"stage_durations_ms\":{\"dlp\":0,\"schema_validation\":0},\"prev_event_hash\":\"7d264ddddd64e0eeef5160ab51fd1c90540fdcb8afa34f93ba6e174025fe7d7d\",\"event_hash\":\"c637f363dc5c4fe523ec5c1a6742857682fdca6379fec3004259bf0701aadb23\",\"hash_algo\":\"sha256\",\"created_at\":\"2026-02-25T20:43:45.735052Z\",\"input\":{\"agent_id\":\"agent-030\",\"org_id\":\"b07bce0f-708f-4fd3-bf76-0630b0fbb4ba\",\"run_id\":\"050f64fa519e5a40bdf2b527e5e99a43\",\"step_id\":49},\"context\":{\"actor\":\"tower/doorjam-demo\",\"auth_method\":\"api_key\",\"dlp\":{\"api_key\":\"***\",\"credit_card\":\"***\",\"email\":{\"count\":0},\"jwt\":{\"count\":0},\"national_id\":{\"count\":0},\"phone\":{\"count\":0}},\"scenario\":\"door_jam_observe_burst\",\"scopes\":[\"gateway:run\",\"admin:console:read\",\"admin:console:write\",\"audit:read\",\"tools:read\",\"tools:write\",\"policy:read\",\"policy:write\",\"egress:read\",\"egress:write\"]},\"dlp_summary\":{\"api_key\":{\"count\":0},\"credit_card\":{\"count\":1},\"email\":{\"count\":0},\"jwt\":{\"count\":0},\"national_id\":{\"count\":0},\"phone\":{\"count\":0}},\"error\":{\"code\":\"RATE_LIMITED\",\"message\":\"rate limit exceeded (bucket=org+tool limit_per_minute=60)\"}},{\"request_id\":\"03c9b3f7-b703-4748-a652-b0246b784fb1\",\"org_id\":\"b07bce0f-708f-4fd3-bf76-0630b0fbb4ba\",\"tool_name\":\"world.observe\",\"actor\":\"tower/doorjam-demo\",\"scopes\":[\"gateway:run\",\"admin:console:read\",\"admin:console:write\",\"audit:read\",\"tools:read\",\"tools:write\",\"policy:read\",\"policy:write\",\"egress:read\",\"egress:write\"],\"decision\":\"deny\",\"status\":\"blocked\",\"reason\":\"rate limit exceeded (bucket=org+tool limit_per_minute=60)\",\"latency_ms\":0,\"idempotency_outcome\":\"SKIPPED_NOT_WRITE\",\"timeout_ms\":10000,\"budget_remaining_ms_at_execute\":10000,\"stage_durations_ms\":{\"dlp\":0,\"schema_validation\":0},\"prev_event_hash\":\"124eeebd6b62344a5cb962707a08b6868631d46191f95fe4066f8761543d8d23\",\"event_hash\":\"7d264ddddd64e0eeef5160ab51fd1c90540fdcb8afa34f93ba6e174025fe7d7d\",\"hash_algo\":\"sha256\",\"created_at\":\"2026-02-25T20:43:45.732202Z\",\"input\":{\"agent_id\":\"agent-029\",\"org_id\":\"b07bce0f-708f-4fd3-bf76-0630b0fbb4ba\",\"run_id\":\"050f64fa519e5a40bdf2b527e5e99a43\",\"step_id\":49},\"context\":{\"actor\":\"tower/doorjam-demo\",\"auth_method\":\"api_key\",\"dlp\":{\"api_key\":\"***\",\"credit_card\":\"***\",\"email\":{\"count\":0},\"jwt\":{\"count\":0},\"national_id\":{\"count\":0},\"phone\":{\"count\":0}},\"scenario\":\"door_jam_observe_burst\",\"scopes\":[\"gateway:run\",\"admin:console:read\",\"admin:console:write\",\"audit:read\",\"tools:read\",\"tools:write\",\"policy:read\",\"policy:write\",\"egress:read\",\"egress:write\"]},\"dlp_summary\":{\"api_key\":{\"count\":0},\"credit_card\":{\"count\":1},\"email\":{\"count\":0},\"jwt\":{\"count\":0},\"national_id\":{\"count\":0},\"phone\":{\"count\":0}},\"error\":{\"code\":\"RATE_LIMITED\",\"message\":\"rate limit exceeded (bucket=org+tool limit_per_minute=60)\"}},{\"request_id\":\"389fbc60-1c38-4389-b800-a5096fb59482\",\"org_id\":\"b07bce0f-708f-4fd3-bf76-0630b0fbb4ba\",\"tool_name\":\"world.observe\",\"actor\":\"tower/doorjam-demo\",\"scopes\":[\"gateway:run\",\"admin:console:read\",\"admin:console:write\",\"audit:read\",\"tools:read\",\"tools:write\",\"policy:read\",\"policy:write\",\"egress:read\",\"egress:write\"],\"decision\":\"deny\",\"status\":\"blocked\",\"reason\":\"rate limit exceeded (bucket=org+tool limit_per_minute=60)\",\"latency_ms\":0,\"idempotency_outcome\":\"SKIPPED_NOT_WRITE\",\"timeout_ms\":10000,\"budget_remaining_ms_at_execute\":10000,\"stage_durations_ms\":{\"dlp\":0,\"schema_validation\":0},\"prev_event_hash\":\"4e71fa11906425a57afc68f420b479d790208d8e27d6a02da71cf9e286dfd9e0\",\"event_hash\":\"124eeebd6b62344a5cb962707a08b6868631d46191f95fe4066f8761543d8d23\",\"hash_algo\":\"sha256\",\"created_at\":\"2026-02-25T20:43:45.729208Z\",\"input\":{\"agent_id\":\"agent-028\",\"org_",
+        "body_sha256": "54fb99db88222488d9d9cfda6995037615f8ad6fa251fc616e42cd8e29a06af6",
+        "redacted": true
+      }
+    },
+    {
+      "seq": 5,
+      "request": {
+        "method": "GET",
+        "url": "http://localhost:8080/readyz",
+        "headers": {
+          "X-NEXUS-ACTOR": "toolab-runner",
+          "X-NEXUS-GATEWAY-KEY": "***REDACTED***",
+          "X-NEXUS-ROLE": "admin"
+        },
+        "body_preview": "",
+        "body_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "redacted": true
+      },
+      "response": {
+        "status_code": 200,
+        "error_kind": "none",
+        "headers": {
+          "Content-Length": "11",
+          "Content-Type": "application/json; charset=utf-8",
+          "Date": "***REDACTED***",
+          "X-Request-Id": "63b6b94f-ed0f-4262-89e2-d0fee8a309e7"
+        },
+        "body_preview": "{\"ok\":true}",
+        "body_sha256": "4062edaf750fb8074e7e83e0c9028c94e32468a8b6f1614774328ef045150f93",
+        "redacted": true
+      }
+    },
+    {
+      "seq": 6,
+      "request": {
+        "method": "GET",
+        "url": "http://localhost:8080/healthz",
+        "headers": {
+          "X-NEXUS-ACTOR": "toolab-runner",
+          "X-NEXUS-GATEWAY-KEY": "***REDACTED***",
+          "X-NEXUS-ROLE": "admin"
+        },
+        "body_preview": "",
+        "body_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "redacted": true
+      },
+      "response": {
+        "status_code": 200,
+        "error_kind": "none",
+        "headers": {
+          "Content-Length": "11",
+          "Content-Type": "application/json; charset=utf-8",
+          "Date": "***REDACTED***",
+          "X-Request-Id": "80f63392-105b-4b6f-b683-7c30a5dcfdeb"
+        },
+        "body_preview": "{\"ok\":true}",
+        "body_sha256": "4062edaf750fb8074e7e83e0c9028c94e32468a8b6f1614774328ef045150f93",
+        "redacted": true
+      }
+    },
+    {
+      "seq": 7,
+      "request": {
+        "method": "GET",
+        "url": "http://localhost:8080/healthz",
+        "headers": {
+          "X-NEXUS-ACTOR": "toolab-runner",
+          "X-NEXUS-GATEWAY-KEY": "***REDACTED***",
+          "X-NEXUS-ROLE": "admin"
+        },
+        "body_preview": "",
+        "body_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "redacted": true
+      },
+      "response": {
+        "status_code": 200,
+        "error_kind": "none",
+        "headers": {
+          "Content-Length": "11",
+          "Content-Type": "application/json; charset=utf-8",
+          "Date": "***REDACTED***",
+          "X-Request-Id": "cf908355-b1a7-4b4f-bf77-815b29b716dd"
+        },
+        "body_preview": "{\"ok\":true}",
+        "body_sha256": "4062edaf750fb8074e7e83e0c9028c94e32468a8b6f1614774328ef045150f93",
+        "redacted": true
+      }
+    },
+    {
+      "seq": 8,
+      "request": {
+        "method": "GET",
+        "url": "http://localhost:8080/v1/tools",
+        "headers": {
+          "X-NEXUS-ACTOR": "toolab-runner",
+          "X-NEXUS-GATEWAY-KEY": "***REDACTED***",
+          "X-NEXUS-ROLE": "admin"
+        },
+        "body_preview": "",
+        "body_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "redacted": true
+      },
+      "response": {
+        "status_code": 200,
+        "error_kind": "none",
+        "headers": {
+          "Content-Type": "application/json; charset=utf-8",
+          "Date": "***REDACTED***",
+          "X-Request-Id": "df8893ba-9948-4790-8f39-586b200c2026"
+        },
+        "body_preview": "{\"items\":[{\"action_type\":\"read\",\"classification\":\"internal\",\"created_at\":\"2026-02-25T20:43:22.713656Z\",\"description\":\"demo echo tool\",\"enabled\":true,\"id\":\"b62178b3-220c-4e50-9b2c-8a0ea8a6dd62\",\"input_schema\":{\"type\":\"object\"},\"kind\":\"http\",\"method\":\"POST\",\"name\":\"echo\",\"risk_level\":1,\"sensitivity\":\"low\",\"updated_at\":\"2026-02-25T20:43:27.214664Z\",\"url\":\"http://mock-tools:8081/echo\"},{\"action_type\":\"write\",\"classification\":\"external\",\"created_at\":\"2026-02-25T20:43:22.713656Z\",\"description\":\"demo transfer tool\",\"enabled\":true,\"id\":\"4a963ba8-f4af-49f1-948c-1feaa8549e68\",\"input_schema\":{\"additionalProperties\":true,\"properties\":{\"amount\":{\"type\":\"number\"}},\"required\":[\"amount\"],\"type\":\"object\"},\"kind\":\"http\",\"method\":\"POST\",\"name\":\"transfer\",\"risk_level\":3,\"sensitivity\":\"high\",\"updated_at\":\"2026-02-25T20:43:27.214664Z\",\"url\":\"http://mock-tools:8081/transfer\"},{\"action_type\":\"write\",\"classification\":\"internal\",\"created_at\":\"2026-02-25T20:43:27.64909Z\",\"description\":\"Sim Engine deterministic move tool\",\"enabled\":true,\"id\":\"43c8e356-2b5c-42b6-80bb-d51f71cae78f\",\"input_schema\":{\"additionalProperties\":true,\"properties\":{\"agent_id\":{\"type\":\"string\"},\"direction\":{\"additionalProperties\":false,\"properties\":{\"x\":{\"type\":\"number\"},\"y\":{\"type\":\"number\"}},\"type\":\"object\"},\"org_id\":{\"type\":\"string\"},\"request_id\":{\"type\":\"string\"},\"run_id\":{\"type\":\"string\"},\"speed\":{\"type\":\"number\"},\"step_id\":{\"type\":\"integer\"},\"target\":{\"additionalProperties\":false,\"properties\":{\"x\":{\"type\":\"number\"},\"y\":{\"type\":\"number\"}},\"type\":\"object\"}},\"required\":[\"org_id\",\"agent_id\",\"run_id\",\"step_id\"],\"type\":\"object\"},\"kind\":\"http\",\"method\":\"POST\",\"name\":\"world.move\",\"output_schema\":{\"additionalProperties\":true,\"properties\":{\"data\":{\"type\":\"object\"},\"error\":{\"type\":[\"object\",\"null\"]},\"request_id\":{\"type\":\"string\"},\"status\":{\"type\":\"string\"}},\"required\":[\"request_id\",\"status\"],\"type\":\"object\"},\"risk_level\":2,\"sensitivity\":\"low\",\"updated_at\":\"2026-02-25T20:43:27.64909Z\",\"url\":\"http://sim-engine:8087/tools/world.move\"},{\"action_type\":\"read\",\"classification\":\"internal\",\"created_at\":\"2026-02-25T20:43:27.64909Z\",\"description\":\"Sim Engine deterministic observe tool\",\"enabled\":true,\"id\":\"a76df9e5-4dad-4831-aa9e-d3c10364cfab\",\"input_schema\":{\"additionalProperties\":true,\"properties\":{\"agent_id\":{\"type\":\"string\"},\"org_id\":{\"type\":\"string\"},\"request_id\":{\"type\":\"string\"},\"run_id\":{\"type\":\"string\"},\"step_id\":{\"type\":\"integer\"}},\"required\":[\"org_id\",\"agent_id\",\"run_id\",\"step_id\"],\"type\":\"object\"},\"kind\":\"http\",\"method\":\"POST\",\"name\":\"world.observe\",\"output_schema\":{\"additionalProperties\":true,\"properties\":{\"data\":{\"type\":\"object\"},\"error\":{\"type\":[\"object\",\"null\"]},\"request_id\":{\"type\":\"string\"},\"status\":{\"type\":\"string\"}},\"required\":[\"request_id\",\"status\"],\"type\":\"object\"},\"risk_level\":1,\"sensitivity\":\"low\",\"updated_at\":\"2026-02-25T20:43:27.64909Z\",\"url\":\"http://sim-engine:8087/tools/world.observe\"}]}",
+        "body_sha256": "e938b159f6886267b6a5747015f3b1ceea3e1e1254684a7cc62a7f9e0c7000d5",
+        "redacted": true
+      }
+    },
+    {
+      "seq": 9,
+      "request": {
+        "method": "GET",
+        "url": "http://localhost:8080/healthz",
+        "headers": {
+          "X-NEXUS-ACTOR": "toolab-runner",
+          "X-NEXUS-GATEWAY-KEY": "***REDACTED***",
+          "X-NEXUS-ROLE": "admin"
+        },
+        "body_preview": "",
+        "body_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "redacted": true
+      },
+      "response": {
+        "status_code": 200,
+        "error_kind": "none",
+        "headers": {
+          "Content-Length": "11",
+          "Content-Type": "application/json; charset=utf-8",
+          "Date": "***REDACTED***",
+          "X-Request-Id": "e345e44a-2c05-417c-ad0e-11e0ffd74b82"
+        },
+        "body_preview": "{\"ok\":true}",
+        "body_sha256": "4062edaf750fb8074e7e83e0c9028c94e32468a8b6f1614774328ef045150f93",
+        "redacted": true
+      }
+    },
+    {
+      "seq": 10,
+      "request": {
+        "method": "GET",
+        "url": "http://localhost:8080/readyz",
+        "headers": {
+          "X-NEXUS-ACTOR": "toolab-runner",
+          "X-NEXUS-GATEWAY-KEY": "***REDACTED***",
+          "X-NEXUS-ROLE": "admin"
+        },
+        "body_preview": "",
+        "body_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "redacted": true
+      },
+      "response": {
+        "status_code": 200,
+        "error_kind": "none",
+        "headers": {
+          "Content-Length": "11",
+          "Content-Type": "application/json; charset=utf-8",
+          "Date": "***REDACTED***",
+          "X-Request-Id": "0e952bdb-5917-47db-930d-eb7c839458dc"
+        },
+        "body_preview": "{\"ok\":true}",
+        "body_sha256": "4062edaf750fb8074e7e83e0c9028c94e32468a8b6f1614774328ef045150f93",
+        "redacted": true
+      }
+    },
+    {
+      "seq": 11,
+      "request": {
+        "method": "GET",
+        "url": "http://localhost:8080/readyz",
+        "headers": {
+          "X-NEXUS-ACTOR": "toolab-runner",
+          "X-NEXUS-GATEWAY-KEY": "***REDACTED***",
+          "X-NEXUS-ROLE": "admin"
+        },
+        "body_preview": "",
+        "body_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "redacted": true
+      },
+      "response": {
+        "status_code": 200,
+        "error_kind": "none",
+        "headers": {
+          "Content-Length": "11",
+          "Content-Type": "application/json; charset=utf-8",
+          "Date": "***REDACTED***",
+          "X-Request-Id": "0cd290c7-cc1a-4b99-9e64-972d514f8fc3"
+        },
+        "body_preview": "{\"ok\":true}",
+        "body_sha256": "4062edaf750fb8074e7e83e0c9028c94e32468a8b6f1614774328ef045150f93",
+        "redacted": true
+      }
+    },
+    {
+      "seq": 12,
+      "request": {
+        "method": "GET",
+        "url": "http://localhost:8080/healthz",
+        "headers": {
+          "X-NEXUS-ACTOR": "toolab-runner",
+          "X-NEXUS-GATEWAY-KEY": "***REDACTED***",
+          "X-NEXUS-ROLE": "admin"
+        },
+        "body_preview": "",
+        "body_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "redacted": true
+      },
+      "response": {
+        "status_code": 200,
+        "error_kind": "none",
+        "headers": {
+          "Content-Length": "11",
+          "Content-Type": "application/json; charset=utf-8",
+          "Date": "***REDACTED***",
+          "X-Request-Id": "57d34566-07be-4929-a9d7-7db2583cdf8d"
+        },
+        "body_preview": "{\"ok\":true}",
+        "body_sha256": "4062edaf750fb8074e7e83e0c9028c94e32468a8b6f1614774328ef045150f93",
+        "redacted": true
+      }
+    },
+    {
+      "seq": 13,
+      "request": {
+        "method": "GET",
+        "url": "http://localhost:8080/healthz",
+        "headers": {
+          "X-NEXUS-ACTOR": "toolab-runner",
+          "X-NEXUS-GATEWAY-KEY": "***REDACTED***",
+          "X-NEXUS-ROLE": "admin"
+        },
+        "body_preview": "",
+        "body_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "redacted": true
+      },
+      "response": {
+        "status_code": 200,
+        "error_kind": "none",
+        "headers": {
+          "Content-Length": "11",
+          "Content-Type": "application/json; charset=utf-8",
+          "Date": "***REDACTED***",
+          "X-Request-Id": "5a467add-4906-4e3a-96dd-46faeec2ba93"
+        },
+        "body_preview": "{\"ok\":true}",
+        "body_sha256": "4062edaf750fb8074e7e83e0c9028c94e32468a8b6f1614774328ef045150f93",
+        "redacted": true
+      }
+    },
+    {
+      "seq": 14,
+      "request": {
+        "method": "GET",
+        "url": "http://localhost:8080/healthz",
+        "headers": {
+          "X-NEXUS-ACTOR": "toolab-runner",
+          "X-NEXUS-GATEWAY-KEY": "***REDACTED***",
+          "X-NEXUS-ROLE": "admin"
+        },
+        "body_preview": "",
+        "body_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "redacted": true
+      },
+      "response": {
+        "status_code": 200,
+        "error_kind": "none",
+        "headers": {
+          "Content-Length": "11",
+          "Content-Type": "application/json; charset=utf-8",
+          "Date": "***REDACTED***",
+          "X-Request-Id": "2ddb1714-4752-4973-b5e9-c02f25ee47c3"
+        },
+        "body_preview": "{\"ok\":true}",
+        "body_sha256": "4062edaf750fb8074e7e83e0c9028c94e32468a8b6f1614774328ef045150f93",
+        "redacted": true
+      }
+    },
+    {
+      "seq": 15,
+      "request": {
+        "method": "GET",
+        "url": "http://localhost:8080/v1/audit?limit=10",
+        "headers": {
+          "X-NEXUS-ACTOR": "toolab-runner",
+          "X-NEXUS-GATEWAY-KEY": "***REDACTED***",
+          "X-NEXUS-ROLE": "admin"
+        },
+        "body_preview": "",
+        "body_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "redacted": true
+      },
+      "response": {
+        "status_code": 200,
+        "error_kind": "none",
+        "headers": {
+          "Content-Type": "application/json; charset=utf-8",
+          "Date": "***REDACTED***",
+          "X-Request-Id": "32f407f1-f2f3-47b9-bc2c-2a7463092d0e"
+        },
+        "body_preview": "{\"items\":[{\"request_id\":\"99cd5d49-d608-4805-baff-c6d4fa42747b\",\"org_id\":\"b07bce0f-708f-4fd3-bf76-0630b0fbb4ba\",\"tool_name\":\"world.observe\",\"actor\":\"tower/doorjam-demo\",\"scopes\":[\"gateway:run\",\"admin:console:read\",\"admin:console:write\",\"audit:read\",\"tools:read\",\"tools:write\",\"policy:read\",\"policy:write\",\"egress:read\",\"egress:write\"],\"decision\":\"deny\",\"status\":\"blocked\",\"reason\":\"rate limit exceeded (bucket=org+tool limit_per_minute=60)\",\"latency_ms\":0,\"idempotency_outcome\":\"SKIPPED_NOT_WRITE\",\"timeout_ms\":10000,\"budget_remaining_ms_at_execute\":10000,\"stage_durations_ms\":{\"dlp\":0,\"schema_validation\":0},\"prev_event_hash\":\"7d264ddddd64e0eeef5160ab51fd1c90540fdcb8afa34f93ba6e174025fe7d7d\",\"event_hash\":\"c637f363dc5c4fe523ec5c1a6742857682fdca6379fec3004259bf0701aadb23\",\"hash_algo\":\"sha256\",\"created_at\":\"2026-02-25T20:43:45.735052Z\",\"input\":{\"agent_id\":\"agent-030\",\"org_id\":\"b07bce0f-708f-4fd3-bf76-0630b0fbb4ba\",\"run_id\":\"050f64fa519e5a40bdf2b527e5e99a43\",\"step_id\":49},\"context\":{\"actor\":\"tower/doorjam-demo\",\"auth_method\":\"api_key\",\"dlp\":{\"api_key\":\"***\",\"credit_card\":\"***\",\"email\":{\"count\":0},\"jwt\":{\"count\":0},\"national_id\":{\"count\":0},\"phone\":{\"count\":0}},\"scenario\":\"door_jam_observe_burst\",\"scopes\":[\"gateway:run\",\"admin:console:read\",\"admin:console:write\",\"audit:read\",\"tools:read\",\"tools:write\",\"policy:read\",\"policy:write\",\"egress:read\",\"egress:write\"]},\"dlp_summary\":{\"api_key\":{\"count\":0},\"credit_card\":{\"count\":1},\"email\":{\"count\":0},\"jwt\":{\"count\":0},\"national_id\":{\"count\":0},\"phone\":{\"count\":0}},\"error\":{\"code\":\"RATE_LIMITED\",\"message\":\"rate limit exceeded (bucket=org+tool limit_per_minute=60)\"}},{\"request_id\":\"03c9b3f7-b703-4748-a652-b0246b784fb1\",\"org_id\":\"b07bce0f-708f-4fd3-bf76-0630b0fbb4ba\",\"tool_name\":\"world.observe\",\"actor\":\"tower/doorjam-demo\",\"scopes\":[\"gateway:run\",\"admin:console:read\",\"admin:console:write\",\"audit:read\",\"tools:read\",\"tools:write\",\"policy:read\",\"policy:write\",\"egress:read\",\"egress:write\"],\"decision\":\"deny\",\"status\":\"blocked\",\"reason\":\"rate limit exceeded (bucket=org+tool limit_per_minute=60)\",\"latency_ms\":0,\"idempotency_outcome\":\"SKIPPED_NOT_WRITE\",\"timeout_ms\":10000,\"budget_remaining_ms_at_execute\":10000,\"stage_durations_ms\":{\"dlp\":0,\"schema_validation\":0},\"prev_event_hash\":\"124eeebd6b62344a5cb962707a08b6868631d46191f95fe4066f8761543d8d23\",\"event_hash\":\"7d264ddddd64e0eeef5160ab51fd1c90540fdcb8afa34f93ba6e174025fe7d7d\",\"hash_algo\":\"sha256\",\"created_at\":\"2026-02-25T20:43:45.732202Z\",\"input\":{\"agent_id\":\"agent-029\",\"org_id\":\"b07bce0f-708f-4fd3-bf76-0630b0fbb4ba\",\"run_id\":\"050f64fa519e5a40bdf2b527e5e99a43\",\"step_id\":49},\"context\":{\"actor\":\"tower/doorjam-demo\",\"auth_method\":\"api_key\",\"dlp\":{\"api_key\":\"***\",\"credit_card\":\"***\",\"email\":{\"count\":0},\"jwt\":{\"count\":0},\"national_id\":{\"count\":0},\"phone\":{\"count\":0}},\"scenario\":\"door_jam_observe_burst\",\"scopes\":[\"gateway:run\",\"admin:console:read\",\"admin:console:write\",\"audit:read\",\"tools:read\",\"tools:write\",\"policy:read\",\"policy:write\",\"egress:read\",\"egress:write\"]},\"dlp_summary\":{\"api_key\":{\"count\":0},\"credit_card\":{\"count\":1},\"email\":{\"count\":0},\"jwt\":{\"count\":0},\"national_id\":{\"count\":0},\"phone\":{\"count\":0}},\"error\":{\"code\":\"RATE_LIMITED\",\"message\":\"rate limit exceeded (bucket=org+tool limit_per_minute=60)\"}},{\"request_id\":\"389fbc60-1c38-4389-b800-a5096fb59482\",\"org_id\":\"b07bce0f-708f-4fd3-bf76-0630b0fbb4ba\",\"tool_name\":\"world.observe\",\"actor\":\"tower/doorjam-demo\",\"scopes\":[\"gateway:run\",\"admin:console:read\",\"admin:console:write\",\"audit:read\",\"tools:read\",\"tools:write\",\"policy:read\",\"policy:write\",\"egress:read\",\"egress:write\"],\"decision\":\"deny\",\"status\":\"blocked\",\"reason\":\"rate limit exceeded (bucket=org+tool limit_per_minute=60)\",\"latency_ms\":0,\"idempotency_outcome\":\"SKIPPED_NOT_WRITE\",\"timeout_ms\":10000,\"budget_remaining_ms_at_execute\":10000,\"stage_durations_ms\":{\"dlp\":0,\"schema_validation\":0},\"prev_event_hash\":\"4e71fa11906425a57afc68f420b479d790208d8e27d6a02da71cf9e286dfd9e0\",\"event_hash\":\"124eeebd6b62344a5cb962707a08b6868631d46191f95fe4066f8761543d8d23\",\"hash_algo\":\"sha256\",\"created_at\":\"2026-02-25T20:43:45.729208Z\",\"input\":{\"agent_id\":\"agent-028\",\"org_",
+        "body_sha256": "54fb99db88222488d9d9cfda6995037615f8ad6fa251fc616e42cd8e29a06af6",
+        "redacted": true
+      }
+    },
+    {
+      "seq": 16,
+      "request": {
+        "method": "GET",
+        "url": "http://localhost:8080/readyz",
+        "headers": {
+          "X-NEXUS-ACTOR": "toolab-runner",
+          "X-NEXUS-GATEWAY-KEY": "***REDACTED***",
+          "X-NEXUS-ROLE": "admin"
+        },
+        "body_preview": "",
+        "body_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "redacted": true
+      },
+      "response": {
+        "status_code": 200,
+        "error_kind": "none",
+        "headers": {
+          "Content-Length": "11",
+          "Content-Type": "application/json; charset=utf-8",
+          "Date": "***REDACTED***",
+          "X-Request-Id": "9ba9ca07-2def-4fee-88fd-500ac70df31a"
+        },
+        "body_preview": "{\"ok\":true}",
+        "body_sha256": "4062edaf750fb8074e7e83e0c9028c94e32468a8b6f1614774328ef045150f93",
+        "redacted": true
+      }
+    },
+    {
+      "seq": 17,
+      "request": {
+        "method": "GET",
+        "url": "http://localhost:8080/readyz",
+        "headers": {
+          "X-NEXUS-ACTOR": "toolab-runner",
+          "X-NEXUS-GATEWAY-KEY": "***REDACTED***",
+          "X-NEXUS-ROLE": "admin"
+        },
+        "body_preview": "",
+        "body_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "redacted": true
+      },
+      "response": {
+        "status_code": 200,
+        "error_kind": "none",
+        "headers": {
+          "Content-Length": "11",
+          "Content-Type": "application/json; charset=utf-8",
+          "Date": "***REDACTED***",
+          "X-Request-Id": "1a79bfee-f7a5-4ddf-a7af-6ff7df889952"
+        },
+        "body_preview": "{\"ok\":true}",
+        "body_sha256": "4062edaf750fb8074e7e83e0c9028c94e32468a8b6f1614774328ef045150f93",
+        "redacted": true
+      }
+    },
+    {
+      "seq": 18,
+      "request": {
+        "method": "GET",
+        "url": "http://localhost:8080/v1/audit?limit=10",
+        "headers": {
+          "X-NEXUS-ACTOR": "toolab-runner",
+          "X-NEXUS-GATEWAY-KEY": "***REDACTED***",
+          "X-NEXUS-ROLE": "admin"
+        },
+        "body_preview": "",
+        "body_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "redacted": true
+      },
+      "response": {
+        "status_code": 200,
+        "error_kind": "none",
+        "headers": {
+          "Content-Type": "application/json; charset=utf-8",
+          "Date": "***REDACTED***",
+          "X-Request-Id": "ac748cb6-73a1-4060-8f1a-f2f8f6fc7c54"
+        },
+        "body_preview": "{\"items\":[{\"request_id\":\"99cd5d49-d608-4805-baff-c6d4fa42747b\",\"org_id\":\"b07bce0f-708f-4fd3-bf76-0630b0fbb4ba\",\"tool_name\":\"world.observe\",\"actor\":\"tower/doorjam-demo\",\"scopes\":[\"gateway:run\",\"admin:console:read\",\"admin:console:write\",\"audit:read\",\"tools:read\",\"tools:write\",\"policy:read\",\"policy:write\",\"egress:read\",\"egress:write\"],\"decision\":\"deny\",\"status\":\"blocked\",\"reason\":\"rate limit exceeded (bucket=org+tool limit_per_minute=60)\",\"latency_ms\":0,\"idempotency_outcome\":\"SKIPPED_NOT_WRITE\",\"timeout_ms\":10000,\"budget_remaining_ms_at_execute\":10000,\"stage_durations_ms\":{\"dlp\":0,\"schema_validation\":0},\"prev_event_hash\":\"7d264ddddd64e0eeef5160ab51fd1c90540fdcb8afa34f93ba6e174025fe7d7d\",\"event_hash\":\"c637f363dc5c4fe523ec5c1a6742857682fdca6379fec3004259bf0701aadb23\",\"hash_algo\":\"sha256\",\"created_at\":\"2026-02-25T20:43:45.735052Z\",\"input\":{\"agent_id\":\"agent-030\",\"org_id\":\"b07bce0f-708f-4fd3-bf76-0630b0fbb4ba\",\"run_id\":\"050f64fa519e5a40bdf2b527e5e99a43\",\"step_id\":49},\"context\":{\"actor\":\"tower/doorjam-demo\",\"auth_method\":\"api_key\",\"dlp\":{\"api_key\":\"***\",\"credit_card\":\"***\",\"email\":{\"count\":0},\"jwt\":{\"count\":0},\"national_id\":{\"count\":0},\"phone\":{\"count\":0}},\"scenario\":\"door_jam_observe_burst\",\"scopes\":[\"gateway:run\",\"admin:console:read\",\"admin:console:write\",\"audit:read\",\"tools:read\",\"tools:write\",\"policy:read\",\"policy:write\",\"egress:read\",\"egress:write\"]},\"dlp_summary\":{\"api_key\":{\"count\":0},\"credit_card\":{\"count\":1},\"email\":{\"count\":0},\"jwt\":{\"count\":0},\"national_id\":{\"count\":0},\"phone\":{\"count\":0}},\"error\":{\"code\":\"RATE_LIMITED\",\"message\":\"rate limit exceeded (bucket=org+tool limit_per_minute=60)\"}},{\"request_id\":\"03c9b3f7-b703-4748-a652-b0246b784fb1\",\"org_id\":\"b07bce0f-708f-4fd3-bf76-0630b0fbb4ba\",\"tool_name\":\"world.observe\",\"actor\":\"tower/doorjam-demo\",\"scopes\":[\"gateway:run\",\"admin:console:read\",\"admin:console:write\",\"audit:read\",\"tools:read\",\"tools:write\",\"policy:read\",\"policy:write\",\"egress:read\",\"egress:write\"],\"decision\":\"deny\",\"status\":\"blocked\",\"reason\":\"rate limit exceeded (bucket=org+tool limit_per_minute=60)\",\"latency_ms\":0,\"idempotency_outcome\":\"SKIPPED_NOT_WRITE\",\"timeout_ms\":10000,\"budget_remaining_ms_at_execute\":10000,\"stage_durations_ms\":{\"dlp\":0,\"schema_validation\":0},\"prev_event_hash\":\"124eeebd6b62344a5cb962707a08b6868631d46191f95fe4066f8761543d8d23\",\"event_hash\":\"7d264ddddd64e0eeef5160ab51fd1c90540fdcb8afa34f93ba6e174025fe7d7d\",\"hash_algo\":\"sha256\",\"created_at\":\"2026-02-25T20:43:45.732202Z\",\"input\":{\"agent_id\":\"agent-029\",\"org_id\":\"b07bce0f-708f-4fd3-bf76-0630b0fbb4ba\",\"run_id\":\"050f64fa519e5a40bdf2b527e5e99a43\",\"step_id\":49},\"context\":{\"actor\":\"tower/doorjam-demo\",\"auth_method\":\"api_key\",\"dlp\":{\"api_key\":\"***\",\"credit_card\":\"***\",\"email\":{\"count\":0},\"jwt\":{\"count\":0},\"national_id\":{\"count\":0},\"phone\":{\"count\":0}},\"scenario\":\"door_jam_observe_burst\",\"scopes\":[\"gateway:run\",\"admin:console:read\",\"admin:console:write\",\"audit:read\",\"tools:read\",\"tools:write\",\"policy:read\",\"policy:write\",\"egress:read\",\"egress:write\"]},\"dlp_summary\":{\"api_key\":{\"count\":0},\"credit_card\":{\"count\":1},\"email\":{\"count\":0},\"jwt\":{\"count\":0},\"national_id\":{\"count\":0},\"phone\":{\"count\":0}},\"error\":{\"code\":\"RATE_LIMITED\",\"message\":\"rate limit exceeded (bucket=org+tool limit_per_minute=60)\"}},{\"request_id\":\"389fbc60-1c38-4389-b800-a5096fb59482\",\"org_id\":\"b07bce0f-708f-4fd3-bf76-0630b0fbb4ba\",\"tool_name\":\"world.observe\",\"actor\":\"tower/doorjam-demo\",\"scopes\":[\"gateway:run\",\"admin:console:read\",\"admin:console:write\",\"audit:read\",\"tools:read\",\"tools:write\",\"policy:read\",\"policy:write\",\"egress:read\",\"egress:write\"],\"decision\":\"deny\",\"status\":\"blocked\",\"reason\":\"rate limit exceeded (bucket=org+tool limit_per_minute=60)\",\"latency_ms\":0,\"idempotency_outcome\":\"SKIPPED_NOT_WRITE\",\"timeout_ms\":10000,\"budget_remaining_ms_at_execute\":10000,\"stage_durations_ms\":{\"dlp\":0,\"schema_validation\":0},\"prev_event_hash\":\"4e71fa11906425a57afc68f420b479d790208d8e27d6a02da71cf9e286dfd9e0\",\"event_hash\":\"124eeebd6b62344a5cb962707a08b6868631d46191f95fe4066f8761543d8d23\",\"hash_algo\":\"sha256\",\"created_at\":\"2026-02-25T20:43:45.729208Z\",\"input\":{\"agent_id\":\"agent-028\",\"org_",
+        "body_sha256": "54fb99db88222488d9d9cfda6995037615f8ad6fa251fc616e42cd8e29a06af6",
+        "redacted": true
+      }
+    },
+    {
+      "seq": 19,
+      "request": {
+        "method": "GET",
+        "url": "http://localhost:8080/healthz",
+        "headers": {
+          "X-NEXUS-ACTOR": "toolab-runner",
+          "X-NEXUS-GATEWAY-KEY": "***REDACTED***",
+          "X-NEXUS-ROLE": "admin"
+        },
+        "body_preview": "",
+        "body_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "redacted": true
+      },
+      "response": {
+        "status_code": 200,
+        "error_kind": "none",
+        "headers": {
+          "Content-Length": "11",
+          "Content-Type": "application/json; charset=utf-8",
+          "Date": "***REDACTED***",
+          "X-Request-Id": "9c57b3a8-ebda-4bc2-9e63-67cc86c3f77b"
+        },
+        "body_preview": "{\"ok\":true}",
+        "body_sha256": "4062edaf750fb8074e7e83e0c9028c94e32468a8b6f1614774328ef045150f93",
+        "redacted": true
+      }
+    },
+    {
+      "seq": 20,
+      "request": {
+        "method": "GET",
+        "url": "http://localhost:8080/v1/audit?limit=10",
+        "headers": {
+          "X-NEXUS-ACTOR": "toolab-runner",
+          "X-NEXUS-GATEWAY-KEY": "***REDACTED***",
+          "X-NEXUS-ROLE": "admin"
+        },
+        "body_preview": "",
+        "body_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "redacted": true
+      },
+      "response": {
+        "status_code": 200,
+        "error_kind": "none",
+        "headers": {
+          "Content-Type": "application/json; charset=utf-8",
+          "Date": "***REDACTED***",
+          "X-Request-Id": "712bd390-f14a-4069-8dc8-9dc54334699c"
+        },
+        "body_preview": "{\"items\":[{\"request_id\":\"99cd5d49-d608-4805-baff-c6d4fa42747b\",\"org_id\":\"b07bce0f-708f-4fd3-bf76-0630b0fbb4ba\",\"tool_name\":\"world.observe\",\"actor\":\"tower/doorjam-demo\",\"scopes\":[\"gateway:run\",\"admin:console:read\",\"admin:console:write\",\"audit:read\",\"tools:read\",\"tools:write\",\"policy:read\",\"policy:write\",\"egress:read\",\"egress:write\"],\"decision\":\"deny\",\"status\":\"blocked\",\"reason\":\"rate limit exceeded (bucket=org+tool limit_per_minute=60)\",\"latency_ms\":0,\"idempotency_outcome\":\"SKIPPED_NOT_WRITE\",\"timeout_ms\":10000,\"budget_remaining_ms_at_execute\":10000,\"stage_durations_ms\":{\"dlp\":0,\"schema_validation\":0},\"prev_event_hash\":\"7d264ddddd64e0eeef5160ab51fd1c90540fdcb8afa34f93ba6e174025fe7d7d\",\"event_hash\":\"c637f363dc5c4fe523ec5c1a6742857682fdca6379fec3004259bf0701aadb23\",\"hash_algo\":\"sha256\",\"created_at\":\"2026-02-25T20:43:45.735052Z\",\"input\":{\"agent_id\":\"agent-030\",\"org_id\":\"b07bce0f-708f-4fd3-bf76-0630b0fbb4ba\",\"run_id\":\"050f64fa519e5a40bdf2b527e5e99a43\",\"step_id\":49},\"context\":{\"actor\":\"tower/doorjam-demo\",\"auth_method\":\"api_key\",\"dlp\":{\"api_key\":\"***\",\"credit_card\":\"***\",\"email\":{\"count\":0},\"jwt\":{\"count\":0},\"national_id\":{\"count\":0},\"phone\":{\"count\":0}},\"scenario\":\"door_jam_observe_burst\",\"scopes\":[\"gateway:run\",\"admin:console:read\",\"admin:console:write\",\"audit:read\",\"tools:read\",\"tools:write\",\"policy:read\",\"policy:write\",\"egress:read\",\"egress:write\"]},\"dlp_summary\":{\"api_key\":{\"count\":0},\"credit_card\":{\"count\":1},\"email\":{\"count\":0},\"jwt\":{\"count\":0},\"national_id\":{\"count\":0},\"phone\":{\"count\":0}},\"error\":{\"code\":\"RATE_LIMITED\",\"message\":\"rate limit exceeded (bucket=org+tool limit_per_minute=60)\"}},{\"request_id\":\"03c9b3f7-b703-4748-a652-b0246b784fb1\",\"org_id\":\"b07bce0f-708f-4fd3-bf76-0630b0fbb4ba\",\"tool_name\":\"world.observe\",\"actor\":\"tower/doorjam-demo\",\"scopes\":[\"gateway:run\",\"admin:console:read\",\"admin:console:write\",\"audit:read\",\"tools:read\",\"tools:write\",\"policy:read\",\"policy:write\",\"egress:read\",\"egress:write\"],\"decision\":\"deny\",\"status\":\"blocked\",\"reason\":\"rate limit exceeded (bucket=org+tool limit_per_minute=60)\",\"latency_ms\":0,\"idempotency_outcome\":\"SKIPPED_NOT_WRITE\",\"timeout_ms\":10000,\"budget_remaining_ms_at_execute\":10000,\"stage_durations_ms\":{\"dlp\":0,\"schema_validation\":0},\"prev_event_hash\":\"124eeebd6b62344a5cb962707a08b6868631d46191f95fe4066f8761543d8d23\",\"event_hash\":\"7d264ddddd64e0eeef5160ab51fd1c90540fdcb8afa34f93ba6e174025fe7d7d\",\"hash_algo\":\"sha256\",\"created_at\":\"2026-02-25T20:43:45.732202Z\",\"input\":{\"agent_id\":\"agent-029\",\"org_id\":\"b07bce0f-708f-4fd3-bf76-0630b0fbb4ba\",\"run_id\":\"050f64fa519e5a40bdf2b527e5e99a43\",\"step_id\":49},\"context\":{\"actor\":\"tower/doorjam-demo\",\"auth_method\":\"api_key\",\"dlp\":{\"api_key\":\"***\",\"credit_card\":\"***\",\"email\":{\"count\":0},\"jwt\":{\"count\":0},\"national_id\":{\"count\":0},\"phone\":{\"count\":0}},\"scenario\":\"door_jam_observe_burst\",\"scopes\":[\"gateway:run\",\"admin:console:read\",\"admin:console:write\",\"audit:read\",\"tools:read\",\"tools:write\",\"policy:read\",\"policy:write\",\"egress:read\",\"egress:write\"]},\"dlp_summary\":{\"api_key\":{\"count\":0},\"credit_card\":{\"count\":1},\"email\":{\"count\":0},\"jwt\":{\"count\":0},\"national_id\":{\"count\":0},\"phone\":{\"count\":0}},\"error\":{\"code\":\"RATE_LIMITED\",\"message\":\"rate limit exceeded (bucket=org+tool limit_per_minute=60)\"}},{\"request_id\":\"389fbc60-1c38-4389-b800-a5096fb59482\",\"org_id\":\"b07bce0f-708f-4fd3-bf76-0630b0fbb4ba\",\"tool_name\":\"world.observe\",\"actor\":\"tower/doorjam-demo\",\"scopes\":[\"gateway:run\",\"admin:console:read\",\"admin:console:write\",\"audit:read\",\"tools:read\",\"tools:write\",\"policy:read\",\"policy:write\",\"egress:read\",\"egress:write\"],\"decision\":\"deny\",\"status\":\"blocked\",\"reason\":\"rate limit exceeded (bucket=org+tool limit_per_minute=60)\",\"latency_ms\":0,\"idempotency_outcome\":\"SKIPPED_NOT_WRITE\",\"timeout_ms\":10000,\"budget_remaining_ms_at_execute\":10000,\"stage_durations_ms\":{\"dlp\":0,\"schema_validation\":0},\"prev_event_hash\":\"4e71fa11906425a57afc68f420b479d790208d8e27d6a02da71cf9e286dfd9e0\",\"event_hash\":\"124eeebd6b62344a5cb962707a08b6868631d46191f95fe4066f8761543d8d23\",\"hash_algo\":\"sha256\",\"created_at\":\"2026-02-25T20:43:45.729208Z\",\"input\":{\"agent_id\":\"agent-028\",\"org_",
+        "body_sha256": "54fb99db88222488d9d9cfda6995037615f8ad6fa251fc616e42cd8e29a06af6",
+        "redacted": true
+      }
+    },
+    {
+      "seq": 21,
+      "request": {
+        "method": "GET",
+        "url": "http://localhost:8080/readyz",
+        "headers": {
+          "X-NEXUS-ACTOR": "toolab-runner",
+          "X-NEXUS-GATEWAY-KEY": "***REDACTED***",
+          "X-NEXUS-ROLE": "admin"
+        },
+        "body_preview": "",
+        "body_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "redacted": true
+      },
+      "response": {
+        "status_code": 200,
+        "error_kind": "none",
+        "headers": {
+          "Content-Length": "11",
+          "Content-Type": "application/json; charset=utf-8",
+          "Date": "***REDACTED***",
+          "X-Request-Id": "cff498f5-d565-486d-9bde-46ae0b103779"
+        },
+        "body_preview": "{\"ok\":true}",
+        "body_sha256": "4062edaf750fb8074e7e83e0c9028c94e32468a8b6f1614774328ef045150f93",
+        "redacted": true
+      }
+    },
+    {
+      "seq": 22,
+      "request": {
+        "method": "GET",
+        "url": "http://localhost:8080/healthz",
+        "headers": {
+          "X-NEXUS-ACTOR": "toolab-runner",
+          "X-NEXUS-GATEWAY-KEY": "***REDACTED***",
+          "X-NEXUS-ROLE": "admin"
+        },
+        "body_preview": "",
+        "body_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "redacted": true
+      },
+      "response": {
+        "status_code": 200,
+        "error_kind": "none",
+        "headers": {
+          "Content-Length": "11",
+          "Content-Type": "application/json; charset=utf-8",
+          "Date": "***REDACTED***",
+          "X-Request-Id": "400f11bd-b31b-4288-ba1a-519ecb291a90"
+        },
+        "body_preview": "{\"ok\":true}",
+        "body_sha256": "4062edaf750fb8074e7e83e0c9028c94e32468a8b6f1614774328ef045150f93",
+        "redacted": true
+      }
+    },
+    {
+      "seq": 23,
+      "request": {
+        "method": "GET",
+        "url": "http://localhost:8080/readyz",
+        "headers": {
+          "X-NEXUS-ACTOR": "toolab-runner",
+          "X-NEXUS-GATEWAY-KEY": "***REDACTED***",
+          "X-NEXUS-ROLE": "admin"
+        },
+        "body_preview": "",
+        "body_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "redacted": true
+      },
+      "response": {
+        "status_code": 200,
+        "error_kind": "none",
+        "headers": {
+          "Content-Length": "11",
+          "Content-Type": "application/json; charset=utf-8",
+          "Date": "***REDACTED***",
+          "X-Request-Id": "6017c201-ebec-49a2-b6cf-b850c6748caf"
+        },
+        "body_preview": "{\"ok\":true}",
+        "body_sha256": "4062edaf750fb8074e7e83e0c9028c94e32468a8b6f1614774328ef045150f93",
+        "redacted": true
+      }
+    },
+    {
+      "seq": 24,
+      "request": {
+        "method": "GET",
+        "url": "http://localhost:8080/healthz",
+        "headers": {
+          "X-NEXUS-ACTOR": "toolab-runner",
+          "X-NEXUS-GATEWAY-KEY": "***REDACTED***",
+          "X-NEXUS-ROLE": "admin"
+        },
+        "body_preview": "",
+        "body_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "redacted": true
+      },
+      "response": {
+        "status_code": 200,
+        "error_kind": "none",
+        "headers": {
+          "Content-Length": "11",
+          "Content-Type": "application/json; charset=utf-8",
+          "Date": "***REDACTED***",
+          "X-Request-Id": "2e7d9039-2adb-4a75-aa1e-70a462ff0f47"
+        },
+        "body_preview": "{\"ok\":true}",
+        "body_sha256": "4062edaf750fb8074e7e83e0c9028c94e32468a8b6f1614774328ef045150f93",
+        "redacted": true
+      }
+    },
+    {
+      "seq": 25,
+      "request": {
+        "method": "GET",
+        "url": "http://localhost:8080/v1/tools",
+        "headers": {
+          "X-NEXUS-ACTOR": "toolab-runner",
+          "X-NEXUS-GATEWAY-KEY": "***REDACTED***",
+          "X-NEXUS-ROLE": "admin"
+        },
+        "body_preview": "",
+        "body_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "redacted": true
+      },
+      "response": {
+        "status_code": 200,
+        "error_kind": "none",
+        "headers": {
+          "Content-Type": "application/json; charset=utf-8",
+          "Date": "***REDACTED***",
+          "X-Request-Id": "fef3df1f-7f82-49ae-874d-b1fc55d17094"
+        },
+        "body_preview": "{\"items\":[{\"action_type\":\"read\",\"classification\":\"internal\",\"created_at\":\"2026-02-25T20:43:22.713656Z\",\"description\":\"demo echo tool\",\"enabled\":true,\"id\":\"b62178b3-220c-4e50-9b2c-8a0ea8a6dd62\",\"input_schema\":{\"type\":\"object\"},\"kind\":\"http\",\"method\":\"POST\",\"name\":\"echo\",\"risk_level\":1,\"sensitivity\":\"low\",\"updated_at\":\"2026-02-25T20:43:27.214664Z\",\"url\":\"http://mock-tools:8081/echo\"},{\"action_type\":\"write\",\"classification\":\"external\",\"created_at\":\"2026-02-25T20:43:22.713656Z\",\"description\":\"demo transfer tool\",\"enabled\":true,\"id\":\"4a963ba8-f4af-49f1-948c-1feaa8549e68\",\"input_schema\":{\"additionalProperties\":true,\"properties\":{\"amount\":{\"type\":\"number\"}},\"required\":[\"amount\"],\"type\":\"object\"},\"kind\":\"http\",\"method\":\"POST\",\"name\":\"transfer\",\"risk_level\":3,\"sensitivity\":\"high\",\"updated_at\":\"2026-02-25T20:43:27.214664Z\",\"url\":\"http://mock-tools:8081/transfer\"},{\"action_type\":\"write\",\"classification\":\"internal\",\"created_at\":\"2026-02-25T20:43:27.64909Z\",\"description\":\"Sim Engine deterministic move tool\",\"enabled\":true,\"id\":\"43c8e356-2b5c-42b6-80bb-d51f71cae78f\",\"input_schema\":{\"additionalProperties\":true,\"properties\":{\"agent_id\":{\"type\":\"string\"},\"direction\":{\"additionalProperties\":false,\"properties\":{\"x\":{\"type\":\"number\"},\"y\":{\"type\":\"number\"}},\"type\":\"object\"},\"org_id\":{\"type\":\"string\"},\"request_id\":{\"type\":\"string\"},\"run_id\":{\"type\":\"string\"},\"speed\":{\"type\":\"number\"},\"step_id\":{\"type\":\"integer\"},\"target\":{\"additionalProperties\":false,\"properties\":{\"x\":{\"type\":\"number\"},\"y\":{\"type\":\"number\"}},\"type\":\"object\"}},\"required\":[\"org_id\",\"agent_id\",\"run_id\",\"step_id\"],\"type\":\"object\"},\"kind\":\"http\",\"method\":\"POST\",\"name\":\"world.move\",\"output_schema\":{\"additionalProperties\":true,\"properties\":{\"data\":{\"type\":\"object\"},\"error\":{\"type\":[\"object\",\"null\"]},\"request_id\":{\"type\":\"string\"},\"status\":{\"type\":\"string\"}},\"required\":[\"request_id\",\"status\"],\"type\":\"object\"},\"risk_level\":2,\"sensitivity\":\"low\",\"updated_at\":\"2026-02-25T20:43:27.64909Z\",\"url\":\"http://sim-engine:8087/tools/world.move\"},{\"action_type\":\"read\",\"classification\":\"internal\",\"created_at\":\"2026-02-25T20:43:27.64909Z\",\"description\":\"Sim Engine deterministic observe tool\",\"enabled\":true,\"id\":\"a76df9e5-4dad-4831-aa9e-d3c10364cfab\",\"input_schema\":{\"additionalProperties\":true,\"properties\":{\"agent_id\":{\"type\":\"string\"},\"org_id\":{\"type\":\"string\"},\"request_id\":{\"type\":\"string\"},\"run_id\":{\"type\":\"string\"},\"step_id\":{\"type\":\"integer\"}},\"required\":[\"org_id\",\"agent_id\",\"run_id\",\"step_id\"],\"type\":\"object\"},\"kind\":\"http\",\"method\":\"POST\",\"name\":\"world.observe\",\"output_schema\":{\"additionalProperties\":true,\"properties\":{\"data\":{\"type\":\"object\"},\"error\":{\"type\":[\"object\",\"null\"]},\"request_id\":{\"type\":\"string\"},\"status\":{\"type\":\"string\"}},\"required\":[\"request_id\",\"status\"],\"type\":\"object\"},\"risk_level\":1,\"sensitivity\":\"low\",\"updated_at\":\"2026-02-25T20:43:27.64909Z\",\"url\":\"http://sim-engine:8087/tools/world.observe\"}]}",
+        "body_sha256": "e938b159f6886267b6a5747015f3b1ceea3e1e1254684a7cc62a7f9e0c7000d5",
+        "redacted": true
+      }
+    },
+    {
+      "seq": 26,
+      "request": {
+        "method": "GET",
+        "url": "http://localhost:8080/v1/tools",
+        "headers": {
+          "X-NEXUS-ACTOR": "toolab-runner",
+          "X-NEXUS-GATEWAY-KEY": "***REDACTED***",
+          "X-NEXUS-ROLE": "admin"
+        },
+        "body_preview": "",
+        "body_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "redacted": true
+      },
+      "response": {
+        "status_code": null,
+        "error_kind": "chaos_abort",
+        "headers": {},
+        "body_preview": "",
+        "body_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "redacted": true
+      }
+    },
+    {
+      "seq": 27,
+      "request": {
+        "method": "GET",
+        "url": "http://localhost:8080/healthz",
+        "headers": {
+          "X-NEXUS-ACTOR": "toolab-runner",
+          "X-NEXUS-GATEWAY-KEY": "***REDACTED***",
+          "X-NEXUS-ROLE": "admin"
+        },
+        "body_preview": "",
+        "body_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "redacted": true
+      },
+      "response": {
+        "status_code": 200,
+        "error_kind": "none",
+        "headers": {
+          "Content-Length": "11",
+          "Content-Type": "application/json; charset=utf-8",
+          "Date": "***REDACTED***",
+          "X-Request-Id": "42129171-a833-4855-a9e2-b3b5e7b3291f"
+        },
+        "body_preview": "{\"ok\":true}",
+        "body_sha256": "4062edaf750fb8074e7e83e0c9028c94e32468a8b6f1614774328ef045150f93",
+        "redacted": true
+      }
+    },
+    {
+      "seq": 28,
+      "request": {
+        "method": "GET",
+        "url": "http://localhost:8080/readyz",
+        "headers": {
+          "X-NEXUS-ACTOR": "toolab-runner",
+          "X-NEXUS-GATEWAY-KEY": "***REDACTED***",
+          "X-NEXUS-ROLE": "admin"
+        },
+        "body_preview": "",
+        "body_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "redacted": true
+      },
+      "response": {
+        "status_code": 200,
+        "error_kind": "none",
+        "headers": {
+          "Content-Length": "11",
+          "Content-Type": "application/json; charset=utf-8",
+          "Date": "***REDACTED***",
+          "X-Request-Id": "d6d380f1-c074-4798-b1d6-e7509935229e"
+        },
+        "body_preview": "{\"ok\":true}",
+        "body_sha256": "4062edaf750fb8074e7e83e0c9028c94e32468a8b6f1614774328ef045150f93",
+        "redacted": true
+      }
+    },
+    {
+      "seq": 29,
+      "request": {
+        "method": "GET",
+        "url": "http://localhost:8080/healthz",
+        "headers": {
+          "X-NEXUS-ACTOR": "toolab-runner",
+          "X-NEXUS-GATEWAY-KEY": "***REDACTED***",
+          "X-NEXUS-ROLE": "admin"
+        },
+        "body_preview": "",
+        "body_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "redacted": true
+      },
+      "response": {
+        "status_code": 200,
+        "error_kind": "none",
+        "headers": {
+          "Content-Length": "11",
+          "Content-Type": "application/json; charset=utf-8",
+          "Date": "***REDACTED***",
+          "X-Request-Id": "73d0a23f-77fe-43cc-9374-de6cc5133682"
+        },
+        "body_preview": "{\"ok\":true}",
+        "body_sha256": "4062edaf750fb8074e7e83e0c9028c94e32468a8b6f1614774328ef045150f93",
+        "redacted": true
+      }
+    },
+    {
+      "seq": 30,
+      "request": {
+        "method": "GET",
+        "url": "http://localhost:8080/healthz",
+        "headers": {
+          "X-NEXUS-ACTOR": "toolab-runner",
+          "X-NEXUS-GATEWAY-KEY": "***REDACTED***",
+          "X-NEXUS-ROLE": "admin"
+        },
+        "body_preview": "",
+        "body_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "redacted": true
+      },
+      "response": {
+        "status_code": 200,
+        "error_kind": "none",
+        "headers": {
+          "Content-Length": "11",
+          "Content-Type": "application/json; charset=utf-8",
+          "Date": "***REDACTED***",
+          "X-Request-Id": "35046fa0-07e5-4810-b8f4-06fc6f22b7d6"
+        },
+        "body_preview": "{\"ok\":true}",
+        "body_sha256": "4062edaf750fb8074e7e83e0c9028c94e32468a8b6f1614774328ef045150f93",
+        "redacted": true
+      }
+    },
+    {
+      "seq": 31,
+      "request": {
+        "method": "GET",
+        "url": "http://localhost:8080/healthz",
+        "headers": {
+          "X-NEXUS-ACTOR": "toolab-runner",
+          "X-NEXUS-GATEWAY-KEY": "***REDACTED***",
+          "X-NEXUS-ROLE": "admin"
+        },
+        "body_preview": "",
+        "body_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "redacted": true
+      },
+      "response": {
+        "status_code": 200,
+        "error_kind": "none",
+        "headers": {
+          "Content-Length": "11",
+          "Content-Type": "application/json; charset=utf-8",
+          "Date": "***REDACTED***",
+          "X-Request-Id": "fcb7d043-79e9-4b20-80a7-86454f842b2e"
+        },
+        "body_preview": "{\"ok\":true}",
+        "body_sha256": "4062edaf750fb8074e7e83e0c9028c94e32468a8b6f1614774328ef045150f93",
+        "redacted": true
+      }
+    },
+    {
+      "seq": 32,
+      "request": {
+        "method": "GET",
+        "url": "http://localhost:8080/healthz",
+        "headers": {
+          "X-NEXUS-ACTOR": "toolab-runner",
+          "X-NEXUS-GATEWAY-KEY": "***REDACTED***",
+          "X-NEXUS-ROLE": "admin"
+        },
+        "body_preview": "",
+        "body_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "redacted": true
+      },
+      "response": {
+        "status_code": 200,
+        "error_kind": "none",
+        "headers": {
+          "Content-Length": "11",
+          "Content-Type": "application/json; charset=utf-8",
+          "Date": "***REDACTED***",
+          "X-Request-Id": "f8a3e111-2af2-4f23-a416-ad5fe6dc3cf1"
+        },
+        "body_preview": "{\"ok\":true}",
+        "body_sha256": "4062edaf750fb8074e7e83e0c9028c94e32468a8b6f1614774328ef045150f93",
+        "redacted": true
+      }
+    },
+    {
+      "seq": 33,
+      "request": {
+        "method": "GET",
+        "url": "http://localhost:8080/healthz",
+        "headers": {
+          "X-NEXUS-ACTOR": "toolab-runner",
+          "X-NEXUS-GATEWAY-KEY": "***REDACTED***",
+          "X-NEXUS-ROLE": "admin"
+        },
+        "body_preview": "",
+        "body_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "redacted": true
+      },
+      "response": {
+        "status_code": 200,
+        "error_kind": "none",
+        "headers": {
+          "Content-Length": "11",
+          "Content-Type": "application/json; charset=utf-8",
+          "Date": "***REDACTED***",
+          "X-Request-Id": "77e7b569-6e1d-48c1-9600-01dc3230b320"
+        },
+        "body_preview": "{\"ok\":true}",
+        "body_sha256": "4062edaf750fb8074e7e83e0c9028c94e32468a8b6f1614774328ef045150f93",
+        "redacted": true
+      }
+    },
+    {
+      "seq": 34,
+      "request": {
+        "method": "GET",
+        "url": "http://localhost:8080/readyz",
+        "headers": {
+          "X-NEXUS-ACTOR": "toolab-runner",
+          "X-NEXUS-GATEWAY-KEY": "***REDACTED***",
+          "X-NEXUS-ROLE": "admin"
+        },
+        "body_preview": "",
+        "body_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "redacted": true
+      },
+      "response": {
+        "status_code": 200,
+        "error_kind": "none",
+        "headers": {
+          "Content-Length": "11",
+          "Content-Type": "application/json; charset=utf-8",
+          "Date": "***REDACTED***",
+          "X-Request-Id": "aa7c60aa-9240-4288-bf66-e2b59cb6bdb4"
+        },
+        "body_preview": "{\"ok\":true}",
+        "body_sha256": "4062edaf750fb8074e7e83e0c9028c94e32468a8b6f1614774328ef045150f93",
+        "redacted": true
+      }
+    },
+    {
+      "seq": 35,
+      "request": {
+        "method": "GET",
+        "url": "http://localhost:8080/healthz",
+        "headers": {
+          "X-NEXUS-ACTOR": "toolab-runner",
+          "X-NEXUS-GATEWAY-KEY": "***REDACTED***",
+          "X-NEXUS-ROLE": "admin"
+        },
+        "body_preview": "",
+        "body_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "redacted": true
+      },
+      "response": {
+        "status_code": 200,
+        "error_kind": "none",
+        "headers": {
+          "Content-Length": "11",
+          "Content-Type": "application/json; charset=utf-8",
+          "Date": "***REDACTED***",
+          "X-Request-Id": "710ec81e-cd66-4c55-8356-9c1bed302a52"
+        },
+        "body_preview": "{\"ok\":true}",
+        "body_sha256": "4062edaf750fb8074e7e83e0c9028c94e32468a8b6f1614774328ef045150f93",
+        "redacted": true
+      }
+    },
+    {
+      "seq": 36,
+      "request": {
+        "method": "GET",
+        "url": "http://localhost:8080/readyz",
+        "headers": {
+          "X-NEXUS-ACTOR": "toolab-runner",
+          "X-NEXUS-GATEWAY-KEY": "***REDACTED***",
+          "X-NEXUS-ROLE": "admin"
+        },
+        "body_preview": "",
+        "body_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "redacted": true
+      },
+      "response": {
+        "status_code": 200,
+        "error_kind": "none",
+        "headers": {
+          "Content-Length": "11",
+          "Content-Type": "application/json; charset=utf-8",
+          "Date": "***REDACTED***",
+          "X-Request-Id": "04ab0e75-1a7c-4fd4-9658-8ed6d2200954"
+        },
+        "body_preview": "{\"ok\":true}",
+        "body_sha256": "4062edaf750fb8074e7e83e0c9028c94e32468a8b6f1614774328ef045150f93",
+        "redacted": true
+      }
+    },
+    {
+      "seq": 37,
+      "request": {
+        "method": "GET",
+        "url": "http://localhost:8080/healthz",
+        "headers": {
+          "X-NEXUS-ACTOR": "toolab-runner",
+          "X-NEXUS-GATEWAY-KEY": "***REDACTED***",
+          "X-NEXUS-ROLE": "admin"
+        },
+        "body_preview": "",
+        "body_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "redacted": true
+      },
+      "response": {
+        "status_code": 200,
+        "error_kind": "none",
+        "headers": {
+          "Content-Length": "11",
+          "Content-Type": "application/json; charset=utf-8",
+          "Date": "***REDACTED***",
+          "X-Request-Id": "0dfd2120-5280-4d2c-bea3-b2c562d77181"
+        },
+        "body_preview": "{\"ok\":true}",
+        "body_sha256": "4062edaf750fb8074e7e83e0c9028c94e32468a8b6f1614774328ef045150f93",
+        "redacted": true
+      }
+    },
+    {
+      "seq": 38,
+      "request": {
+        "method": "GET",
+        "url": "http://localhost:8080/readyz",
+        "headers": {
+          "X-NEXUS-ACTOR": "toolab-runner",
+          "X-NEXUS-GATEWAY-KEY": "***REDACTED***",
+          "X-NEXUS-ROLE": "admin"
+        },
+        "body_preview": "",
+        "body_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "redacted": true
+      },
+      "response": {
+        "status_code": 200,
+        "error_kind": "none",
+        "headers": {
+          "Content-Length": "11",
+          "Content-Type": "application/json; charset=utf-8",
+          "Date": "***REDACTED***",
+          "X-Request-Id": "a4aabf3f-e116-4382-8f5a-bddd3dd9e1f0"
+        },
+        "body_preview": "{\"ok\":true}",
+        "body_sha256": "4062edaf750fb8074e7e83e0c9028c94e32468a8b6f1614774328ef045150f93",
+        "redacted": true
+      }
+    },
+    {
+      "seq": 39,
+      "request": {
+        "method": "GET",
+        "url": "http://localhost:8080/v1/audit?limit=10",
+        "headers": {
+          "X-NEXUS-ACTOR": "toolab-runner",
+          "X-NEXUS-GATEWAY-KEY": "***REDACTED***",
+          "X-NEXUS-ROLE": "admin"
+        },
+        "body_preview": "",
+        "body_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "redacted": true
+      },
+      "response": {
+        "status_code": 200,
+        "error_kind": "none",
+        "headers": {
+          "Content-Type": "application/json; charset=utf-8",
+          "Date": "***REDACTED***",
+          "X-Request-Id": "6d4633b5-0336-47d7-8eaa-d07a9d7701fb"
+        },
+        "body_preview": "{\"items\":[{\"request_id\":\"99cd5d49-d608-4805-baff-c6d4fa42747b\",\"org_id\":\"b07bce0f-708f-4fd3-bf76-0630b0fbb4ba\",\"tool_name\":\"world.observe\",\"actor\":\"tower/doorjam-demo\",\"scopes\":[\"gateway:run\",\"admin:console:read\",\"admin:console:write\",\"audit:read\",\"tools:read\",\"tools:write\",\"policy:read\",\"policy:write\",\"egress:read\",\"egress:write\"],\"decision\":\"deny\",\"status\":\"blocked\",\"reason\":\"rate limit exceeded (bucket=org+tool limit_per_minute=60)\",\"latency_ms\":0,\"idempotency_outcome\":\"SKIPPED_NOT_WRITE\",\"timeout_ms\":10000,\"budget_remaining_ms_at_execute\":10000,\"stage_durations_ms\":{\"dlp\":0,\"schema_validation\":0},\"prev_event_hash\":\"7d264ddddd64e0eeef5160ab51fd1c90540fdcb8afa34f93ba6e174025fe7d7d\",\"event_hash\":\"c637f363dc5c4fe523ec5c1a6742857682fdca6379fec3004259bf0701aadb23\",\"hash_algo\":\"sha256\",\"created_at\":\"2026-02-25T20:43:45.735052Z\",\"input\":{\"agent_id\":\"agent-030\",\"org_id\":\"b07bce0f-708f-4fd3-bf76-0630b0fbb4ba\",\"run_id\":\"050f64fa519e5a40bdf2b527e5e99a43\",\"step_id\":49},\"context\":{\"actor\":\"tower/doorjam-demo\",\"auth_method\":\"api_key\",\"dlp\":{\"api_key\":\"***\",\"credit_card\":\"***\",\"email\":{\"count\":0},\"jwt\":{\"count\":0},\"national_id\":{\"count\":0},\"phone\":{\"count\":0}},\"scenario\":\"door_jam_observe_burst\",\"scopes\":[\"gateway:run\",\"admin:console:read\",\"admin:console:write\",\"audit:read\",\"tools:read\",\"tools:write\",\"policy:read\",\"policy:write\",\"egress:read\",\"egress:write\"]},\"dlp_summary\":{\"api_key\":{\"count\":0},\"credit_card\":{\"count\":1},\"email\":{\"count\":0},\"jwt\":{\"count\":0},\"national_id\":{\"count\":0},\"phone\":{\"count\":0}},\"error\":{\"code\":\"RATE_LIMITED\",\"message\":\"rate limit exceeded (bucket=org+tool limit_per_minute=60)\"}},{\"request_id\":\"03c9b3f7-b703-4748-a652-b0246b784fb1\",\"org_id\":\"b07bce0f-708f-4fd3-bf76-0630b0fbb4ba\",\"tool_name\":\"world.observe\",\"actor\":\"tower/doorjam-demo\",\"scopes\":[\"gateway:run\",\"admin:console:read\",\"admin:console:write\",\"audit:read\",\"tools:read\",\"tools:write\",\"policy:read\",\"policy:write\",\"egress:read\",\"egress:write\"],\"decision\":\"deny\",\"status\":\"blocked\",\"reason\":\"rate limit exceeded (bucket=org+tool limit_per_minute=60)\",\"latency_ms\":0,\"idempotency_outcome\":\"SKIPPED_NOT_WRITE\",\"timeout_ms\":10000,\"budget_remaining_ms_at_execute\":10000,\"stage_durations_ms\":{\"dlp\":0,\"schema_validation\":0},\"prev_event_hash\":\"124eeebd6b62344a5cb962707a08b6868631d46191f95fe4066f8761543d8d23\",\"event_hash\":\"7d264ddddd64e0eeef5160ab51fd1c90540fdcb8afa34f93ba6e174025fe7d7d\",\"hash_algo\":\"sha256\",\"created_at\":\"2026-02-25T20:43:45.732202Z\",\"input\":{\"agent_id\":\"agent-029\",\"org_id\":\"b07bce0f-708f-4fd3-bf76-0630b0fbb4ba\",\"run_id\":\"050f64fa519e5a40bdf2b527e5e99a43\",\"step_id\":49},\"context\":{\"actor\":\"tower/doorjam-demo\",\"auth_method\":\"api_key\",\"dlp\":{\"api_key\":\"***\",\"credit_card\":\"***\",\"email\":{\"count\":0},\"jwt\":{\"count\":0},\"national_id\":{\"count\":0},\"phone\":{\"count\":0}},\"scenario\":\"door_jam_observe_burst\",\"scopes\":[\"gateway:run\",\"admin:console:read\",\"admin:console:write\",\"audit:read\",\"tools:read\",\"tools:write\",\"policy:read\",\"policy:write\",\"egress:read\",\"egress:write\"]},\"dlp_summary\":{\"api_key\":{\"count\":0},\"credit_card\":{\"count\":1},\"email\":{\"count\":0},\"jwt\":{\"count\":0},\"national_id\":{\"count\":0},\"phone\":{\"count\":0}},\"error\":{\"code\":\"RATE_LIMITED\",\"message\":\"rate limit exceeded (bucket=org+tool limit_per_minute=60)\"}},{\"request_id\":\"389fbc60-1c38-4389-b800-a5096fb59482\",\"org_id\":\"b07bce0f-708f-4fd3-bf76-0630b0fbb4ba\",\"tool_name\":\"world.observe\",\"actor\":\"tower/doorjam-demo\",\"scopes\":[\"gateway:run\",\"admin:console:read\",\"admin:console:write\",\"audit:read\",\"tools:read\",\"tools:write\",\"policy:read\",\"policy:write\",\"egress:read\",\"egress:write\"],\"decision\":\"deny\",\"status\":\"blocked\",\"reason\":\"rate limit exceeded (bucket=org+tool limit_per_minute=60)\",\"latency_ms\":0,\"idempotency_outcome\":\"SKIPPED_NOT_WRITE\",\"timeout_ms\":10000,\"budget_remaining_ms_at_execute\":10000,\"stage_durations_ms\":{\"dlp\":0,\"schema_validation\":0},\"prev_event_hash\":\"4e71fa11906425a57afc68f420b479d790208d8e27d6a02da71cf9e286dfd9e0\",\"event_hash\":\"124eeebd6b62344a5cb962707a08b6868631d46191f95fe4066f8761543d8d23\",\"hash_algo\":\"sha256\",\"created_at\":\"2026-02-25T20:43:45.729208Z\",\"input\":{\"agent_id\":\"agent-028\",\"org_",
+        "body_sha256": "54fb99db88222488d9d9cfda6995037615f8ad6fa251fc616e42cd8e29a06af6",
+        "redacted": true
+      }
+    }
+  ],
+  "observability": {
+    "metrics_snapshot": {
+      "adapter": {
+        "adapter_version": "1",
+        "app_name": "nexus",
+        "app_version": "1.0.0",
+        "capabilities": [
+          "state.fingerprint",
+          "state.snapshot",
+          "state.restore",
+          "state.reset",
+          "metrics"
+        ]
+      },
+      "adapter_metrics": [
+        {
+          "labels": {},
+          "name": "go_gc_duration_seconds",
+          "type": "summary",
+          "value": {
+            "count": 510,
+            "quantiles": [
+              {
+                "quantile": 0,
+                "value": 0.000022992
+              },
+              {
+                "quantile": 0.25,
+                "value": 0.000034488
+              },
+              {
+                "quantile": 0.5,
+                "value": 0.000047548
+              },
+              {
+                "quantile": 0.75,
+                "value": 0.000070131
+              },
+              {
+                "quantile": 1,
+                "value": 0.000161822
+              }
+            ],
+            "sum": 0.028065625
+          }
+        },
+        {
+          "labels": {},
+          "name": "go_gc_gogc_percent",
+          "type": "gauge",
+          "value": 100
+        },
+        {
+          "labels": {},
+          "name": "go_gc_gomemlimit_bytes",
+          "type": "gauge",
+          "value": 9223372036854776000
+        },
+        {
+          "labels": {},
+          "name": "go_goroutines",
+          "type": "gauge",
+          "value": 17
+        },
+        {
+          "labels": {
+            "version": "go1.24.13"
+          },
+          "name": "go_info",
+          "type": "gauge",
+          "value": 1
+        },
+        {
+          "labels": {},
+          "name": "go_memstats_alloc_bytes",
+          "type": "gauge",
+          "value": 9514056
+        },
+        {
+          "labels": {},
+          "name": "go_memstats_alloc_bytes_total",
+          "type": "counter",
+          "value": 852364784
+        },
+        {
+          "labels": {},
+          "name": "go_memstats_buck_hash_sys_bytes",
+          "type": "gauge",
+          "value": 5762
+        },
+        {
+          "labels": {},
+          "name": "go_memstats_frees_total",
+          "type": "counter",
+          "value": 10216887
+        },
+        {
+          "labels": {},
+          "name": "go_memstats_gc_sys_bytes",
+          "type": "gauge",
+          "value": 3346136
+        },
+        {
+          "labels": {},
+          "name": "go_memstats_heap_alloc_bytes",
+          "type": "gauge",
+          "value": 9514056
+        },
+        {
+          "labels": {},
+          "name": "go_memstats_heap_idle_bytes",
+          "type": "gauge",
+          "value": 2662400
+        },
+        {
+          "labels": {},
+          "name": "go_memstats_heap_inuse_bytes",
+          "type": "gauge",
+          "value": 12673024
+        },
+        {
+          "labels": {},
+          "name": "go_memstats_heap_objects",
+          "type": "gauge",
+          "value": 39018
+        },
+        {
+          "labels": {},
+          "name": "go_memstats_heap_released_bytes",
+          "type": "gauge",
+          "value": 1982464
+        },
+        {
+          "labels": {},
+          "name": "go_memstats_heap_sys_bytes",
+          "type": "gauge",
+          "value": 15335424
+        },
+        {
+          "labels": {},
+          "name": "go_memstats_last_gc_time_seconds",
+          "type": "gauge",
+          "value": 1772053330.3617947
+        },
+        {
+          "labels": {},
+          "name": "go_memstats_mallocs_total",
+          "type": "counter",
+          "value": 10255905
+        },
+        {
+          "labels": {},
+          "name": "go_memstats_mcache_inuse_bytes",
+          "type": "gauge",
+          "value": 9664
+        },
+        {
+          "labels": {},
+          "name": "go_memstats_mcache_sys_bytes",
+          "type": "gauge",
+          "value": 15704
+        },
+        {
+          "labels": {},
+          "name": "go_memstats_mspan_inuse_bytes",
+          "type": "gauge",
+          "value": 212000
+        },
+        {
+          "labels": {},
+          "name": "go_memstats_mspan_sys_bytes",
+          "type": "gauge",
+          "value": 244800
+        },
+        {
+          "labels": {},
+          "name": "go_memstats_next_gc_bytes",
+          "type": "gauge",
+          "value": 12939354
+        },
+        {
+          "labels": {},
+          "name": "go_memstats_other_sys_bytes",
+          "type": "gauge",
+          "value": 1588510
+        },
+        {
+          "labels": {},
+          "name": "go_memstats_stack_inuse_bytes",
+          "type": "gauge",
+          "value": 1441792
+        },
+        {
+          "labels": {},
+          "name": "go_memstats_stack_sys_bytes",
+          "type": "gauge",
+          "value": 1441792
+        },
+        {
+          "labels": {},
+          "name": "go_memstats_sys_bytes",
+          "type": "gauge",
+          "value": 21978128
+        },
+        {
+          "labels": {},
+          "name": "go_sched_gomaxprocs_threads",
+          "type": "gauge",
+          "value": 8
+        },
+        {
+          "labels": {},
+          "name": "go_threads",
+          "type": "gauge",
+          "value": 14
+        },
+        {
+          "labels": {
+            "code": "200",
+            "method": "GET",
+            "url": "/_toolab/manifest"
+          },
+          "name": "nexus_gateway_request_duration_seconds",
+          "type": "histogram",
+          "value": {
+            "buckets": [
+              {
+                "cumulative_count": 4,
+                "upper_bound": 0.005
+              },
+              {
+                "cumulative_count": 4,
+                "upper_bound": 0.01
+              },
+              {
+                "cumulative_count": 4,
+                "upper_bound": 0.025
+              },
+              {
+                "cumulative_count": 4,
+                "upper_bound": 0.05
+              },
+              {
+                "cumulative_count": 4,
+                "upper_bound": 0.1
+              },
+              {
+                "cumulative_count": 4,
+                "upper_bound": 0.25
+              },
+              {
+                "cumulative_count": 4,
+                "upper_bound": 0.5
+              },
+              {
+                "cumulative_count": 4,
+                "upper_bound": 1
+              },
+              {
+                "cumulative_count": 4,
+                "upper_bound": 2.5
+              },
+              {
+                "cumulative_count": 4,
+                "upper_bound": 5
+              },
+              {
+                "cumulative_count": 4,
+                "upper_bound": 10
+              }
+            ],
+            "count": 4,
+            "sum": 0.00021700500000000001
+          }
+        },
+        {
+          "labels": {
+            "code": "200",
+            "method": "GET",
+            "url": "/_toolab/metrics"
+          },
+          "name": "nexus_gateway_request_duration_seconds",
+          "type": "histogram",
+          "value": {
+            "buckets": [
+              {
+                "cumulative_count": 2,
+                "upper_bound": 0.005
+              },
+              {
+                "cumulative_count": 2,
+                "upper_bound": 0.01
+              },
+              {
+                "cumulative_count": 2,
+                "upper_bound": 0.025
+              },
+              {
+                "cumulative_count": 2,
+                "upper_bound": 0.05
+              },
+              {
+                "cumulative_count": 2,
+                "upper_bound": 0.1
+              },
+              {
+                "cumulative_count": 2,
+                "upper_bound": 0.25
+              },
+              {
+                "cumulative_count": 2,
+                "upper_bound": 0.5
+              },
+              {
+                "cumulative_count": 2,
+                "upper_bound": 1
+              },
+              {
+                "cumulative_count": 2,
+                "upper_bound": 2.5
+              },
+              {
+                "cumulative_count": 2,
+                "upper_bound": 5
+              },
+              {
+                "cumulative_count": 2,
+                "upper_bound": 10
+              }
+            ],
+            "count": 2,
+            "sum": 0.0015220160000000002
+          }
+        },
+        {
+          "labels": {
+            "code": "200",
+            "method": "GET",
+            "url": "/_toolab/state/fingerprint"
+          },
+          "name": "nexus_gateway_request_duration_seconds",
+          "type": "histogram",
+          "value": {
+            "buckets": [
+              {
+                "cumulative_count": 2,
+                "upper_bound": 0.005
+              },
+              {
+                "cumulative_count": 2,
+                "upper_bound": 0.01
+              },
+              {
+                "cumulative_count": 3,
+                "upper_bound": 0.025
+              },
+              {
+                "cumulative_count": 3,
+                "upper_bound": 0.05
+              },
+              {
+                "cumulative_count": 3,
+                "upper_bound": 0.1
+              },
+              {
+                "cumulative_count": 3,
+                "upper_bound": 0.25
+              },
+              {
+                "cumulative_count": 3,
+                "upper_bound": 0.5
+              },
+              {
+                "cumulative_count": 3,
+                "upper_bound": 1
+              },
+              {
+                "cumulative_count": 3,
+                "upper_bound": 2.5
+              },
+              {
+                "cumulative_count": 3,
+                "upper_bound": 5
+              },
+              {
+                "cumulative_count": 3,
+                "upper_bound": 10
+              }
+            ],
+            "count": 3,
+            "sum": 0.018829787
+          }
+        },
+        {
+          "labels": {
+            "code": "200",
+            "method": "GET",
+            "url": "/healthz"
+          },
+          "name": "nexus_gateway_request_duration_seconds",
+          "type": "histogram",
+          "value": {
+            "buckets": [
+              {
+                "cumulative_count": 54,
+                "upper_bound": 0.005
+              },
+              {
+                "cumulative_count": 54,
+                "upper_bound": 0.01
+              },
+              {
+                "cumulative_count": 54,
+                "upper_bound": 0.025
+              },
+              {
+                "cumulative_count": 54,
+                "upper_bound": 0.05
+              },
+              {
+                "cumulative_count": 54,
+                "upper_bound": 0.1
+              },
+              {
+                "cumulative_count": 54,
+                "upper_bound": 0.25
+              },
+              {
+                "cumulative_count": 54,
+                "upper_bound": 0.5
+              },
+              {
+                "cumulative_count": 54,
+                "upper_bound": 1
+              },
+              {
+                "cumulative_count": 54,
+                "upper_bound": 2.5
+              },
+              {
+                "cumulative_count": 54,
+                "upper_bound": 5
+              },
+              {
+                "cumulative_count": 54,
+                "upper_bound": 10
+              }
+            ],
+            "count": 54,
+            "sum": 0.0006246559999999998
+          }
+        },
+        {
+          "labels": {
+            "code": "200",
+            "method": "GET",
+            "url": "/readyz"
+          },
+          "name": "nexus_gateway_request_duration_seconds",
+          "type": "histogram",
+          "value": {
+            "buckets": [
+              {
+                "cumulative_count": 618,
+                "upper_bound": 0.005
+              },
+              {
+                "cumulative_count": 618,
+                "upper_bound": 0.01
+              },
+              {
+                "cumulative_count": 618,
+                "upper_bound": 0.025
+              },
+              {
+                "cumulative_count": 618,
+                "upper_bound": 0.05
+              },
+              {
+                "cumulative_count": 618,
+                "upper_bound": 0.1
+              },
+              {
+                "cumulative_count": 618,
+                "upper_bound": 0.25
+              },
+              {
+                "cumulative_count": 618,
+                "upper_bound": 0.5
+              },
+              {
+                "cumulative_count": 618,
+                "upper_bound": 1
+              },
+              {
+                "cumulative_count": 618,
+                "upper_bound": 2.5
+              },
+              {
+                "cumulative_count": 618,
+                "upper_bound": 5
+              },
+              {
+                "cumulative_count": 618,
+                "upper_bound": 10
+              }
+            ],
+            "count": 618,
+            "sum": 0.11993915599999998
+          }
+        },
+        {
+          "labels": {
+            "code": "200",
+            "method": "GET",
+            "url": "/v1/audit"
+          },
+          "name": "nexus_gateway_request_duration_seconds",
+          "type": "histogram",
+          "value": {
+            "buckets": [
+              {
+                "cumulative_count": 15,
+                "upper_bound": 0.005
+              },
+              {
+                "cumulative_count": 15,
+                "upper_bound": 0.01
+              },
+              {
+                "cumulative_count": 15,
+                "upper_bound": 0.025
+              },
+              {
+                "cumulative_count": 15,
+                "upper_bound": 0.05
+              },
+              {
+                "cumulative_count": 15,
+                "upper_bound": 0.1
+              },
+              {
+                "cumulative_count": 15,
+                "upper_bound": 0.25
+              },
+              {
+                "cumulative_count": 15,
+                "upper_bound": 0.5
+              },
+              {
+                "cumulative_count": 15,
+                "upper_bound": 1
+              },
+              {
+                "cumulative_count": 15,
+                "upper_bound": 2.5
+              },
+              {
+                "cumulative_count": 15,
+                "upper_bound": 5
+              },
+              {
+                "cumulative_count": 15,
+                "upper_bound": 10
+              }
+            ],
+            "count": 15,
+            "sum": 0.018852088
+          }
+        },
+        {
+          "labels": {
+            "code": "200",
+            "method": "GET",
+            "url": "/v1/events"
+          },
+          "name": "nexus_gateway_request_duration_seconds",
+          "type": "histogram",
+          "value": {
+            "buckets": [
+              {
+                "cumulative_count": 116,
+                "upper_bound": 0.005
+              },
+              {
+                "cumulative_count": 116,
+                "upper_bound": 0.01
+              },
+              {
+                "cumulative_count": 116,
+                "upper_bound": 0.025
+              },
+              {
+                "cumulative_count": 116,
+                "upper_bound": 0.05
+              },
+              {
+                "cumulative_count": 116,
+                "upper_bound": 0.1
+              },
+              {
+                "cumulative_count": 116,
+                "upper_bound": 0.25
+              },
+              {
+                "cumulative_count": 116,
+                "upper_bound": 0.5
+              },
+              {
+                "cumulative_count": 116,
+                "upper_bound": 1
+              },
+              {
+                "cumulative_count": 116,
+                "upper_bound": 2.5
+              },
+              {
+                "cumulative_count": 116,
+                "upper_bound": 5
+              },
+              {
+                "cumulative_count": 116,
+                "upper_bound": 10
+              }
+            ],
+            "count": 116,
+            "sum": 0.11998584799999992
+          }
+        },
+        {
+          "labels": {
+            "code": "200",
+            "method": "GET",
+            "url": "/v1/tools"
+          },
+          "name": "nexus_gateway_request_duration_seconds",
+          "type": "histogram",
+          "value": {
+            "buckets": [
+              {
+                "cumulative_count": 9,
+                "upper_bound": 0.005
+              },
+              {
+                "cumulative_count": 9,
+                "upper_bound": 0.01
+              },
+              {
+                "cumulative_count": 9,
+                "upper_bound": 0.025
+              },
+              {
+                "cumulative_count": 9,
+                "upper_bound": 0.05
+              },
+              {
+                "cumulative_count": 9,
+                "upper_bound": 0.1
+              },
+              {
+                "cumulative_count": 9,
+                "upper_bound": 0.25
+              },
+              {
+                "cumulative_count": 9,
+                "upper_bound": 0.5
+              },
+              {
+                "cumulative_count": 9,
+                "upper_bound": 1
+              },
+              {
+                "cumulative_count": 9,
+                "upper_bound": 2.5
+              },
+              {
+                "cumulative_count": 9,
+                "upper_bound": 5
+              },
+              {
+                "cumulative_count": 9,
+                "upper_bound": 10
+              }
+            ],
+            "count": 9,
+            "sum": 0.007463882000000001
+          }
+        },
+        {
+          "labels": {
+            "code": "200",
+            "method": "GET",
+            "url": "/v1/world/events"
+          },
+          "name": "nexus_gateway_request_duration_seconds",
+          "type": "histogram",
+          "value": {
+            "buckets": [
+              {
+                "cumulative_count": 2,
+                "upper_bound": 0.005
+              },
+              {
+                "cumulative_count": 41,
+                "upper_bound": 0.01
+              },
+              {
+                "cumulative_count": 47,
+                "upper_bound": 0.025
+              },
+              {
+                "cumulative_count": 47,
+                "upper_bound": 0.05
+              },
+              {
+                "cumulative_count": 47,
+                "upper_bound": 0.1
+              },
+              {
+                "cumulative_count": 47,
+                "upper_bound": 0.25
+              },
+              {
+                "cumulative_count": 47,
+                "upper_bound": 0.5
+              },
+              {
+                "cumulative_count": 47,
+                "upper_bound": 1
+              },
+              {
+                "cumulative_count": 47,
+                "upper_bound": 2.5
+              },
+              {
+                "cumulative_count": 47,
+                "upper_bound": 5
+              },
+              {
+                "cumulative_count": 47,
+                "upper_bound": 10
+              }
+            ],
+            "count": 47,
+            "sum": 0.441084158
+          }
+        },
+        {
+          "labels": {
+            "code": "200",
+            "method": "GET",
+            "url": "/v1/world/runs"
+          },
+          "name": "nexus_gateway_request_duration_seconds",
+          "type": "histogram",
+          "value": {
+            "buckets": [
+              {
+                "cumulative_count": 2,
+                "upper_bound": 0.005
+              },
+              {
+                "cumulative_count": 2,
+                "upper_bound": 0.01
+              },
+              {
+                "cumulative_count": 2,
+                "upper_bound": 0.025
+              },
+              {
+                "cumulative_count": 2,
+                "upper_bound": 0.05
+              },
+              {
+                "cumulative_count": 2,
+                "upper_bound": 0.1
+              },
+              {
+                "cumulative_count": 2,
+                "upper_bound": 0.25
+              },
+              {
+                "cumulative_count": 2,
+                "upper_bound": 0.5
+              },
+              {
+                "cumulative_count": 2,
+                "upper_bound": 1
+              },
+              {
+                "cumulative_count": 2,
+                "upper_bound": 2.5
+              },
+              {
+                "cumulative_count": 2,
+                "upper_bound": 5
+              },
+              {
+                "cumulative_count": 2,
+                "upper_bound": 10
+              }
+            ],
+            "count": 2,
+            "sum": 0.001535807
+          }
+        },
+        {
+          "labels": {
+            "code": "200",
+            "method": "GET",
+            "url": "/v1/world/state"
+          },
+          "name": "nexus_gateway_request_duration_seconds",
+          "type": "histogram",
+          "value": {
+            "buckets": [
+              {
+                "cumulative_count": 10,
+                "upper_bound": 0.005
+              },
+              {
+                "cumulative_count": 10,
+                "upper_bound": 0.01
+              },
+              {
+                "cumulative_count": 10,
+                "upper_bound": 0.025
+              },
+              {
+                "cumulative_count": 10,
+                "upper_bound": 0.05
+              },
+              {
+                "cumulative_count": 10,
+                "upper_bound": 0.1
+              },
+              {
+                "cumulative_count": 10,
+                "upper_bound": 0.25
+              },
+              {
+                "cumulative_count": 10,
+                "upper_bound": 0.5
+              },
+              {
+                "cumulative_count": 10,
+                "upper_bound": 1
+              },
+              {
+                "cumulative_count": 10,
+                "upper_bound": 2.5
+              },
+              {
+                "cumulative_count": 10,
+                "upper_bound": 5
+              },
+              {
+                "cumulative_count": 10,
+                "upper_bound": 10
+              }
+            ],
+            "count": 10,
+            "sum": 0.010896053
+          }
+        },
+        {
+          "labels": {
+            "code": "200",
+            "method": "POST",
+            "url": "/v1/run"
+          },
+          "name": "nexus_gateway_request_duration_seconds",
+          "type": "histogram",
+          "value": {
+            "buckets": [
+              {
+                "cumulative_count": 1501,
+                "upper_bound": 0.005
+              },
+              {
+                "cumulative_count": 2988,
+                "upper_bound": 0.01
+              },
+              {
+                "cumulative_count": 2997,
+                "upper_bound": 0.025
+              },
+              {
+                "cumulative_count": 2998,
+                "upper_bound": 0.05
+              },
+              {
+                "cumulative_count": 3000,
+                "upper_bound": 0.1
+              },
+              {
+                "cumulative_count": 3000,
+                "upper_bound": 0.25
+              },
+              {
+                "cumulative_count": 3000,
+                "upper_bound": 0.5
+              },
+              {
+                "cumulative_count": 3000,
+                "upper_bound": 1
+              },
+              {
+                "cumulative_count": 3000,
+                "upper_bound": 2.5
+              },
+              {
+                "cumulative_count": 3000,
+                "upper_bound": 5
+              },
+              {
+                "cumulative_count": 3000,
+                "upper_bound": 10
+              }
+            ],
+            "count": 3000,
+            "sum": 15.630103293000028
+          }
+        },
+        {
+          "labels": {
+            "code": "200",
+            "method": "POST",
+            "url": "/v1/world/replay"
+          },
+          "name": "nexus_gateway_request_duration_seconds",
+          "type": "histogram",
+          "value": {
+            "buckets": [
+              {
+                "cumulative_count": 0,
+                "upper_bound": 0.005
+              },
+              {
+                "cumulative_count": 0,
+                "upper_bound": 0.01
+              },
+              {
+                "cumulative_count": 0,
+                "upper_bound": 0.025
+              },
+              {
+                "cumulative_count": 0,
+                "upper_bound": 0.05
+              },
+              {
+                "cumulative_count": 0,
+                "upper_bound": 0.1
+              },
+              {
+                "cumulative_count": 0,
+                "upper_bound": 0.25
+              },
+              {
+                "cumulative_count": 1,
+                "upper_bound": 0.5
+              },
+              {
+                "cumulative_count": 1,
+                "upper_bound": 1
+              },
+              {
+                "cumulative_count": 2,
+                "upper_bound": 2.5
+              },
+              {
+                "cumulative_count": 2,
+                "upper_bound": 5
+              },
+              {
+                "cumulative_count": 2,
+                "upper_bound": 10
+              }
+            ],
+            "count": 2,
+            "sum": 2.428528756
+          }
+        },
+        {
+          "labels": {
+            "code": "200",
+            "method": "POST",
+            "url": "/v1/world/run/create"
+          },
+          "name": "nexus_gateway_request_duration_seconds",
+          "type": "histogram",
+          "value": {
+            "buckets": [
+              {
+                "cumulative_count": 0,
+                "upper_bound": 0.005
+              },
+              {
+                "cumulative_count": 0,
+                "upper_bound": 0.01
+              },
+              {
+                "cumulative_count": 0,
+                "upper_bound": 0.025
+              },
+              {
+                "cumulative_count": 2,
+                "upper_bound": 0.05
+              },
+              {
+                "cumulative_count": 2,
+                "upper_bound": 0.1
+              },
+              {
+                "cumulative_count": 2,
+                "upper_bound": 0.25
+              },
+              {
+                "cumulative_count": 2,
+                "upper_bound": 0.5
+              },
+              {
+                "cumulative_count": 2,
+                "upper_bound": 1
+              },
+              {
+                "cumulative_count": 2,
+                "upper_bound": 2.5
+              },
+              {
+                "cumulative_count": 2,
+                "upper_bound": 5
+              },
+              {
+                "cumulative_count": 2,
+                "upper_bound": 10
+              }
+            ],
+            "count": 2,
+            "sum": 0.052830903
+          }
+        },
+        {
+          "labels": {
+            "code": "201",
+            "method": "POST",
+            "url": "/v1/actions/apply"
+          },
+          "name": "nexus_gateway_request_duration_seconds",
+          "type": "histogram",
+          "value": {
+            "buckets": [
+              {
+                "cumulative_count": 0,
+                "upper_bound": 0.005
+              },
+              {
+                "cumulative_count": 1,
+                "upper_bound": 0.01
+              },
+              {
+                "cumulative_count": 1,
+                "upper_bound": 0.025
+              },
+              {
+                "cumulative_count": 1,
+                "upper_bound": 0.05
+              },
+              {
+                "cumulative_count": 1,
+                "upper_bound": 0.1
+              },
+              {
+                "cumulative_count": 1,
+                "upper_bound": 0.25
+              },
+              {
+                "cumulative_count": 1,
+                "upper_bound": 0.5
+              },
+              {
+                "cumulative_count": 1,
+                "upper_bound": 1
+              },
+              {
+                "cumulative_count": 1,
+                "upper_bound": 2.5
+              },
+              {
+                "cumulative_count": 1,
+                "upper_bound": 5
+              },
+              {
+                "cumulative_count": 1,
+                "upper_bound": 10
+              }
+            ],
+            "count": 1,
+            "sum": 0.005808081
+          }
+        },
+        {
+          "labels": {
+            "code": "201",
+            "method": "POST",
+            "url": "/v1/incidents"
+          },
+          "name": "nexus_gateway_request_duration_seconds",
+          "type": "histogram",
+          "value": {
+            "buckets": [
+              {
+                "cumulative_count": 1,
+                "upper_bound": 0.005
+              },
+              {
+                "cumulative_count": 1,
+                "upper_bound": 0.01
+              },
+              {
+                "cumulative_count": 1,
+                "upper_bound": 0.025
+              },
+              {
+                "cumulative_count": 1,
+                "upper_bound": 0.05
+              },
+              {
+                "cumulative_count": 1,
+                "upper_bound": 0.1
+              },
+              {
+                "cumulative_count": 1,
+                "upper_bound": 0.25
+              },
+              {
+                "cumulative_count": 1,
+                "upper_bound": 0.5
+              },
+              {
+                "cumulative_count": 1,
+                "upper_bound": 1
+              },
+              {
+                "cumulative_count": 1,
+                "upper_bound": 2.5
+              },
+              {
+                "cumulative_count": 1,
+                "upper_bound": 5
+              },
+              {
+                "cumulative_count": 1,
+                "upper_bound": 10
+              }
+            ],
+            "count": 1,
+            "sum": 0.002044432
+          }
+        },
+        {
+          "labels": {
+            "code": "201",
+            "method": "POST",
+            "url": "/v1/policy-proposals"
+          },
+          "name": "nexus_gateway_request_duration_seconds",
+          "type": "histogram",
+          "value": {
+            "buckets": [
+              {
+                "cumulative_count": 1,
+                "upper_bound": 0.005
+              },
+              {
+                "cumulative_count": 1,
+                "upper_bound": 0.01
+              },
+              {
+                "cumulative_count": 1,
+                "upper_bound": 0.025
+              },
+              {
+                "cumulative_count": 1,
+                "upper_bound": 0.05
+              },
+              {
+                "cumulative_count": 1,
+                "upper_bound": 0.1
+              },
+              {
+                "cumulative_count": 1,
+                "upper_bound": 0.25
+              },
+              {
+                "cumulative_count": 1,
+                "upper_bound": 0.5
+              },
+              {
+                "cumulative_count": 1,
+                "upper_bound": 1
+              },
+              {
+                "cumulative_count": 1,
+                "upper_bound": 2.5
+              },
+              {
+                "cumulative_count": 1,
+                "upper_bound": 5
+              },
+              {
+                "cumulative_count": 1,
+                "upper_bound": 10
+              }
+            ],
+            "count": 1,
+            "sum": 0.00163701
+          }
+        },
+        {
+          "labels": {
+            "code": "401",
+            "method": "GET",
+            "url": "/v1/events"
+          },
+          "name": "nexus_gateway_request_duration_seconds",
+          "type": "histogram",
+          "value": {
+            "buckets": [
+              {
+                "cumulative_count": 1,
+                "upper_bound": 0.005
+              },
+              {
+                "cumulative_count": 1,
+                "upper_bound": 0.01
+              },
+              {
+                "cumulative_count": 1,
+                "upper_bound": 0.025
+              },
+              {
+                "cumulative_count": 1,
+                "upper_bound": 0.05
+              },
+              {
+                "cumulative_count": 1,
+                "upper_bound": 0.1
+              },
+              {
+                "cumulative_count": 1,
+                "upper_bound": 0.25
+              },
+              {
+                "cumulative_count": 1,
+                "upper_bound": 0.5
+              },
+              {
+                "cumulative_count": 1,
+                "upper_bound": 1
+              },
+              {
+                "cumulative_count": 1,
+                "upper_bound": 2.5
+              },
+              {
+                "cumulative_count": 1,
+                "upper_bound": 5
+              },
+              {
+                "cumulative_count": 1,
+                "upper_bound": 10
+              }
+            ],
+            "count": 1,
+            "sum": 0.001253291
+          }
+        },
+        {
+          "labels": {
+            "code": "403",
+            "method": "POST",
+            "url": "/v1/run"
+          },
+          "name": "nexus_gateway_request_duration_seconds",
+          "type": "histogram",
+          "value": {
+            "buckets": [
+              {
+                "cumulative_count": 218,
+                "upper_bound": 0.005
+              },
+              {
+                "cumulative_count": 220,
+                "upper_bound": 0.01
+              },
+              {
+                "cumulative_count": 220,
+                "upper_bound": 0.025
+              },
+              {
+                "cumulative_count": 220,
+                "upper_bound": 0.05
+              },
+              {
+                "cumulative_count": 220,
+                "upper_bound": 0.1
+              },
+              {
+                "cumulative_count": 220,
+                "upper_bound": 0.25
+              },
+              {
+                "cumulative_count": 220,
+                "upper_bound": 0.5
+              },
+              {
+                "cumulative_count": 220,
+                "upper_bound": 1
+              },
+              {
+                "cumulative_count": 220,
+                "upper_bound": 2.5
+              },
+              {
+                "cumulative_count": 220,
+                "upper_bound": 5
+              },
+              {
+                "cumulative_count": 220,
+                "upper_bound": 10
+              }
+            ],
+            "count": 220,
+            "sum": 0.5868069079999999
+          }
+        },
+        {
+          "labels": {},
+          "name": "nexus_gateway_request_size_bytes",
+          "type": "summary",
+          "value": {
+            "count": 4108,
+            "quantiles": [],
+            "sum": 2082208
+          }
+        },
+        {
+          "labels": {
+            "code": "200",
+            "handler": "nexus-core/internal/audit.(*Handler).query-fm",
+            "host": "localhost:8080",
+            "method": "GET",
+            "url": "/v1/audit"
+          },
+          "name": "nexus_gateway_requests_total",
+          "type": "counter",
+          "value": 15
+        },
+        {
+          "labels": {
+            "code": "200",
+            "handler": "nexus-core/internal/events.(*Handler).list-fm",
+            "host": "nexus-core:8080",
+            "method": "GET",
+            "url": "/v1/events"
+          },
+          "name": "nexus_gateway_requests_total",
+          "type": "counter",
+          "value": 116
+        },
+        {
+          "labels": {
+            "code": "200",
+            "handler": "nexus-core/internal/gateway.(*Handler).run-fm",
+            "host": "localhost:8080",
+            "method": "POST",
+            "url": "/v1/run"
+          },
+          "name": "nexus_gateway_requests_total",
+          "type": "counter",
+          "value": 3000
+        },
+        {
+          "labels": {
+            "code": "200",
+            "handler": "nexus-core/internal/tool.(*Handler).list-fm",
+            "host": "localhost:8080",
+            "method": "GET",
+            "url": "/v1/tools"
+          },
+          "name": "nexus_gateway_requests_total",
+          "type": "counter",
+          "value": 9
+        },
+        {
+          "labels": {
+            "code": "200",
+            "handler": "nexus-core/internal/toolab.(*Handler).manifest-fm",
+            "host": "localhost:8080",
+            "method": "GET",
+            "url": "/_toolab/manifest"
+          },
+          "name": "nexus_gateway_requests_total",
+          "type": "counter",
+          "value": 4
+        },
+        {
+          "labels": {
+            "code": "200",
+            "handler": "nexus-core/internal/toolab.(*Handler).metrics-fm",
+            "host": "localhost:8080",
+            "method": "GET",
+            "url": "/_toolab/metrics"
+          },
+          "name": "nexus_gateway_requests_total",
+          "type": "counter",
+          "value": 2
+        },
+        {
+          "labels": {
+            "code": "200",
+            "handler": "nexus-core/internal/toolab.(*Handler).stateFingerprint-fm",
+            "host": "localhost:8080",
+            "method": "GET",
+            "url": "/_toolab/state/fingerprint"
+          },
+          "name": "nexus_gateway_requests_total",
+          "type": "counter",
+          "value": 3
+        },
+        {
+          "labels": {
+            "code": "200",
+            "handler": "nexus-core/internal/world.(*Handler).createRun-fm",
+            "host": "localhost:8080",
+            "method": "POST",
+            "url": "/v1/world/run/create"
+          },
+          "name": "nexus_gateway_requests_total",
+          "type": "counter",
+          "value": 2
+        },
+        {
+          "labels": {
+            "code": "200",
+            "handler": "nexus-core/internal/world.(*Handler).events-fm",
+            "host": "localhost:8080",
+            "method": "GET",
+            "url": "/v1/world/events"
+          },
+          "name": "nexus_gateway_requests_total",
+          "type": "counter",
+          "value": 47
+        },
+        {
+          "labels": {
+            "code": "200",
+            "handler": "nexus-core/internal/world.(*Handler).listRuns-fm",
+            "host": "localhost:8080",
+            "method": "GET",
+            "url": "/v1/world/runs"
+          },
+          "name": "nexus_gateway_requests_total",
+          "type": "counter",
+          "value": 2
+        },
+        {
+          "labels": {
+            "code": "200",
+            "handler": "nexus-core/internal/world.(*Handler).replay-fm",
+            "host": "localhost:8080",
+            "method": "POST",
+            "url": "/v1/world/replay"
+          },
+          "name": "nexus_gateway_requests_total",
+          "type": "counter",
+          "value": 2
+        },
+        {
+          "labels": {
+            "code": "200",
+            "handler": "nexus-core/internal/world.(*Handler).state-fm",
+            "host": "localhost:8080",
+            "method": "GET",
+            "url": "/v1/world/state"
+          },
+          "name": "nexus_gateway_requests_total",
+          "type": "counter",
+          "value": 10
+        },
+        {
+          "labels": {
+            "code": "200",
+            "handler": "nexus-core/wire.NewRouter.func1",
+            "host": "localhost:8080",
+            "method": "GET",
+            "url": "/healthz"
+          },
+          "name": "nexus_gateway_requests_total",
+          "type": "counter",
+          "value": 54
+        },
+        {
+          "labels": {
+            "code": "200",
+            "handler": "nexus-core/wire.NewRouter.func2",
+            "host": "localhost:8080",
+            "method": "GET",
+            "url": "/readyz"
+          },
+          "name": "nexus_gateway_requests_total",
+          "type": "counter",
+          "value": 618
+        },
+        {
+          "labels": {
+            "code": "201",
+            "handler": "nexus-core/internal/actions.(*Handler).apply-fm",
+            "host": "nexus-core:8080",
+            "method": "POST",
+            "url": "/v1/actions/apply"
+          },
+          "name": "nexus_gateway_requests_total",
+          "type": "counter",
+          "value": 1
+        },
+        {
+          "labels": {
+            "code": "201",
+            "handler": "nexus-core/internal/incidents.(*Handler).create-fm",
+            "host": "nexus-core:8080",
+            "method": "POST",
+            "url": "/v1/incidents"
+          },
+          "name": "nexus_gateway_requests_total",
+          "type": "counter",
+          "value": 1
+        },
+        {
+          "labels": {
+            "code": "201",
+            "handler": "nexus-core/internal/policyproposal.(*Handler).create-fm",
+            "host": "nexus-core:8080",
+            "method": "POST",
+            "url": "/v1/policy-proposals"
+          },
+          "name": "nexus_gateway_requests_total",
+          "type": "counter",
+          "value": 1
+        },
+        {
+          "labels": {
+            "code": "401",
+            "handler": "nexus-core/internal/events.(*Handler).list-fm",
+            "host": "nexus-core:8080",
+            "method": "GET",
+            "url": "/v1/events"
+          },
+          "name": "nexus_gateway_requests_total",
+          "type": "counter",
+          "value": 1
+        },
+        {
+          "labels": {
+            "code": "403",
+            "handler": "nexus-core/internal/gateway.(*Handler).run-fm",
+            "host": "localhost:8080",
+            "method": "POST",
+            "url": "/v1/run"
+          },
+          "name": "nexus_gateway_requests_total",
+          "type": "counter",
+          "value": 220
+        },
+        {
+          "labels": {},
+          "name": "nexus_gateway_response_size_bytes",
+          "type": "summary",
+          "value": {
+            "count": 4108,
+            "quantiles": [],
+            "sum": 10978178
+          }
+        },
+        {
+          "labels": {
+            "decision": "allow",
+            "status": "success",
+            "tool_name": "world.move"
+          },
+          "name": "nexus_run_latency_ms_prom",
+          "type": "histogram",
+          "value": {
+            "buckets": [
+              {
+                "cumulative_count": 2938,
+                "upper_bound": 10
+              },
+              {
+                "cumulative_count": 2938,
+                "upper_bound": 25
+              },
+              {
+                "cumulative_count": 2939,
+                "upper_bound": 50
+              },
+              {
+                "cumulative_count": 2940,
+                "upper_bound": 100
+              },
+              {
+                "cumulative_count": 2940,
+                "upper_bound": 250
+              },
+              {
+                "cumulative_count": 2940,
+                "upper_bound": 500
+              },
+              {
+                "cumulative_count": 2940,
+                "upper_bound": 1000
+              },
+              {
+                "cumulative_count": 2940,
+                "upper_bound": 2500
+              },
+              {
+                "cumulative_count": 2940,
+                "upper_bound": 5000
+              },
+              {
+                "cumulative_count": 2940,
+                "upper_bound": 10000
+              }
+            ],
+            "count": 2940,
+            "sum": 10083
+          }
+        },
+        {
+          "labels": {
+            "decision": "allow",
+            "status": "success",
+            "tool_name": "world.observe"
+          },
+          "name": "nexus_run_latency_ms_prom",
+          "type": "histogram",
+          "value": {
+            "buckets": [
+              {
+                "cumulative_count": 60,
+                "upper_bound": 10
+              },
+              {
+                "cumulative_count": 60,
+                "upper_bound": 25
+              },
+              {
+                "cumulative_count": 60,
+                "upper_bound": 50
+              },
+              {
+                "cumulative_count": 60,
+                "upper_bound": 100
+              },
+              {
+                "cumulative_count": 60,
+                "upper_bound": 250
+              },
+              {
+                "cumulative_count": 60,
+                "upper_bound": 500
+              },
+              {
+                "cumulative_count": 60,
+                "upper_bound": 1000
+              },
+              {
+                "cumulative_count": 60,
+                "upper_bound": 2500
+              },
+              {
+                "cumulative_count": 60,
+                "upper_bound": 5000
+              },
+              {
+                "cumulative_count": 60,
+                "upper_bound": 10000
+              }
+            ],
+            "count": 60,
+            "sum": 125
+          }
+        },
+        {
+          "labels": {
+            "decision": "deny",
+            "status": "blocked",
+            "tool_name": "world.move"
+          },
+          "name": "nexus_run_latency_ms_prom",
+          "type": "histogram",
+          "value": {
+            "buckets": [
+              {
+                "cumulative_count": 60,
+                "upper_bound": 10
+              },
+              {
+                "cumulative_count": 60,
+                "upper_bound": 25
+              },
+              {
+                "cumulative_count": 60,
+                "upper_bound": 50
+              },
+              {
+                "cumulative_count": 60,
+                "upper_bound": 100
+              },
+              {
+                "cumulative_count": 60,
+                "upper_bound": 250
+              },
+              {
+                "cumulative_count": 60,
+                "upper_bound": 500
+              },
+              {
+                "cumulative_count": 60,
+                "upper_bound": 1000
+              },
+              {
+                "cumulative_count": 60,
+                "upper_bound": 2500
+              },
+              {
+                "cumulative_count": 60,
+                "upper_bound": 5000
+              },
+              {
+                "cumulative_count": 60,
+                "upper_bound": 10000
+              }
+            ],
+            "count": 60,
+            "sum": 1
+          }
+        },
+        {
+          "labels": {
+            "decision": "deny",
+            "status": "blocked",
+            "tool_name": "world.observe"
+          },
+          "name": "nexus_run_latency_ms_prom",
+          "type": "histogram",
+          "value": {
+            "buckets": [
+              {
+                "cumulative_count": 160,
+                "upper_bound": 10
+              },
+              {
+                "cumulative_count": 160,
+                "upper_bound": 25
+              },
+              {
+                "cumulative_count": 160,
+                "upper_bound": 50
+              },
+              {
+                "cumulative_count": 160,
+                "upper_bound": 100
+              },
+              {
+                "cumulative_count": 160,
+                "upper_bound": 250
+              },
+              {
+                "cumulative_count": 160,
+                "upper_bound": 500
+              },
+              {
+                "cumulative_count": 160,
+                "upper_bound": 1000
+              },
+              {
+                "cumulative_count": 160,
+                "upper_bound": 2500
+              },
+              {
+                "cumulative_count": 160,
+                "upper_bound": 5000
+              },
+              {
+                "cumulative_count": 160,
+                "upper_bound": 10000
+              }
+            ],
+            "count": 160,
+            "sum": 0
+          }
+        },
+        {
+          "labels": {
+            "decision": "allow",
+            "status": "success",
+            "tool_name": "world.move"
+          },
+          "name": "nexus_run_total_prom",
+          "type": "counter",
+          "value": 2940
+        },
+        {
+          "labels": {
+            "decision": "allow",
+            "status": "success",
+            "tool_name": "world.observe"
+          },
+          "name": "nexus_run_total_prom",
+          "type": "counter",
+          "value": 60
+        },
+        {
+          "labels": {
+            "decision": "deny",
+            "status": "blocked",
+            "tool_name": "world.move"
+          },
+          "name": "nexus_run_total_prom",
+          "type": "counter",
+          "value": 60
+        },
+        {
+          "labels": {
+            "decision": "deny",
+            "status": "blocked",
+            "tool_name": "world.observe"
+          },
+          "name": "nexus_run_total_prom",
+          "type": "counter",
+          "value": 160
+        },
+        {
+          "labels": {},
+          "name": "process_cpu_seconds_total",
+          "type": "counter",
+          "value": 6.63
+        },
+        {
+          "labels": {},
+          "name": "process_max_fds",
+          "type": "gauge",
+          "value": 1048576
+        },
+        {
+          "labels": {},
+          "name": "process_network_receive_bytes_total",
+          "type": "counter",
+          "value": 31040692
+        },
+        {
+          "labels": {},
+          "name": "process_network_transmit_bytes_total",
+          "type": "counter",
+          "value": 28487109
+        },
+        {
+          "labels": {},
+          "name": "process_open_fds",
+          "type": "gauge",
+          "value": 12
+        },
+        {
+          "labels": {},
+          "name": "process_resident_memory_bytes",
+          "type": "gauge",
+          "value": 33099776
+        },
+        {
+          "labels": {},
+          "name": "process_start_time_seconds",
+          "type": "gauge",
+          "value": 1772052194.67
+        },
+        {
+          "labels": {},
+          "name": "process_virtual_memory_bytes",
+          "type": "gauge",
+          "value": 1295884288
+        },
+        {
+          "labels": {},
+          "name": "process_virtual_memory_max_bytes",
+          "type": "gauge",
+          "value": 18446744073709552000
+        },
+        {
+          "labels": {},
+          "name": "promhttp_metric_handler_requests_in_flight",
+          "type": "gauge",
+          "value": 0
+        },
+        {
+          "labels": {
+            "code": "200"
+          },
+          "name": "promhttp_metric_handler_requests_total",
+          "type": "counter",
+          "value": 78
+        },
+        {
+          "labels": {
+            "code": "500"
+          },
+          "name": "promhttp_metric_handler_requests_total",
+          "type": "counter",
+          "value": 0
+        },
+        {
+          "labels": {
+            "code": "503"
+          },
+          "name": "promhttp_metric_handler_requests_total",
+          "type": "counter",
+          "value": 0
+        }
+      ],
+      "adapter_post_fingerprint": "sha256:41ee2047e8e72d278753cb4a0baae21ae2a01290cebde0a8c029b32ca650f516"
+    }
+  },
+  "assertions": {
+    "overall": "PASS",
+    "rules": [
+      {
+        "id": "threshold_error_rate",
+        "type": "threshold_error_rate",
+        "passed": true,
+        "observed": 0.025000000000000022,
+        "expected": 0.15,
+        "message": "error_rate 0.025000 \u003c= 0.150000"
+      },
+      {
+        "id": "threshold_p95_ms",
+        "type": "threshold_p95_ms",
+        "passed": true,
+        "observed": 50,
+        "expected": 500,
+        "message": "p95_ms 50 \u003c= 500"
+      },
+      {
+        "id": "invariant_00_no_5xx_allowed",
+        "type": "no_5xx_allowed",
+        "passed": true,
+        "observed": 0,
+        "expected": 0,
+        "message": "5xx_count=0"
+      },
+      {
+        "id": "invariant_01_max_4xx_rate",
+        "type": "max_4xx_rate",
+        "passed": true,
+        "observed": 0,
+        "expected": 0.1,
+        "message": "4xx_rate=0.000000"
+      }
+    ],
+    "violated_rules": []
+  },
+  "unknowns": [
+    "metrics_snapshot unavailable: not configured",
+    "trace_refs unavailable: not configured",
+    "logs_excerpt unavailable: not configured"
+  ],
+  "redaction_summary": {
+    "headers_redacted": [
+      "authorization",
+      "cookie",
+      "set-cookie",
+      "x-api-key",
+      "x-nexus-gateway-key",
+      "date"
+    ],
+    "json_paths_redacted": [],
+    "mask": "***REDACTED***",
+    "max_body_preview_bytes": 4096,
+    "max_samples": 50
+  },
+  "repro": {
+    "command": "toolab run ../scenarios/nexus_health.yaml --out ../golden_runs",
+    "script_path": "../golden_runs/903a4a67bfbb4a2597716ab8cc476c818da842bfc09405fef81d6e186c8808f9/repro.sh",
+    "expected_deterministic_fingerprint": "316aaba15faf3f431ba5ebc85ee2068eeffffaa3e43daf29b8bf6e54c67e7d8e"
+  },
+  "environment": {
+    "go_version": "go1.25.7",
+    "os": "linux",
+    "arch": "amd64",
+    "http_client": {
+      "redirects": "disabled"
+    }
+  },
+  "deterministic_fingerprint": "316aaba15faf3f431ba5ebc85ee2068eeffffaa3e43daf29b8bf6e54c67e7d8e"
+}

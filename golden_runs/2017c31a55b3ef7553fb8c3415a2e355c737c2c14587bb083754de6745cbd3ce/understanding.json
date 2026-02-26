@@ -1,0 +1,184 @@
+{
+  "schema_version": 1,
+  "run_ref": {
+    "run_id": "2017c31a55b3ef7553fb8c3415a2e355c737c2c14587bb083754de6745cbd3ce",
+    "evidence_path": "../golden_runs/2017c31a55b3ef7553fb8c3415a2e355c737c2c14587bb083754de6745cbd3ce/evidence.json"
+  },
+  "sections": {
+    "what_is": {
+      "summary": "Service identified as unknown-service (version 0.1.0).",
+      "anchors": [
+        {
+          "type": "json_pointer",
+          "value": "/service_identity"
+        }
+      ]
+    },
+    "how_to_use": {
+      "summary": "Suggested flows: flow_001",
+      "anchors": [
+        {
+          "type": "json_pointer",
+          "value": "/flows"
+        }
+      ]
+    },
+    "what_was_tested": {
+      "summary": "Scenario 59790cc1a9b15d1ac2faa9ffcb002b1bc8ed3050ef5a153ac7d9f8573fc81647 executed with 10 planned requests and 10 completed.",
+      "anchors": [
+        {
+          "type": "json_pointer",
+          "value": "/scenario_fingerprint/scenario_sha256"
+        },
+        {
+          "type": "json_pointer",
+          "value": "/execution/planned_requests"
+        },
+        {
+          "type": "json_pointer",
+          "value": "/execution/completed_requests"
+        }
+      ]
+    },
+    "what_happened": {
+      "summary": "Observed error_rate=1.0000, p50=0ms, p95=0ms, p99=0ms.",
+      "anchors": [
+        {
+          "type": "json_pointer",
+          "value": "/stats/error_rate"
+        },
+        {
+          "type": "json_pointer",
+          "value": "/stats/p50_ms"
+        },
+        {
+          "type": "json_pointer",
+          "value": "/stats/p95_ms"
+        },
+        {
+          "type": "json_pointer",
+          "value": "/stats/p99_ms"
+        }
+      ]
+    },
+    "what_failed": {
+      "summary": "Violated rules: threshold_error_rate",
+      "anchors": [
+        {
+          "type": "json_pointer",
+          "value": "/assertions/violated_rules"
+        }
+      ]
+    },
+    "what_is_proven": {
+      "summary": "Assertions did not fully pass.",
+      "anchors": [
+        {
+          "type": "json_pointer",
+          "value": "/assertions/overall"
+        }
+      ]
+    },
+    "what_is_unknown": {
+      "summary": "unknowns: discovery unavailable: map derived from observed outcomes only; logs_excerpt unavailable: not configured; metrics_snapshot unavailable: not configured; trace_refs unavailable: not configured",
+      "anchors": [
+        {
+          "type": "json_pointer",
+          "value": "/unknowns"
+        }
+      ]
+    },
+    "how_to_reproduce": {
+      "summary": "Reproduce with: toolab run ../testdata/e2e/scenario.yaml --out ../golden_runs (expected fingerprint 5deef5b7c84e8a65c66837f5f10525c4f0d71b62a42291476daccfbf51c68d98).",
+      "anchors": [
+        {
+          "type": "json_pointer",
+          "value": "/repro/command"
+        },
+        {
+          "type": "json_pointer",
+          "value": "/deterministic_fingerprint"
+        }
+      ]
+    }
+  },
+  "claims": [
+    {
+      "statement": "Assertion overall result is FAIL.",
+      "status": "supported",
+      "anchors": [
+        {
+          "type": "json_pointer",
+          "value": "/assertions/overall"
+        }
+      ],
+      "missing_evidence": []
+    },
+    {
+      "statement": "P95 latency = 0ms.",
+      "status": "supported",
+      "anchors": [
+        {
+          "type": "json_pointer",
+          "value": "/stats/p95_ms"
+        }
+      ],
+      "missing_evidence": []
+    },
+    {
+      "statement": "Some claims cannot be supported with available evidence.",
+      "status": "unknown",
+      "anchors": [
+        {
+          "type": "json_pointer",
+          "value": "/unknowns"
+        }
+      ],
+      "missing_evidence": [
+        "discovery unavailable: map derived from observed outcomes only",
+        "logs_excerpt unavailable: not configured",
+        "metrics_snapshot unavailable: not configured",
+        "trace_refs unavailable: not configured"
+      ]
+    },
+    {
+      "statement": "Total requests = 10.",
+      "status": "supported",
+      "anchors": [
+        {
+          "type": "json_pointer",
+          "value": "/stats/total_requests"
+        }
+      ],
+      "missing_evidence": []
+    }
+  ],
+  "unknowns": [
+    "discovery unavailable: map derived from observed outcomes only",
+    "logs_excerpt unavailable: not configured",
+    "metrics_snapshot unavailable: not configured",
+    "trace_refs unavailable: not configured"
+  ],
+  "anchors": [
+    {
+      "type": "json_pointer",
+      "value": "/assertions/overall"
+    },
+    {
+      "type": "json_pointer",
+      "value": "/stats/p95_ms"
+    },
+    {
+      "type": "json_pointer",
+      "value": "/stats/total_requests"
+    },
+    {
+      "type": "json_pointer",
+      "value": "/unknowns"
+    }
+  ],
+  "determinism": {
+    "canonical_writer_version": "understanding-json-v1",
+    "understanding_fingerprint": "678d3a6f7aa0aa4739092a36a238ded57f65a41a998768b0943a7881d3b43612"
+  }
+}

@@ -1,0 +1,37 @@
+{
+  "schema_version": 1,
+  "service_identity": {
+    "name": "unknown-service",
+    "version": "0.1.0",
+    "environment": "unknown"
+  },
+  "resources": [],
+  "endpoints": [
+    {
+      "method": "GET",
+      "path": "/health"
+    }
+  ],
+  "flows": [
+    {
+      "id": "flow_001",
+      "requests": [
+        {
+          "method": "GET",
+          "path": "/health"
+        }
+      ]
+    }
+  ],
+  "invariants": [],
+  "limits": {},
+  "unknowns": [
+    "discovery unavailable: map derived from observed outcomes only"
+  ],
+  "anchors": [],
+  "partial": true,
+  "determinism": {
+    "canonical_writer_version": "system-map-json-v1",
+    "system_map_fingerprint": "973b78868ab49613af7836fc72153e59084f3dc671f00d9d1c3fbbf19c5ef39c"
+  }
+}
