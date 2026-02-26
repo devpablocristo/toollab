@@ -2,7 +2,6 @@ package app
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -22,8 +21,8 @@ type GenerateConfig struct {
 	OpenAPIFile          string
 	OpenAPIAuthFlag      string
 	TargetBaseURL        string
-	ToollabURL            string
-	ToollabAuthFlag       string
+	ToollabURL           string
+	ToollabAuthFlag      string
 	OutPath              string
 	Seed                 string
 	Mode                 string
@@ -33,7 +32,7 @@ type GenerateConfig struct {
 	RequiredCapabilities []string
 	Print                bool
 	DryRun               bool
-	ToollabVersion        string
+	ToollabVersion       string
 }
 
 type GenerateResult struct {
@@ -154,7 +153,7 @@ func GenerateScenario(ctx context.Context, cfg GenerateConfig) (*GenerateResult,
 		}
 		build, bErr := generate.BuildFromToollab(ctx, toollabFetcher, openapiFetcher, toollabAuth, generate.ToollabOptions{
 			TargetBaseURL:        cfg.TargetBaseURL,
-			ToollabURL:            toollabBase,
+			ToollabURL:           toollabBase,
 			Prefer:               cfg.Prefer,
 			FlowSource:           cfg.FlowSource,
 			Mode:                 cfg.Mode,
@@ -185,7 +184,7 @@ func GenerateScenario(ctx context.Context, cfg GenerateConfig) (*GenerateResult,
 	}
 
 	metaDoc := meta.Document{
-		Operation:     "generate",
+		Operation:      "generate",
 		ToollabVersion: cfg.ToollabVersion,
 		Seed: meta.SeedInfo{
 			Provided:   cfg.Seed != "",
@@ -267,7 +266,7 @@ func resolveSeed(userSeed string, inputs map[string]string, cfg GenerateConfig) 
 		"merge_strategy":        "",
 		"base_url_override":     cfg.BaseURLOverride,
 		"target_base_url":       cfg.TargetBaseURL,
-		"toollab_url":            cfg.ToollabURL,
+		"toollab_url":           cfg.ToollabURL,
 		"required_capabilities": cfg.RequiredCapabilities,
 	}
 	seed, _, err := meta.DeriveSeed(meta.SeedInput{
@@ -318,12 +317,4 @@ func missingCapabilities(declared, required []string) []string {
 	}
 	sort.Strings(missing)
 	return missing
-}
-
-func ReadJSONFile(path string, out any) error {
-	raw, err := os.ReadFile(path)
-	if err != nil {
-		return err
-	}
-	return json.Unmarshal(raw, out)
 }

@@ -1,7 +1,6 @@
 package generate
 
 import (
-	"context"
 	"crypto/sha256"
 	"encoding/binary"
 	"fmt"
@@ -11,7 +10,6 @@ import (
 
 	"gopkg.in/yaml.v3"
 
-	"toollab-core/internal/discovery"
 	"toollab-core/internal/gen"
 	"toollab-core/internal/scenario"
 )
@@ -21,18 +19,6 @@ type OpenAPIOptions struct {
 	BaseURL       string
 	EffectiveSeed string
 	Input         string
-}
-
-func BuildFromOpenAPI(ctx context.Context, fetcher *discovery.OpenAPIFetcher, auth *discovery.AuthConfig, opts OpenAPIOptions) (*scenario.Scenario, string, []string, error) {
-	doc, openapiHash, _, warnings, err := fetcher.Fetch(ctx, opts.Input, auth)
-	if err != nil {
-		return nil, "", warnings, err
-	}
-	scn, extraWarnings, err := BuildFromOpenAPIDoc(doc, opts)
-	if err != nil {
-		return nil, "", append(warnings, extraWarnings...), err
-	}
-	return scn, openapiHash, append(warnings, extraWarnings...), nil
 }
 
 func BuildFromOpenAPIDoc(doc *gen.OpenAPIDoc, opts OpenAPIOptions) (*scenario.Scenario, []string, error) {

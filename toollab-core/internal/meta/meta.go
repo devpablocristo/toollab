@@ -6,11 +6,8 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
-	"net/url"
-	"path/filepath"
 	"sort"
 	"strconv"
-	"strings"
 	"time"
 
 	"toollab-core/pkg/utils"
@@ -20,19 +17,19 @@ const SchemaVersion = 1
 const CanonicalWriterVersion = "meta-json-v1"
 
 type Document struct {
-	SchemaVersion int            `json:"schema_version"`
-	Operation     string         `json:"operation"`
+	SchemaVersion  int            `json:"schema_version"`
+	Operation      string         `json:"operation"`
 	ToollabVersion string         `json:"toollab_version"`
-	Seed          SeedInfo       `json:"seed"`
-	Source        SourceInfo     `json:"source"`
-	Hashes        HashesInfo     `json:"hashes"`
-	Options       map[string]any `json:"options"`
-	Capabilities  CapabilityInfo `json:"capabilities"`
-	Warnings      []string       `json:"warnings"`
-	Unknowns      []string       `json:"unknowns"`
-	Changes       []Change       `json:"changes,omitempty"`
-	Determinism   Determinism    `json:"determinism"`
-	GeneratedAt   string         `json:"generated_at_utc"`
+	Seed           SeedInfo       `json:"seed"`
+	Source         SourceInfo     `json:"source"`
+	Hashes         HashesInfo     `json:"hashes"`
+	Options        map[string]any `json:"options"`
+	Capabilities   CapabilityInfo `json:"capabilities"`
+	Warnings       []string       `json:"warnings"`
+	Unknowns       []string       `json:"unknowns"`
+	Changes        []Change       `json:"changes,omitempty"`
+	Determinism    Determinism    `json:"determinism"`
+	GeneratedAt    string         `json:"generated_at_utc"`
 }
 
 type SeedInfo struct {
@@ -85,31 +82,6 @@ type SeedInput struct {
 	Options map[string]any    `json:"options"`
 }
 
-func CanonicalURL(raw string) string {
-	u, err := url.Parse(raw)
-	if err != nil {
-		return raw
-	}
-	u.Host = strings.ToLower(u.Host)
-	u.Path = strings.TrimSuffix(u.Path, "/")
-	query := u.Query()
-	keys := make([]string, 0, len(query))
-	for k := range query {
-		keys = append(keys, k)
-	}
-	sort.Strings(keys)
-	ordered := url.Values{}
-	for _, k := range keys {
-		vals := append([]string(nil), query[k]...)
-		sort.Strings(vals)
-		for _, v := range vals {
-			ordered.Add(k, v)
-		}
-	}
-	u.RawQuery = ordered.Encode()
-	return u.String()
-}
-
 func DeriveSeed(input SeedInput) (string, string, error) {
 	canonical, err := utils.CanonicalJSON(input)
 	if err != nil {
@@ -149,11 +121,4 @@ func SortStrings(values []string) []string {
 	cp := append([]string(nil), values...)
 	sort.Strings(cp)
 	return cp
-}
-
-func NormalizeOutputPath(path string) string {
-	if path == "" {
-		return path
-	}
-	return filepath.Clean(path)
 }

@@ -29,7 +29,7 @@ func main() {
 		// Backward compatibility: gen behaves as generate --from openapi.
 		genArgs := append([]string{"--from", "openapi"}, os.Args[2:]...)
 		if len(os.Args) >= 3 && !strings.HasPrefix(os.Args[2], "-") {
-			// Legacy style: toollab gen <openapi-spec>
+			// Positional shorthand: toollab gen <openapi-spec>
 			genArgs = []string{"--from", "openapi", "--openapi-file", os.Args[2]}
 			genArgs = append(genArgs, os.Args[3:]...)
 		}
@@ -158,8 +158,8 @@ func handleGenerate(args []string) error {
 		OpenAPIFile:          *openapiFile,
 		OpenAPIAuthFlag:      *openapiAuth,
 		TargetBaseURL:        *targetBaseURL,
-		ToollabURL:            *toollabURL,
-		ToollabAuthFlag:       *toollabAuth,
+		ToollabURL:           *toollabURL,
+		ToollabAuthFlag:      *toollabAuth,
 		OutPath:              *outPath,
 		Seed:                 *seed,
 		Mode:                 *mode,
@@ -205,9 +205,6 @@ func handleEnrich(args []string) error {
 	cmd := flag.NewFlagSet("enrich", flag.ContinueOnError)
 	var fromValues stringSlice
 	cmd.Var(&fromValues, "from", "enrichment source: openapi|toollab (repeatable)")
-	// backward-compatible booleans
-	useOpenAPILegacy := cmd.Bool("from-openapi", false, "enable openapi enrichment")
-	useToollabLegacy := cmd.Bool("from-toollab", false, "enable toollab enrichment")
 
 	openapiURL := cmd.String("openapi-url", "", "OpenAPI URL")
 	openapiFile := cmd.String("openapi-file", "", "OpenAPI file")
@@ -231,8 +228,8 @@ func handleEnrich(args []string) error {
 		baseScenarioPath = rest[0]
 	}
 
-	useOpenAPI := *useOpenAPILegacy
-	useToollab := *useToollabLegacy
+	useOpenAPI := false
+	useToollab := false
 	for _, from := range fromValues {
 		switch from {
 		case "openapi":
@@ -253,10 +250,10 @@ func handleEnrich(args []string) error {
 		OpenAPIURL:       *openapiURL,
 		OpenAPIFile:      *openapiFile,
 		OpenAPIAuthFlag:  *openapiAuth,
-		UseToollab:        useToollab,
+		UseToollab:       useToollab,
 		TargetBaseURL:    *targetBaseURL,
-		ToollabURL:        *toollabURL,
-		ToollabAuthFlag:   *toollabAuth,
+		ToollabURL:       *toollabURL,
+		ToollabAuthFlag:  *toollabAuth,
 		Seed:             *seed,
 		OutPath:          *outPath,
 		MergeStrategy:    enrich.Strategy(*mergeStrategy),
@@ -307,8 +304,8 @@ func handleMap(args []string) error {
 		OpenAPIInput:    input,
 		OpenAPIAuthFlag: *openapiAuth,
 		TargetBaseURL:   *targetBaseURL,
-		ToollabURL:       *toollabURL,
-		ToollabAuthFlag:  *toollabAuth,
+		ToollabURL:      *toollabURL,
+		ToollabAuthFlag: *toollabAuth,
 		OutPath:         *out,
 		Seed:            *seed,
 		Print:           *printOut,

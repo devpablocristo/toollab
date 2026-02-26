@@ -109,36 +109,6 @@ func TestClientStateFingerprint(t *testing.T) {
 	}
 }
 
-func TestClientStateSnapshot(t *testing.T) {
-	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.URL.Path == "/state/snapshot" && r.Method == http.MethodPost {
-			var body map[string]string
-			_ = json.NewDecoder(r.Body).Decode(&body)
-			w.WriteHeader(http.StatusCreated)
-			_ = json.NewEncoder(w).Encode(map[string]any{
-				"snapshot_id": "snap_001",
-				"fingerprint": "sha256:def456",
-				"label":       body["label"],
-			})
-			return
-		}
-		http.NotFound(w, r)
-	}))
-	defer srv.Close()
-
-	client := NewClient(srv.URL)
-	result, err := client.StateSnapshot(context.Background(), "pre-run")
-	if err != nil {
-		t.Fatal(err)
-	}
-	if result.SnapshotID != "snap_001" {
-		t.Errorf("expected snap_001, got %s", result.SnapshotID)
-	}
-	if result.Fingerprint != "sha256:def456" {
-		t.Errorf("expected sha256:def456, got %s", result.Fingerprint)
-	}
-}
-
 func TestClientMetrics(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path == "/metrics" && r.Method == http.MethodGet {

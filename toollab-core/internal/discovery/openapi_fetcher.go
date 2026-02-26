@@ -1,7 +1,6 @@
 package discovery
 
 import (
-	"bytes"
 	"compress/gzip"
 	"context"
 	"crypto/sha256"
@@ -193,8 +192,4 @@ func JSONHashCanonical(raw []byte) (string, []byte, error) {
 func HashBytes(raw []byte) string {
 	sum := sha256.Sum256(raw)
 	return hex.EncodeToString(sum[:])
-}
-
-func bytesTrimSpace(in []byte) []byte {
-	return bytes.TrimSpace(in)
 }

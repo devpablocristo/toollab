@@ -98,35 +98,6 @@ func (c *Client) StateFingerprint(ctx context.Context) (string, error) {
 	return resp.Fingerprint, nil
 }
 
-// SnapshotResult holds the response from a state snapshot.
-type SnapshotResult struct {
-	SnapshotID  string `json:"snapshot_id"`
-	Fingerprint string `json:"fingerprint"`
-}
-
-// StateSnapshot captures current state, returns snapshot ID + fingerprint.
-func (c *Client) StateSnapshot(ctx context.Context, label string) (*SnapshotResult, error) {
-	body := map[string]string{"label": label}
-	var resp SnapshotResult
-	if err := c.postJSON(ctx, "/state/snapshot", body, &resp); err != nil {
-		return nil, err
-	}
-	return &resp, nil
-}
-
-// StateRestore restores to a previous snapshot.
-func (c *Client) StateRestore(ctx context.Context, snapshotID string) error {
-	body := map[string]string{"snapshot_id": snapshotID}
-	var resp map[string]any
-	return c.postJSON(ctx, "/state/restore", body, &resp)
-}
-
-// StateReset restores to initial/seed state.
-func (c *Client) StateReset(ctx context.Context) error {
-	var resp map[string]any
-	return c.postJSON(ctx, "/state/reset", nil, &resp)
-}
-
 // --- Seed ---
 
 // SeedApply puts the target into deterministic mode.
