@@ -7,18 +7,16 @@
 //	    AppName:    "my-app",
 //	    AppVersion: "1.0.0",
 //	})
-//	http.Handle("/_toolab/", adapter.Handler())
-//
-// Usage with Gin:
-//
-//	adapter := toolab.NewAdapter(toolab.Config{...})
-//	adapter.RegisterGin(router.Group("/_toolab"))
+//	http.Handle("/_toolab/", http.StripPrefix("/_toolab", adapter.Handler()))
 package toolab
 
 import (
+	"crypto/sha256"
 	"database/sql"
+	"encoding/hex"
 	"encoding/json"
 	"net/http"
+	"sort"
 	"strconv"
 	"strings"
 	"sync"
@@ -26,10 +24,17 @@ import (
 )
 
 // Config configures the adapter. Only AppName and AppVersion are required.
-// All other fields enable optional capabilities.
+// Optional providers enable additional capabilities.
 type Config struct {
 	AppName    string
 	AppVersion string
+
+	// StandardVersion defaults to "1.1".
+	StandardVersion string
+
+	// BaseURL is used to generate absolute links in manifest/profile.
+	// If empty, base URL is derived from the incoming request.
+	BaseURL string
 
 	// DB enables state.fingerprint, state.snapshot, state.restore, state.reset.
 	// If nil, state capabilities are not advertised.
@@ -50,6 +55,14 @@ type Config struct {
 
 	// SeedProvider enables the "seed" capability.
 	SeedProvider SeedProvider
+
+	// Standard v1.1 discovery providers.
+	SchemaProvider         SchemaProvider
+	SuggestedFlowsProvider SuggestedFlowsProvider
+	InvariantsProvider     InvariantsProvider
+	LimitsProvider         LimitsProvider
+	EnvironmentProvider    EnvironmentProvider
+	OpenAPIProvider        OpenAPIProvider
 }
 
 // Adapter is the toolab adapter instance.
@@ -68,6 +81,9 @@ type snapshotMeta struct {
 
 // NewAdapter creates a new adapter with the given configuration.
 func NewAdapter(cfg Config) *Adapter {
+	if cfg.StandardVersion == "" {
+		cfg.StandardVersion = "1.1"
+	}
 	return &Adapter{
 		cfg:       cfg,
 		snapshots: make(map[string]snapshotMeta),
@@ -81,6 +97,28 @@ func NewAdapter(cfg Config) *Adapter {
 func (a *Adapter) Handler() http.Handler {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/manifest", a.handleManifest)
+
+	if a.hasProfile() {
+		mux.HandleFunc("/profile", a.handleProfile)
+	}
+	if a.cfg.SchemaProvider != nil {
+		mux.HandleFunc("/schema", a.handleSchema)
+	}
+	if a.cfg.OpenAPIProvider != nil {
+		mux.HandleFunc("/openapi", a.handleOpenAPI)
+	}
+	if a.cfg.SuggestedFlowsProvider != nil {
+		mux.HandleFunc("/suggested_flows", a.handleSuggestedFlows)
+	}
+	if a.cfg.InvariantsProvider != nil {
+		mux.HandleFunc("/invariants", a.handleInvariants)
+	}
+	if a.cfg.LimitsProvider != nil {
+		mux.HandleFunc("/limits", a.handleLimits)
+	}
+	if a.cfg.EnvironmentProvider != nil {
+		mux.HandleFunc("/environment", a.handleEnvironment)
+	}
 
 	if a.hasState() {
 		mux.HandleFunc("/state/fingerprint", a.handleStateFingerprint)
@@ -103,6 +141,29 @@ func (a *Adapter) Handler() http.Handler {
 	return mux
 }
 
+func (a *Adapter) hasState() bool {
+	return a.cfg.StateProvider != nil || a.cfg.DB != nil
+}
+
+func (a *Adapter) hasProfile() bool {
+	return a.cfg.SchemaProvider != nil ||
+		a.cfg.SuggestedFlowsProvider != nil ||
+		a.cfg.InvariantsProvider != nil ||
+		a.cfg.LimitsProvider != nil ||
+		a.cfg.EnvironmentProvider != nil ||
+		a.cfg.OpenAPIProvider != nil
+}
+
+func (a *Adapter) stateProvider() StateProvider {
+	if a.cfg.StateProvider != nil {
+		return a.cfg.StateProvider
+	}
+	if a.cfg.DB != nil {
+		return &defaultDBState{db: a.cfg.DB}
+	}
+	return nil
+}
+
 func (a *Adapter) capabilities() []string {
 	caps := make([]string, 0)
 	if a.hasState() {
@@ -120,21 +181,90 @@ func (a *Adapter) capabilities() []string {
 	if a.cfg.LogsProvider != nil {
 		caps = append(caps, "logs")
 	}
+	if a.hasProfile() {
+		caps = append(caps, "profile")
+	}
+	if a.cfg.SchemaProvider != nil {
+		caps = append(caps, "schema")
+	}
+	if a.cfg.OpenAPIProvider != nil {
+		caps = append(caps, "openapi")
+	}
+	if a.cfg.SuggestedFlowsProvider != nil {
+		caps = append(caps, "suggested_flows")
+	}
+	if a.cfg.InvariantsProvider != nil {
+		caps = append(caps, "invariants")
+	}
+	if a.cfg.LimitsProvider != nil {
+		caps = append(caps, "limits")
+	}
+	if a.cfg.EnvironmentProvider != nil {
+		caps = append(caps, "environment")
+	}
+	sort.Strings(caps)
 	return caps
 }
 
-func (a *Adapter) hasState() bool {
-	return a.cfg.StateProvider != nil || a.cfg.DB != nil
+func (a *Adapter) baseURL(r *http.Request) string {
+	if strings.TrimSpace(a.cfg.BaseURL) != "" {
+		return strings.TrimRight(strings.TrimSpace(a.cfg.BaseURL), "/")
+	}
+	scheme := "http"
+	if r != nil && r.TLS != nil {
+		scheme = "https"
+	}
+	if r != nil {
+		if forwarded := strings.TrimSpace(r.Header.Get("X-Forwarded-Proto")); forwarded != "" {
+			scheme = strings.ToLower(forwarded)
+		}
+		host := strings.TrimSpace(r.Host)
+		if host == "" {
+			host = "localhost"
+		}
+		return scheme + "://" + host
+	}
+	return ""
 }
 
-func (a *Adapter) stateProvider() StateProvider {
-	if a.cfg.StateProvider != nil {
-		return a.cfg.StateProvider
+func (a *Adapter) manifestPayload(r *http.Request) map[string]any {
+	base := a.baseURL(r)
+	caps := a.capabilities()
+	out := map[string]any{
+		"adapter_version":  "1",
+		"standard_version": a.cfg.StandardVersion,
+		"app_name":         a.cfg.AppName,
+		"app_version":      a.cfg.AppVersion,
+		"capabilities":     caps,
 	}
-	if a.cfg.DB != nil {
-		return &defaultDBState{db: a.cfg.DB}
+	if base != "" {
+		links := map[string]string{}
+		if a.cfg.OpenAPIProvider != nil {
+			links["openapi_url"] = base + "/openapi.yaml"
+		}
+		if a.cfg.SchemaProvider != nil {
+			links["schema_url"] = base + "/_toolab/schema"
+		}
+		if a.hasProfile() {
+			links["profile_url"] = base + "/_toolab/profile"
+		}
+		if a.cfg.SuggestedFlowsProvider != nil {
+			links["suggested_flows_url"] = base + "/_toolab/suggested_flows"
+		}
+		if a.cfg.InvariantsProvider != nil {
+			links["invariants_url"] = base + "/_toolab/invariants"
+		}
+		if a.cfg.LimitsProvider != nil {
+			links["limits_url"] = base + "/_toolab/limits"
+		}
+		if a.cfg.EnvironmentProvider != nil {
+			links["environment_url"] = base + "/_toolab/environment"
+		}
+		if len(links) > 0 {
+			out["links"] = links
+		}
 	}
-	return nil
+	return out
 }
 
 // --- Handlers ---
@@ -144,12 +274,213 @@ func (a *Adapter) handleManifest(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusMethodNotAllowed, "method_not_allowed", "use GET")
 		return
 	}
-	writeJSON(w, http.StatusOK, map[string]any{
-		"adapter_version": "1",
-		"app_name":        a.cfg.AppName,
-		"app_version":     a.cfg.AppVersion,
-		"capabilities":    a.capabilities(),
-	})
+	writeJSON(w, http.StatusOK, a.manifestPayload(r))
+}
+
+func (a *Adapter) handleProfile(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		writeError(w, http.StatusMethodNotAllowed, "method_not_allowed", "use GET")
+		return
+	}
+	if !a.hasProfile() {
+		writeError(w, http.StatusNotImplemented, "not_supported", "profile capability not supported")
+		return
+	}
+
+	profile := map[string]any{
+		"standard_version": a.cfg.StandardVersion,
+		"profile_version":  "1",
+		"manifest":         a.manifestPayload(r),
+	}
+
+	unknowns := make([]string, 0)
+	hashes := map[string]string{}
+
+	if a.cfg.SchemaProvider != nil {
+		value, err := a.cfg.SchemaProvider.Schema(r.Context())
+		if err != nil {
+			unknowns = append(unknowns, "schema unavailable")
+		} else {
+			profile["schema"] = value
+			if h := hashAny(value); h != "" {
+				hashes["schema_sha256"] = h
+			}
+		}
+	}
+	if a.cfg.SuggestedFlowsProvider != nil {
+		value, err := a.cfg.SuggestedFlowsProvider.SuggestedFlows(r.Context())
+		if err != nil {
+			unknowns = append(unknowns, "suggested_flows unavailable")
+		} else {
+			profile["suggested_flows"] = value
+			if h := hashAny(value); h != "" {
+				hashes["suggested_flows_sha256"] = h
+			}
+		}
+	}
+	if a.cfg.InvariantsProvider != nil {
+		value, err := a.cfg.InvariantsProvider.Invariants(r.Context())
+		if err != nil {
+			unknowns = append(unknowns, "invariants unavailable")
+		} else {
+			profile["invariants"] = value
+			if h := hashAny(value); h != "" {
+				hashes["invariants_sha256"] = h
+			}
+		}
+	}
+	if a.cfg.LimitsProvider != nil {
+		value, err := a.cfg.LimitsProvider.Limits(r.Context())
+		if err != nil {
+			unknowns = append(unknowns, "limits unavailable")
+		} else {
+			profile["limits"] = value
+			if h := hashAny(value); h != "" {
+				hashes["limits_sha256"] = h
+			}
+		}
+	}
+	if a.cfg.EnvironmentProvider != nil {
+		value, err := a.cfg.EnvironmentProvider.Environment(r.Context())
+		if err != nil {
+			unknowns = append(unknowns, "environment unavailable")
+		} else {
+			profile["environment"] = value
+			if h := hashAny(value); h != "" {
+				hashes["environment_sha256"] = h
+			}
+		}
+	}
+	if a.cfg.OpenAPIProvider != nil {
+		info, err := a.cfg.OpenAPIProvider.OpenAPIInfo(r.Context())
+		if err != nil {
+			unknowns = append(unknowns, "openapi metadata unavailable")
+		} else if info != nil {
+			if info.URL == "" {
+				info.URL = a.baseURL(r) + "/openapi.yaml"
+			}
+			profile["openapi"] = info
+			if info.SHA256 != "" {
+				hashes["openapi_sha256"] = info.SHA256
+			}
+		}
+	}
+
+	if len(hashes) > 0 {
+		profile["hashes"] = hashes
+	}
+	if len(unknowns) > 0 {
+		sort.Strings(unknowns)
+		profile["unknowns"] = unknowns
+	}
+	writeJSON(w, http.StatusOK, profile)
+}
+
+func (a *Adapter) handleSchema(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		writeError(w, http.StatusMethodNotAllowed, "method_not_allowed", "use GET")
+		return
+	}
+	if a.cfg.SchemaProvider == nil {
+		writeError(w, http.StatusNotImplemented, "not_supported", "schema capability not supported")
+		return
+	}
+	value, err := a.cfg.SchemaProvider.Schema(r.Context())
+	if err != nil {
+		writeError(w, http.StatusServiceUnavailable, "schema_not_available", err.Error())
+		return
+	}
+	writeJSON(w, http.StatusOK, value)
+}
+
+func (a *Adapter) handleOpenAPI(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		writeError(w, http.StatusMethodNotAllowed, "method_not_allowed", "use GET")
+		return
+	}
+	if a.cfg.OpenAPIProvider == nil {
+		writeError(w, http.StatusNotImplemented, "not_supported", "openapi capability not supported")
+		return
+	}
+	contentType, raw, err := a.cfg.OpenAPIProvider.OpenAPIDocument(r.Context())
+	if err != nil {
+		writeError(w, http.StatusServiceUnavailable, "openapi_not_available", err.Error())
+		return
+	}
+	if contentType == "" {
+		contentType = "application/yaml"
+	}
+	w.Header().Set("Content-Type", contentType)
+	w.WriteHeader(http.StatusOK)
+	_, _ = w.Write(raw)
+}
+
+func (a *Adapter) handleSuggestedFlows(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		writeError(w, http.StatusMethodNotAllowed, "method_not_allowed", "use GET")
+		return
+	}
+	if a.cfg.SuggestedFlowsProvider == nil {
+		writeError(w, http.StatusNotImplemented, "not_supported", "suggested_flows capability not supported")
+		return
+	}
+	value, err := a.cfg.SuggestedFlowsProvider.SuggestedFlows(r.Context())
+	if err != nil {
+		writeError(w, http.StatusServiceUnavailable, "suggested_flows_not_available", err.Error())
+		return
+	}
+	writeJSON(w, http.StatusOK, value)
+}
+
+func (a *Adapter) handleInvariants(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		writeError(w, http.StatusMethodNotAllowed, "method_not_allowed", "use GET")
+		return
+	}
+	if a.cfg.InvariantsProvider == nil {
+		writeError(w, http.StatusNotImplemented, "not_supported", "invariants capability not supported")
+		return
+	}
+	value, err := a.cfg.InvariantsProvider.Invariants(r.Context())
+	if err != nil {
+		writeError(w, http.StatusServiceUnavailable, "invariants_not_available", err.Error())
+		return
+	}
+	writeJSON(w, http.StatusOK, value)
+}
+
+func (a *Adapter) handleLimits(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		writeError(w, http.StatusMethodNotAllowed, "method_not_allowed", "use GET")
+		return
+	}
+	if a.cfg.LimitsProvider == nil {
+		writeError(w, http.StatusNotImplemented, "not_supported", "limits capability not supported")
+		return
+	}
+	value, err := a.cfg.LimitsProvider.Limits(r.Context())
+	if err != nil {
+		writeError(w, http.StatusServiceUnavailable, "limits_not_available", err.Error())
+		return
+	}
+	writeJSON(w, http.StatusOK, value)
+}
+
+func (a *Adapter) handleEnvironment(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		writeError(w, http.StatusMethodNotAllowed, "method_not_allowed", "use GET")
+		return
+	}
+	if a.cfg.EnvironmentProvider == nil {
+		writeError(w, http.StatusNotImplemented, "not_supported", "environment capability not supported")
+		return
+	}
+	value, err := a.cfg.EnvironmentProvider.Environment(r.Context())
+	if err != nil {
+		writeError(w, http.StatusServiceUnavailable, "environment_not_available", err.Error())
+		return
+	}
+	writeJSON(w, http.StatusOK, value)
 }
 
 func (a *Adapter) handleStateFingerprint(w http.ResponseWriter, r *http.Request) {
@@ -372,5 +703,11 @@ func parseInt(s string, def int) int {
 	return n
 }
 
-// stripPrefix is unused but reserved for potential future use with path routing.
-var _ = strings.TrimPrefix
+func hashAny(v any) string {
+	raw, err := json.Marshal(v)
+	if err != nil {
+		return ""
+	}
+	sum := sha256.Sum256(raw)
+	return hex.EncodeToString(sum[:])
+}

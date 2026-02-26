@@ -165,6 +165,102 @@ func TestMethodNotAllowed(t *testing.T) {
 	}
 }
 
+func TestStandardManifestAndDiscoveryEndpoints(t *testing.T) {
+	a := NewAdapter(Config{
+		AppName:                "test-app",
+		AppVersion:             "3.0.0",
+		BaseURL:                "http://localhost:8080",
+		SchemaProvider:         &mockSchemaProvider{},
+		SuggestedFlowsProvider: &mockSuggestedFlowsProvider{},
+		InvariantsProvider:     &mockInvariantsProvider{},
+		LimitsProvider:         &mockLimitsProvider{},
+		EnvironmentProvider:    &mockEnvironmentProvider{},
+		OpenAPIProvider:        &mockOpenAPIProvider{},
+	})
+	handler := a.Handler()
+
+	t.Run("manifest includes standard fields", func(t *testing.T) {
+		req := httptest.NewRequest(http.MethodGet, "/manifest", nil)
+		w := httptest.NewRecorder()
+		handler.ServeHTTP(w, req)
+		if w.Code != http.StatusOK {
+			t.Fatalf("manifest status=%d body=%s", w.Code, w.Body.String())
+		}
+		var resp map[string]any
+		if err := json.NewDecoder(w.Body).Decode(&resp); err != nil {
+			t.Fatalf("decode manifest: %v", err)
+		}
+		if resp["standard_version"] != "1.1" {
+			t.Fatalf("expected standard_version=1.1, got %v", resp["standard_version"])
+		}
+		links, ok := resp["links"].(map[string]any)
+		if !ok || links["profile_url"] == nil {
+			t.Fatalf("expected links.profile_url in manifest")
+		}
+	})
+
+	t.Run("discovery endpoints", func(t *testing.T) {
+		endpoints := []string{
+			"/profile",
+			"/schema",
+			"/suggested_flows",
+			"/invariants",
+			"/limits",
+			"/environment",
+		}
+		for _, path := range endpoints {
+			req := httptest.NewRequest(http.MethodGet, path, nil)
+			w := httptest.NewRecorder()
+			handler.ServeHTTP(w, req)
+			if w.Code != http.StatusOK {
+				t.Fatalf("%s status=%d body=%s", path, w.Code, w.Body.String())
+			}
+			if !strings.Contains(w.Header().Get("Content-Type"), "application/json") {
+				t.Fatalf("%s invalid content-type: %s", path, w.Header().Get("Content-Type"))
+			}
+		}
+	})
+
+	t.Run("openapi endpoint", func(t *testing.T) {
+		req := httptest.NewRequest(http.MethodGet, "/openapi", nil)
+		w := httptest.NewRecorder()
+		handler.ServeHTTP(w, req)
+		if w.Code != http.StatusOK {
+			t.Fatalf("openapi status=%d body=%s", w.Code, w.Body.String())
+		}
+		if !strings.Contains(w.Header().Get("Content-Type"), "application/yaml") {
+			t.Fatalf("unexpected openapi content-type: %s", w.Header().Get("Content-Type"))
+		}
+		if !strings.Contains(w.Body.String(), "openapi: \"3.0.3\"") {
+			t.Fatalf("unexpected openapi body: %s", w.Body.String())
+		}
+	})
+}
+
+func TestProfileIncludesUnknownsWhenProviderFails(t *testing.T) {
+	a := NewAdapter(Config{
+		AppName:        "test-app",
+		AppVersion:     "1.0.0",
+		SchemaProvider: &mockFailSchemaProvider{},
+	})
+	handler := a.Handler()
+
+	req := httptest.NewRequest(http.MethodGet, "/profile", nil)
+	w := httptest.NewRecorder()
+	handler.ServeHTTP(w, req)
+	if w.Code != http.StatusOK {
+		t.Fatalf("profile status=%d body=%s", w.Code, w.Body.String())
+	}
+	var resp map[string]any
+	if err := json.NewDecoder(w.Body).Decode(&resp); err != nil {
+		t.Fatalf("decode profile: %v", err)
+	}
+	unknowns, ok := resp["unknowns"].([]any)
+	if !ok || len(unknowns) == 0 {
+		t.Fatalf("expected unknowns in profile response")
+	}
+}
+
 // --- Mocks ---
 
 type mockMetrics struct{}
@@ -190,3 +286,88 @@ func (m *mockSeed) Apply(_ context.Context, _ string, scope []string) (SeedResul
 }
 
 func (m *mockSeed) Clear(_ context.Context) error { return nil }
+
+type mockSchemaProvider struct{}
+
+func (m *mockSchemaProvider) Schema(_ context.Context) (any, error) {
+	return map[string]any{
+		"database": map[string]any{
+			"type": "postgres",
+		},
+		"entities": []map[string]any{
+			{
+				"name":  "users",
+				"table": "users",
+				"columns": []map[string]any{
+					{"name": "id", "type": "uuid", "nullable": false},
+				},
+			},
+		},
+	}, nil
+}
+
+type mockFailSchemaProvider struct{}
+
+func (m *mockFailSchemaProvider) Schema(_ context.Context) (any, error) {
+	return nil, context.DeadlineExceeded
+}
+
+type mockSuggestedFlowsProvider struct{}
+
+func (m *mockSuggestedFlowsProvider) SuggestedFlows(_ context.Context) (any, error) {
+	empty := ""
+	return map[string]any{
+		"flows": []map[string]any{
+			{
+				"id": "health_flow",
+				"requests": []map[string]any{
+					{"method": "GET", "path": "/healthz", "body": empty},
+				},
+			},
+		},
+	}, nil
+}
+
+type mockInvariantsProvider struct{}
+
+func (m *mockInvariantsProvider) Invariants(_ context.Context) (any, error) {
+	return map[string]any{
+		"invariants": []map[string]any{
+			{"id": "inv_no_5xx", "type": "no_5xx_allowed"},
+		},
+	}, nil
+}
+
+type mockLimitsProvider struct{}
+
+func (m *mockLimitsProvider) Limits(_ context.Context) (any, error) {
+	return map[string]any{
+		"rate": map[string]any{
+			"requests_per_second": 10,
+		},
+	}, nil
+}
+
+type mockEnvironmentProvider struct{}
+
+func (m *mockEnvironmentProvider) Environment(_ context.Context) (any, error) {
+	return map[string]any{
+		"mode":      "test",
+		"read_only": false,
+		"features":  map[string]bool{"toolab_standard_v1_1": true},
+	}, nil
+}
+
+type mockOpenAPIProvider struct{}
+
+func (m *mockOpenAPIProvider) OpenAPIDocument(_ context.Context) (string, []byte, error) {
+	return "application/yaml", []byte("openapi: \"3.0.3\"\ninfo:\n  title: Test\n  version: \"1.0.0\"\npaths: {}\n"), nil
+}
+
+func (m *mockOpenAPIProvider) OpenAPIInfo(_ context.Context) (*OpenAPIInfo, error) {
+	return &OpenAPIInfo{
+		ContentType: "application/yaml",
+		Version:     "3.0.3",
+		SHA256:      "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+	}, nil
+}

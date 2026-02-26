@@ -30,9 +30,9 @@ type MetricsProvider interface {
 
 // Metric is a single metric data point.
 type Metric struct {
-	Name   string         `json:"name"`
-	Type   string         `json:"type"` // "counter", "gauge", "histogram"
-	Value  any            `json:"value"`
+	Name   string            `json:"name"`
+	Type   string            `json:"type"` // "counter", "gauge", "histogram"
+	Value  any               `json:"value"`
 	Labels map[string]string `json:"labels"`
 }
 
@@ -91,4 +91,44 @@ type SeedProvider interface {
 type SeedResult struct {
 	Applied []string `json:"applied"`
 	Ignored []string `json:"ignored"`
+}
+
+// SchemaProvider exposes schema capability data.
+type SchemaProvider interface {
+	Schema(ctx context.Context) (any, error)
+}
+
+// SuggestedFlowsProvider exposes suggested_flows capability data.
+type SuggestedFlowsProvider interface {
+	SuggestedFlows(ctx context.Context) (any, error)
+}
+
+// InvariantsProvider exposes invariants capability data.
+type InvariantsProvider interface {
+	Invariants(ctx context.Context) (any, error)
+}
+
+// LimitsProvider exposes limits capability data.
+type LimitsProvider interface {
+	Limits(ctx context.Context) (any, error)
+}
+
+// EnvironmentProvider exposes environment capability data.
+type EnvironmentProvider interface {
+	Environment(ctx context.Context) (any, error)
+}
+
+// OpenAPIInfo is metadata advertised for the openapi capability.
+type OpenAPIInfo struct {
+	URL         string `json:"url,omitempty"`
+	ContentType string `json:"content_type,omitempty"`
+	Version     string `json:"version,omitempty"`
+	ETag        string `json:"etag,omitempty"`
+	SHA256      string `json:"sha256,omitempty"`
+}
+
+// OpenAPIProvider exposes OpenAPI document and metadata for capability fallback.
+type OpenAPIProvider interface {
+	OpenAPIDocument(ctx context.Context) (contentType string, document []byte, err error)
+	OpenAPIInfo(ctx context.Context) (*OpenAPIInfo, error)
 }
