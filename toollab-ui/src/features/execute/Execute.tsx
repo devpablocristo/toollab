@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import { api, type FullAuditResult, type Target } from "../../lib/api";
@@ -16,13 +16,7 @@ export function Execute() {
   const [mode, setMode] = useState("smoke");
   const [result, setResult] = useState<FullAuditResult | null>(null);
 
-  const selectedTarget = targets.find((t) => t.id === selectedTargetId);
-
-  useEffect(() => {
-    if (!selectedTargetId && targets.length > 0) {
-      setSelectedTargetId(targets[0].id);
-    }
-  }, [targets, selectedTargetId]);
+  const selectedTarget = targets.find((t) => t.id === selectedTargetId) ?? targets[0];
 
   const createTargetMutation = useMutation({
     mutationFn: () =>
@@ -68,6 +62,8 @@ export function Execute() {
 
   const primaryButtonClass =
     "bg-accent text-surface px-4 py-2 rounded-lg text-sm font-semibold hover:bg-accent-dim transition-colors disabled:opacity-40";
+  const deleteButtonClass =
+    "bg-surface-raised border border-fail/30 text-fail px-4 py-2 rounded-xl font-semibold text-sm hover:bg-fail/10 transition-colors disabled:opacity-40";
 
   return (
     <div className="space-y-6">
@@ -79,8 +75,7 @@ export function Execute() {
       </div>
 
       <div className="bg-surface-raised border border-border-subtle rounded-xl p-5 space-y-4">
-        <div className="flex items-center justify-between">
-          <h2 className="text-sm font-semibold uppercase tracking-wider text-text-secondary">Targets</h2>
+        <div className="flex items-center justify-end">
           <button
             onClick={() => setShowTargetForm((v) => !v)}
             className={primaryButtonClass}
@@ -135,7 +130,7 @@ export function Execute() {
           </label>
           <div className="flex items-center gap-2">
             <select
-              value={selectedTargetId}
+              value={selectedTarget?.id ?? ""}
               onChange={(e) => setSelectedTargetId(e.target.value)}
               className="w-full bg-surface border border-border-subtle rounded-lg px-3 py-2 text-sm focus:border-accent outline-none"
             >
@@ -153,7 +148,7 @@ export function Execute() {
               <button
                 onClick={() => removeTargetMutation.mutate(selectedTarget.id)}
                 disabled={removeTargetMutation.isPending}
-                className={primaryButtonClass}
+                className={deleteButtonClass}
               >
                 Eliminar
               </button>
@@ -187,7 +182,7 @@ export function Execute() {
             disabled={fullAuditMutation.isPending || !selectedTarget}
             className={`w-full ${primaryButtonClass} py-3`}
           >
-            {fullAuditMutation.isPending ? "Ejecutando auditoría completa..." : "Generar reporte completo"}
+            {fullAuditMutation.isPending ? "Ejecutando auditoría completa..." : "Generar run"}
           </button>
         </div>
       </div>

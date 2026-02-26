@@ -3,6 +3,8 @@ import { useState } from "react";
 import { api } from "../../lib/api";
 
 export function TargetsList() {
+  const deleteButtonClass =
+    "bg-surface-raised border border-fail/30 text-fail px-4 py-2 rounded-xl font-semibold text-sm hover:bg-fail/10 transition-colors disabled:opacity-40";
   const qc = useQueryClient();
   const { data: targets, isLoading } = useQuery({
     queryKey: ["targets"],
@@ -133,7 +135,8 @@ export function TargetsList() {
               </div>
               <button
                 onClick={() => remove.mutate(t.id)}
-                className="text-text-muted hover:text-fail transition-colors text-sm font-mono"
+                disabled={remove.isPending}
+                className={deleteButtonClass}
               >
                 Eliminar
               </button>

@@ -1,10 +1,10 @@
 import { useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useParams } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from "recharts";
-import { api, type CatalogEndpoint, type EndpointSchema, type SchemaField } from "../../lib/api";
+import { api, type CatalogEndpoint, type EndpointSchema, type SchemaField, type Target } from "../../lib/api";
 import { VerdictBadge } from "../../components/VerdictBadge";
 import { StatCard } from "../../components/StatCard";
 
@@ -12,28 +12,18 @@ type Tab = "datos" | "interpretacion";
 
 export function RunDetail() {
   const { id } = useParams<{ id: string }>();
-  const qc = useQueryClient();
-  const navigate = useNavigate();
   const [tab, setTab] = useState<Tab>("datos");
 
   const { data, isLoading } = useQuery({
     queryKey: ["run", id],
     queryFn: () => api.getRun(id!),
     enabled: !!id,
+    refetchInterval: 5000,
   });
 
-  const interpret = useMutation({
-    mutationFn: () => api.execInterpret({ run_id: id! }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["run", id] }),
-  });
-
-  const remove = useMutation({
-    mutationFn: () => api.deleteRun(id!),
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["runs"] });
-      qc.invalidateQueries({ queryKey: ["stats"] });
-      navigate("/runs");
-    },
+  const { data: targets = [] } = useQuery({
+    queryKey: ["targets"],
+    queryFn: api.listTargets,
   });
 
   const { data: auditData } = useQuery({
@@ -68,6 +58,7 @@ export function RunDetail() {
   if (!data) return <p className="text-fail font-mono">Run no encontrado</p>;
 
   const { run, assertions, interpretation } = data;
+  const targetName = targets.find((t: Target) => t.id === run.target_id)?.name || "Target desconocido";
   const histogram: Record<string, number> = JSON.parse(run.status_histogram || "{}");
 
   return (
@@ -76,19 +67,12 @@ export function RunDetail() {
       <div className="flex items-start justify-between animate-fade-in">
         <div>
           <div className="flex items-center gap-3 mb-2">
-            <h1 className="text-2xl font-bold tracking-tight">Run</h1>
+            <h1 className="text-2xl font-bold tracking-tight">{targetName}</h1>
             <VerdictBadge verdict={run.verdict} />
           </div>
           <p className="font-mono text-text-secondary text-sm">{run.id}</p>
         </div>
         <div className="flex items-center gap-3">
-          <button
-            onClick={() => { if (confirm("¿Eliminar este run?")) remove.mutate(); }}
-            disabled={remove.isPending}
-            className="bg-surface-raised border border-fail/20 text-fail px-4 py-2 rounded-lg font-semibold text-sm hover:bg-fail/10 transition-colors disabled:opacity-40"
-          >
-            Eliminar
-          </button>
           <p className="text-text-muted text-sm">{new Date(run.created_at).toLocaleString()}</p>
         </div>
       </div>
@@ -122,7 +106,7 @@ export function RunDetail() {
               : "text-text-secondary hover:text-text-primary hover:bg-surface-overlay"
           }`}
         >
-          Interpretación LLM
+          Análisis de los datos
           {interpretation && <span className="w-2 h-2 rounded-full bg-accent" />}
         </button>
       </div>
@@ -142,8 +126,6 @@ export function RunDetail() {
       {tab === "interpretacion" && (
         <InterpretationTab
           interpretation={interpretation}
-          isPending={interpret.isPending}
-          onInterpret={() => interpret.mutate()}
         />
       )}
     </div>
@@ -554,22 +536,13 @@ function SchemaView({ schema, depth = 0 }: { schema: EndpointSchema; depth?: num
    INTERPRETACIÓN LLM
    ═══════════════════════════════════════════════════════ */
 
-function InterpretationTab({ interpretation, isPending, onInterpret }: {
-  interpretation: string | null; isPending: boolean; onInterpret: () => void;
+function InterpretationTab({ interpretation }: {
+  interpretation: string | null;
 }) {
   return (
     <div className="space-y-4 animate-fade-in">
       {interpretation && (
         <div>
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-8 h-8 rounded-lg bg-accent/10 border border-accent/20 flex items-center justify-center">
-              <span className="text-accent text-sm font-bold">AI</span>
-            </div>
-            <div>
-              <h2 className="text-lg font-semibold">Interpretación del servicio</h2>
-              <p className="text-xs text-text-muted">Análisis generado por LLM a partir de todos los datos de la auditoría</p>
-            </div>
-          </div>
           <div className="bg-surface-raised border border-accent/10 rounded-xl overflow-hidden">
             <div className="h-1 bg-gradient-to-r from-accent/40 via-accent/20 to-transparent" />
             <div className="p-8 llm-prose">
@@ -579,27 +552,14 @@ function InterpretationTab({ interpretation, isPending, onInterpret }: {
         </div>
       )}
 
-      {isPending && (
-        <div className="bg-surface-raised border border-accent/20 rounded-xl p-8 text-center">
-          <div className="inline-block w-5 h-5 border-2 border-accent border-t-transparent rounded-full animate-spin mb-3" />
-          <p className="text-text-secondary text-sm">El LLM está analizando todos los datos…</p>
-          <p className="text-text-muted text-xs mt-1">Esto puede tardar 1-2 min en CPU</p>
-        </div>
-      )}
-
-      {!interpretation && !isPending && (
+      {!interpretation && (
         <div className="bg-surface-raised border border-border-subtle rounded-xl p-12 text-center space-y-4">
+          <div className="inline-block w-5 h-5 border-2 border-accent border-t-transparent rounded-full animate-spin mb-2" />
           <p className="text-text-muted text-sm">
-            Los datos puros están en la pestaña anterior.<br />
-            Acá el LLM analiza todo y genera una interpretación completa en lenguaje natural.
+            El análisis LLM se ejecuta automáticamente al generar el run.<br />
+            Estamos esperando el resultado asíncrono.
           </p>
-          <button
-            onClick={onInterpret}
-            className="bg-accent text-surface px-6 py-3 rounded-xl font-bold text-sm hover:bg-accent-dim transition-colors"
-            style={{ boxShadow: "0 0 20px rgba(0,232,157,0.15)" }}
-          >
-            Generar interpretación con LLM
-          </button>
+          <p className="text-text-muted text-xs">La vista se actualiza automáticamente cada 5 segundos.</p>
         </div>
       )}
     </div>

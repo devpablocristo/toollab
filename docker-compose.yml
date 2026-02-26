@@ -8,7 +8,7 @@ services:
       TOOLLAB_DASHBOARD_PORT: "${TOOLLAB_DASHBOARD_PORT:-8090}"
       TOOLLAB_DB_PATH: "/app/data/toollab.db"
       TOOLLAB_CORE_DIR: "/app/core"
-      LLM_PROVIDER: "${LLM_PROVIDER:-gemini}"
+      LLM_PROVIDER: "${LLM_PROVIDER:-gemini,ollama}"
       GEMINI_API_KEY: "${GEMINI_API_KEY:-}"
       GEMINI_MODEL: "${GEMINI_MODEL:-gemini-2.0-flash}"
       GOOGLE_PROJECT_ID: "${GOOGLE_PROJECT_ID:-}"

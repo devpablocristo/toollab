@@ -775,11 +775,15 @@ func latestScenarioPath(coreDir string) (string, error) {
 }
 
 func (r *Router) runInterpretationAsync(runID, runDir string) {
-	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Minute)
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Minute)
 	defer cancel()
 
 	result := r.exec.Run(ctx, "interpret", runDir)
 	if !result.Success {
+		errMsg := fmt.Sprintf("No se pudo generar el análisis LLM.\n\nDetalle técnico:\n%s", strings.TrimSpace(result.Error))
+		if _, err := r.interpretations.Insert(runID, "llm-error", errMsg, ""); err != nil && !strings.Contains(err.Error(), "UNIQUE constraint") {
+			fmt.Printf("full-audit interpret async persist error state failed for run %s: %v\n", runID, err)
+		}
 		fmt.Printf("full-audit interpret async failed for run %s: %s\n", runID, result.Error)
 		return
 	}

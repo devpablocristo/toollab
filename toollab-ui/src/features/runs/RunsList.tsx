@@ -1,20 +1,16 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
-import { api } from "../../lib/api";
+import { api, type Target } from "../../lib/api";
 import { VerdictBadge } from "../../components/VerdictBadge";
 
 export function RunsList() {
-  const qc = useQueryClient();
   const { data: runs, isLoading } = useQuery({
     queryKey: ["runs"],
     queryFn: () => api.listRuns(),
   });
-  const deleteMutation = useMutation({
-    mutationFn: (id: string) => api.deleteRun(id),
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["runs"] });
-      qc.invalidateQueries({ queryKey: ["stats"] });
-    },
+  const { data: targets = [] } = useQuery({
+    queryKey: ["targets"],
+    queryFn: api.listTargets,
   });
 
   return (
@@ -56,9 +52,14 @@ export function RunsList() {
                 <Link to={`/runs/${r.id}`} className="flex items-center justify-between gap-4 flex-1 min-w-0">
                   <div className="flex items-center gap-4 min-w-0">
                     <VerdictBadge verdict={r.verdict} />
-                    <span className="font-mono text-sm text-text-secondary group-hover:text-accent transition-colors truncate">
-                      {r.id.slice(0, 16)}&hellip;
-                    </span>
+                    <div className="min-w-0">
+                      <p className="text-sm text-text-primary group-hover:text-accent transition-colors truncate">
+                        {targets.find((t: Target) => t.id === r.target_id)?.name || "Target desconocido"}
+                      </p>
+                      <p className="font-mono text-xs text-text-muted truncate">
+                        {r.id.slice(0, 16)}&hellip;
+                      </p>
+                    </div>
                   </div>
                   <div className="flex items-center gap-6 text-sm font-mono text-text-secondary shrink-0">
                     <span>{r.total_requests} req</span>
@@ -70,13 +71,6 @@ export function RunsList() {
                     </span>
                   </div>
                 </Link>
-                <button
-                  onClick={() => deleteMutation.mutate(r.id)}
-                  disabled={deleteMutation.isPending}
-                  className="ml-4 text-sm text-text-muted hover:text-fail transition-colors"
-                >
-                  Eliminar
-                </button>
               </div>
             </div>
           ))}
