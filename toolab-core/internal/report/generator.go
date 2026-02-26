@@ -193,10 +193,28 @@ set -euo pipefail
 SCENARIO_PATH="${1:-%s}"
 OUT_BASE="${2:-./golden_runs}"
 EXPECTED="%s"
+SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 
-toolab run "$SCENARIO_PATH" --out "$OUT_BASE"
-LATEST_DIR="$(ls -1dt "$OUT_BASE"/* | head -n 1)"
-ACTUAL="$(python3 - <<'PY' "$LATEST_DIR/evidence.json"
+if [[ -n "${TOOLAB_CMD:-}" ]]; then
+  read -r -a TOOLAB_ARR <<<"${TOOLAB_CMD}"
+elif command -v toolab >/dev/null 2>&1; then
+  TOOLAB_ARR=("toolab")
+elif command -v go >/dev/null 2>&1 && [[ -f "$REPO_ROOT/toolab-core/cmd/toolab/main.go" ]]; then
+  TOOLAB_ARR=("go" "-C" "$REPO_ROOT/toolab-core" "run" "./cmd/toolab")
+else
+  echo "toolab command not found. Set TOOLAB_CMD or install toolab in PATH." >&2
+  exit 127
+fi
+
+RUN_OUTPUT="$("${TOOLAB_ARR[@]}" run "$SCENARIO_PATH" --out "$OUT_BASE")"
+echo "$RUN_OUTPUT"
+RUN_DIR="$(printf '%%s\n' "$RUN_OUTPUT" | awk -F= '/^run_dir=/{print $2; exit}')"
+if [[ -z "$RUN_DIR" ]]; then
+  RUN_DIR="$(ls -1dt "$OUT_BASE"/* | head -n 1)"
+fi
+
+ACTUAL="$(python3 - <<'PY' "$RUN_DIR/evidence.json"
 import json,sys
 print(json.load(open(sys.argv[1]))['deterministic_fingerprint'])
 PY

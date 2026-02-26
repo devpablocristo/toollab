@@ -180,6 +180,9 @@ func GenerateScenario(ctx context.Context, cfg GenerateConfig) (*GenerateResult,
 	if err != nil {
 		return nil, err
 	}
+	if _, _, err := scenario.LoadBytes("generated.scenario.yaml", scenarioYAML); err != nil {
+		return nil, fmt.Errorf("generated scenario validation: %w", err)
+	}
 
 	metaDoc := meta.Document{
 		Operation:     "generate",

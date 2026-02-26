@@ -183,6 +183,9 @@ func EnrichScenario(ctx context.Context, cfg EnrichConfig) (*EnrichResult, error
 	if err != nil {
 		return nil, err
 	}
+	if _, _, err := scenario.LoadBytes("enriched.scenario.yaml", scenarioYAML); err != nil {
+		return nil, fmt.Errorf("enriched scenario validation: %w", err)
+	}
 	hashes.OutputScenarioSHA = scenarioSHA
 
 	metaChanges := make([]meta.Change, 0, len(mergeResult.Changes))

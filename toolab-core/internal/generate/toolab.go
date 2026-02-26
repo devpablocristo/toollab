@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"regexp"
 	"sort"
 	"strings"
 
@@ -13,25 +14,27 @@ import (
 )
 
 type ToolabOptions struct {
-	TargetBaseURL       string
-	ToolabURL           string
-	Prefer              string
-	FlowSource          string
-	Mode                string
-	EffectiveSeed       string
+	TargetBaseURL        string
+	ToolabURL            string
+	Prefer               string
+	FlowSource           string
+	Mode                 string
+	EffectiveSeed        string
 	RequiredCapabilities []string
 }
 
 type ToolabBuildResult struct {
-	Scenario         *scenario.Scenario
-	ManifestHash     string
-	ProfileHash      string
-	OpenAPIHash      string
-	Warnings         []string
-	Unknowns         []string
-	DeclaredCaps     []string
-	UsedCaps         []string
+	Scenario     *scenario.Scenario
+	ManifestHash string
+	ProfileHash  string
+	OpenAPIHash  string
+	Warnings     []string
+	Unknowns     []string
+	DeclaredCaps []string
+	UsedCaps     []string
 }
+
+var invariantRequestIDPattern = regexp.MustCompile(`^[A-Za-z0-9_.-]+$`)
 
 func BuildFromToolab(ctx context.Context, fetcher *discovery.ToolabFetcher, openapiFetcher *discovery.OpenAPIFetcher, auth *discovery.AuthConfig, opts ToolabOptions) (*ToolabBuildResult, error) {
 	manifest, manifestHash, warnings, err := fetcher.Manifest(ctx, auth)
@@ -289,8 +292,8 @@ func parseSuggestedFlows(raw json.RawMessage) ([]scenario.RequestSpec, map[strin
 		Requests []flowReq `json:"requests"`
 	}
 	type payload struct {
-		Flows          []flow             `json:"flows"`
-		DefaultHeaders map[string]string  `json:"default_headers"`
+		Flows          []flow            `json:"flows"`
+		DefaultHeaders map[string]string `json:"default_headers"`
 	}
 	var p payload
 	if err := json.Unmarshal(raw, &p); err != nil {
@@ -366,16 +369,42 @@ func parseInvariants(raw json.RawMessage) []scenario.InvariantConfig {
 	out := []scenario.InvariantConfig{}
 	for _, in := range p.Invariants {
 		switch in.Type {
-		case "no_5xx_allowed", "max_4xx_rate", "status_code_rate", "idempotent_key_identical_response":
+		case "no_5xx_allowed":
+			out = append(out, scenario.InvariantConfig{Type: in.Type})
+		case "max_4xx_rate":
+			if in.Max < 0 || in.Max > 1 {
+				continue
+			}
+			out = append(out, scenario.InvariantConfig{
+				Type: in.Type,
+				Max:  in.Max,
+			})
+		case "status_code_rate":
+			if in.Status < 100 || in.Status > 599 {
+				continue
+			}
+			if in.Max < 0 || in.Max > 1 {
+				continue
+			}
+			out = append(out, scenario.InvariantConfig{
+				Type:   in.Type,
+				Max:    in.Max,
+				Status: in.Status,
+			})
+		case "idempotent_key_identical_response":
+			if strings.TrimSpace(in.RequestID) == "" {
+				continue
+			}
+			if !invariantRequestIDPattern.MatchString(in.RequestID) {
+				continue
+			}
+			out = append(out, scenario.InvariantConfig{
+				Type:      in.Type,
+				RequestID: in.RequestID,
+			})
 		default:
 			continue
 		}
-		out = append(out, scenario.InvariantConfig{
-			Type:      in.Type,
-			Max:       in.Max,
-			Status:    in.Status,
-			RequestID: in.RequestID,
-		})
 	}
 	return normalizeInvariants(out)
 }
