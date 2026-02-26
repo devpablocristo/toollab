@@ -17,7 +17,10 @@ func Load(path string) (*Scenario, *Fingerprint, error) {
 	if err != nil {
 		return nil, nil, fmt.Errorf("read scenario: %w", err)
 	}
+	return LoadBytes(path, raw)
+}
 
+func LoadBytes(path string, raw []byte) (*Scenario, *Fingerprint, error) {
 	if err := validateScenarioSchema(raw); err != nil {
 		return nil, nil, err
 	}
