@@ -1,0 +1,219 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://toolab.dev/schemas/diff.v1.schema.json",
+  "title": "Toolab Diff v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "run_a",
+    "run_b",
+    "scenario_delta",
+    "stats_delta",
+    "endpoint_delta",
+    "invariant_delta",
+    "discovery_delta",
+    "unknowns",
+    "anchors",
+    "determinism"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "integer",
+      "const": 1
+    },
+    "run_a": {
+      "$ref": "#/$defs/runRef"
+    },
+    "run_b": {
+      "$ref": "#/$defs/runRef"
+    },
+    "scenario_delta": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "changed",
+        "scenario_sha_a",
+        "scenario_sha_b"
+      ],
+      "properties": {
+        "changed": {
+          "type": "boolean"
+        },
+        "scenario_sha_a": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "scenario_sha_b": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        }
+      }
+    },
+    "stats_delta": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "p50_ms",
+        "p95_ms",
+        "p99_ms",
+        "error_rate"
+      ],
+      "properties": {
+        "p50_ms": {
+          "type": "integer"
+        },
+        "p95_ms": {
+          "type": "integer"
+        },
+        "p99_ms": {
+          "type": "integer"
+        },
+        "error_rate": {
+          "type": "number"
+        }
+      }
+    },
+    "endpoint_delta": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "key",
+          "latency_delta_ms",
+          "error_rate_delta"
+        ],
+        "properties": {
+          "key": {
+            "type": "string",
+            "minLength": 1
+          },
+          "latency_delta_ms": {
+            "type": "integer"
+          },
+          "error_rate_delta": {
+            "type": "number"
+          }
+        }
+      }
+    },
+    "invariant_delta": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "changed",
+        "new_violations",
+        "resolved_violations"
+      ],
+      "properties": {
+        "changed": {
+          "type": "boolean"
+        },
+        "new_violations": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "resolved_violations": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "discovery_delta": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "profile_hash_changed": {
+          "type": "boolean"
+        },
+        "schema_hash_changed": {
+          "type": "boolean"
+        }
+      }
+    },
+    "unknowns": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "anchors": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/anchor"
+      }
+    },
+    "determinism": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "canonical_writer_version",
+        "diff_fingerprint"
+      ],
+      "properties": {
+        "canonical_writer_version": {
+          "type": "string",
+          "minLength": 1
+        },
+        "diff_fingerprint": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        }
+      }
+    },
+    "generated_at_utc": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "$defs": {
+    "runRef": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "run_id",
+        "evidence_path"
+      ],
+      "properties": {
+        "run_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "evidence_path": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "anchor": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "value"
+      ],
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": [
+            "seq",
+            "request_id",
+            "request_fingerprint",
+            "response_hash",
+            "json_pointer"
+          ]
+        },
+        "value": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    }
+  }
+}

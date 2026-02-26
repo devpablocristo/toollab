@@ -1,0 +1,209 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://toolab.dev/schemas/understanding.v1.schema.json",
+  "title": "Toolab Understanding v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "run_ref",
+    "sections",
+    "claims",
+    "unknowns",
+    "anchors",
+    "determinism"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "integer",
+      "const": 1
+    },
+    "run_ref": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "run_id",
+        "evidence_path"
+      ],
+      "properties": {
+        "run_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "evidence_path": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "sections": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "what_is",
+        "how_to_use",
+        "what_was_tested",
+        "what_happened",
+        "what_failed",
+        "what_is_proven",
+        "what_is_unknown",
+        "how_to_reproduce"
+      ],
+      "properties": {
+        "what_is": {
+          "$ref": "#/$defs/section"
+        },
+        "how_to_use": {
+          "$ref": "#/$defs/section"
+        },
+        "what_was_tested": {
+          "$ref": "#/$defs/section"
+        },
+        "what_happened": {
+          "$ref": "#/$defs/section"
+        },
+        "what_failed": {
+          "$ref": "#/$defs/section"
+        },
+        "what_is_proven": {
+          "$ref": "#/$defs/section"
+        },
+        "what_is_unknown": {
+          "$ref": "#/$defs/section"
+        },
+        "how_to_reproduce": {
+          "$ref": "#/$defs/section"
+        }
+      }
+    },
+    "claims": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/claim"
+      }
+    },
+    "unknowns": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "anchors": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/anchor"
+      }
+    },
+    "determinism": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "canonical_writer_version",
+        "understanding_fingerprint"
+      ],
+      "properties": {
+        "canonical_writer_version": {
+          "type": "string",
+          "minLength": 1
+        },
+        "understanding_fingerprint": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "narrative_only": {
+          "type": "boolean"
+        },
+        "llm_input_sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        }
+      }
+    },
+    "generated_at_utc": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "$defs": {
+    "section": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "summary",
+        "anchors"
+      ],
+      "properties": {
+        "summary": {
+          "type": "string"
+        },
+        "anchors": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/anchor"
+          }
+        }
+      }
+    },
+    "claim": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "statement",
+        "status",
+        "anchors",
+        "missing_evidence"
+      ],
+      "properties": {
+        "statement": {
+          "type": "string",
+          "minLength": 1
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "supported",
+            "unknown"
+          ]
+        },
+        "anchors": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/anchor"
+          }
+        },
+        "missing_evidence": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    },
+    "anchor": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "value"
+      ],
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": [
+            "seq",
+            "request_id",
+            "request_fingerprint",
+            "response_hash",
+            "json_pointer"
+          ]
+        },
+        "value": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    }
+  }
+}

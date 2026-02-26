@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://toolab.dev/schemas/toolab.standard.error.v1.1.schema.json",
+  "title": "Toolab Standard Error Envelope v1.1",
+  "description": "Error payload schema for /_toolab/* endpoints",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "error",
+    "message"
+  ],
+  "properties": {
+    "error": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^[a-z0-9._-]+$"
+    },
+    "message": {
+      "type": "string",
+      "minLength": 1
+    }
+  }
+}
