@@ -1,9 +1,12 @@
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import { api, type Target } from "../../lib/api";
 import { VerdictBadge } from "../../components/VerdictBadge";
 
 export function RunsList() {
+  const deleteButtonClass =
+    "bg-surface-raised border border-fail/30 text-fail px-4 py-2 rounded-xl font-semibold text-sm hover:bg-fail/10 transition-colors disabled:opacity-40";
+  const qc = useQueryClient();
   const { data: runs, isLoading } = useQuery({
     queryKey: ["runs"],
     queryFn: () => api.listRuns(),
@@ -11,6 +14,13 @@ export function RunsList() {
   const { data: targets = [] } = useQuery({
     queryKey: ["targets"],
     queryFn: api.listTargets,
+  });
+  const remove = useMutation({
+    mutationFn: (id: string) => api.deleteRun(id),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["runs"] });
+      qc.invalidateQueries({ queryKey: ["stats"] });
+    },
   });
 
   return (
@@ -71,6 +81,13 @@ export function RunsList() {
                     </span>
                   </div>
                 </Link>
+                <button
+                  onClick={() => remove.mutate(r.id)}
+                  disabled={remove.isPending}
+                  className={`ml-4 ${deleteButtonClass}`}
+                >
+                  Eliminar
+                </button>
               </div>
             </div>
           ))}

@@ -191,7 +191,10 @@ export function Execute() {
         <div className="space-y-3">
           {result.run_id && (
             <div className="bg-pass/10 border border-pass/20 rounded-xl p-4 text-sm">
-              <span className="text-pass font-semibold">Run generado: </span>
+              <span className="text-pass font-semibold">
+                Run generado: {selectedTarget?.name || "Target"}
+              </span>
+              <span className="text-text-secondary mx-2">|</span>
               <Link to={`/runs/${result.run_id}`} className="text-accent font-mono hover:underline">
                 {result.run_id}
               </Link>
