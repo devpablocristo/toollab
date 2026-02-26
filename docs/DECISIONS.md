@@ -109,3 +109,32 @@
   - Keep integers as integers whenever possible.
   - Avoid floating-point emission when not required by schema.
   - When floats are required, emit using stable formatting (`strconv.FormatFloat(..., 'f', -1, 64)` equivalent behavior) in canonical writers.
+
+## D-017 Understanding no-claim policy
+
+- Status: accepted
+- Decision:
+  - `map/explain/diff` are evidence-driven.
+  - Claims without enough evidence must be emitted as `unknown`.
+  - Understanding artifacts never modify deterministic PASS/FAIL assertions.
+
+## D-018 Deterministic understanding artifacts
+
+- Status: accepted
+- Decision:
+  - `system_map.json`, `understanding.json`, and `diff.json` omit runtime timestamps by default.
+  - Fingerprints are computed from canonical JSON excluding informational fields.
+
+## D-019 Enrich aggressive precedence
+
+- Status: accepted
+- Decision:
+  - In `aggressive` mode, TOOLAB discovery may overwrite non-critical defaults.
+  - OpenAPI discovery never overwrites existing manual/TOOLAB values; it only fills gaps.
+
+## D-020 Run CLI argument order
+
+- Status: accepted
+- Decision:
+  - `toolab run` accepts `--out` before or after scenario path.
+  - Parsing is deterministic and rejects unknown flags.

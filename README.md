@@ -35,6 +35,21 @@ With output base directory:
 toolab run scenario.yaml --out golden_runs
 ```
 
+Generation and enrichment:
+
+```bash
+toolab generate --from openapi --openapi-file ./openapi.yaml --out ./scenario.generated.yaml
+toolab enrich ./scenario.generated.yaml --from toolab --target-base-url http://localhost:8080 --out ./scenario.enriched.yaml
+```
+
+Understanding layer:
+
+```bash
+toolab map --from toolab --target-base-url http://localhost:8080 --out ./artifacts
+toolab explain ./golden_runs/<run_id> --out ./artifacts
+toolab diff ./golden_runs/<run_a> ./golden_runs/<run_b> --out ./artifacts
+```
+
 ## Build and Test
 
 ```bash
@@ -51,6 +66,10 @@ Run directory: `golden_runs/<run_id>/`
 - `junit.xml`
 - `decision_tape.jsonl`
 - `repro.sh`
+- `system_map.json`
+- `system_map.md`
+- `understanding.json`
+- `understanding.md`
 
 ## Reproducibility
 
