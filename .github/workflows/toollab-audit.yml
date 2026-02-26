@@ -1,0 +1,72 @@
+name: Toollab API Audit
+
+on:
+  workflow_dispatch:
+    inputs:
+      target_url:
+        description: "Target API base URL"
+        required: true
+      mode:
+        description: "Test mode (smoke|load|chaos)"
+        default: "smoke"
+      from:
+        description: "Discovery source (toollab|openapi)"
+        default: "toollab"
+
+  schedule:
+    - cron: "0 6 * * 1"
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.22"
+
+      - name: Build toollab
+        working-directory: toollab-core
+        run: go build -o ../toollab ./cmd/toollab
+
+      - name: Generate scenario
+        run: |
+          ./toollab generate \
+            --from ${{ inputs.from || 'toollab' }} \
+            --target-base-url ${{ inputs.target_url || env.TARGET_URL }} \
+            --mode ${{ inputs.mode || 'smoke' }}
+
+      - name: Run tests
+        run: |
+          ./toollab run scenarios/scenario.yaml
+          RUN_DIR=$(ls -td golden_runs/*/ | head -1)
+          echo "RUN_DIR=$RUN_DIR" >> $GITHUB_ENV
+
+      - name: Security audit
+        run: ./toollab audit ${{ env.RUN_DIR }}
+
+      - name: Coverage report
+        run: ./toollab coverage ${{ env.RUN_DIR }}
+        continue-on-error: true
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: toollab-audit-results
+          path: |
+            ${{ env.RUN_DIR }}/evidence.json
+            ${{ env.RUN_DIR }}/security_audit.json
+            ${{ env.RUN_DIR }}/coverage_report.json
+            ${{ env.RUN_DIR }}/contract_validation.json
+            ${{ env.RUN_DIR }}/understanding.md
+          retention-days: 30
+
+      - name: Check verdict
+        run: |
+          VERDICT=$(grep '"overall"' ${{ env.RUN_DIR }}/evidence.json | head -1 | grep -o '"PASS"\|"FAIL"')
+          echo "Verdict: $VERDICT"
+          if [ "$VERDICT" = '"FAIL"' ]; then
+            echo "::error::API audit FAILED"
+            exit 1
+          fi

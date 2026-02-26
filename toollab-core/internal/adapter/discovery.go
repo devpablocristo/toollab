@@ -10,6 +10,8 @@ import (
 	"net/http"
 	"strings"
 	"time"
+
+	"toollab-core/internal/discovery"
 )
 
 // Info holds the parsed manifest from a toollab-ready target.
@@ -147,6 +149,18 @@ func (c *Client) Traces(ctx context.Context, since time.Time, limit int) ([]map[
 		return nil, err
 	}
 	return resp.Traces, nil
+}
+
+// --- Description ---
+
+// Description fetches the service description from the adapter.
+// Returns nil if the capability is not available.
+func (c *Client) Description(ctx context.Context) *discovery.ServiceDescription {
+	var desc discovery.ServiceDescription
+	if err := c.getJSON(ctx, "/description", &desc); err != nil {
+		return nil
+	}
+	return &desc
 }
 
 // --- HTTP helpers ---

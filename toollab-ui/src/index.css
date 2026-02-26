@@ -1,0 +1,401 @@
+@import "tailwindcss";
+
+@theme {
+  /* Surfaces — deep navy-black */
+  --color-surface: #060b14;
+  --color-surface-raised: #0c1322;
+  --color-surface-overlay: #121a2e;
+
+  /* Borders */
+  --color-border: #1c2840;
+  --color-border-subtle: #141e30;
+
+  /* Text */
+  --color-text-primary: #e0e6f0;
+  --color-text-secondary: #6b7a94;
+  --color-text-muted: #3d4e66;
+
+  /* Accents — phosphor green */
+  --color-accent: #00e89d;
+  --color-accent-dim: #00c584;
+
+  /* Semantic */
+  --color-pass: #00e89d;
+  --color-fail: #ff3b5c;
+  --color-warning: #ffb020;
+  --color-danger: #ff3b5c;
+  --color-danger-dim: #e62e4f;
+
+  /* Fonts */
+  --font-display: "Syne", system-ui, sans-serif;
+  --font-body: "Outfit", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", "Fira Code", ui-monospace, monospace;
+}
+
+/* ── Base ────────────────────────────────────── */
+
+body {
+  background-color: var(--color-surface);
+  color: var(--color-text-primary);
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-image: radial-gradient(
+    circle,
+    rgba(28, 40, 64, 0.4) 1px,
+    transparent 1px
+  );
+  background-size: 24px 24px;
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--font-display);
+}
+
+::selection {
+  background: rgba(0, 232, 157, 0.2);
+  color: var(--color-accent);
+}
+
+/* ── Scrollbar ───────────────────────────────── */
+
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--color-surface);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-text-muted);
+}
+
+/* ── Keyframes ───────────────────────────────── */
+
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulse-dot {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.4;
+  }
+}
+
+@keyframes glow-breathe {
+  0%,
+  100% {
+    opacity: 0.6;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+@keyframes bar-fill {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+/* ── Animation utilities ─────────────────────── */
+
+.animate-fade-in {
+  animation: fade-in-up 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.stagger-1 {
+  animation-delay: 0.06s;
+}
+.stagger-2 {
+  animation-delay: 0.12s;
+}
+.stagger-3 {
+  animation-delay: 0.18s;
+}
+.stagger-4 {
+  animation-delay: 0.24s;
+}
+.stagger-5 {
+  animation-delay: 0.3s;
+}
+
+/* ── Glow utilities ──────────────────────────── */
+
+.glow-accent {
+  box-shadow:
+    0 0 15px rgba(0, 232, 157, 0.06),
+    inset 0 1px 0 rgba(0, 232, 157, 0.04);
+}
+
+.glow-fail {
+  box-shadow:
+    0 0 15px rgba(255, 59, 92, 0.06),
+    inset 0 1px 0 rgba(255, 59, 92, 0.04);
+}
+
+.text-glow {
+  text-shadow: 0 0 20px rgba(0, 232, 157, 0.3);
+}
+
+.text-glow-fail {
+  text-shadow: 0 0 20px rgba(255, 59, 92, 0.3);
+}
+
+/* ── Lab card component ──────────────────────── */
+
+.lab-card {
+  position: relative;
+  background: var(--color-surface-raised);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: 12px;
+  overflow: hidden;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.lab-card:hover {
+  border-color: var(--color-border);
+}
+
+.lab-card::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: var(--color-accent);
+  opacity: 0.3;
+  transition: opacity 0.2s ease;
+}
+
+.lab-card:hover::before {
+  opacity: 0.7;
+}
+
+.lab-card--fail::before {
+  background: var(--color-fail);
+}
+
+.lab-card--warning::before {
+  background: var(--color-warning);
+}
+
+.lab-card--neutral::before {
+  background: var(--color-text-muted);
+  opacity: 0.15;
+}
+
+.lab-card--neutral:hover::before {
+  opacity: 0.3;
+}
+
+/* ── Input focus ─────────────────────────────── */
+
+input:focus,
+textarea:focus,
+select:focus {
+  border-color: var(--color-accent) !important;
+  box-shadow:
+    0 0 0 1px rgba(0, 232, 157, 0.1),
+    0 0 15px rgba(0, 232, 157, 0.05);
+}
+
+/* ── Gradient dividers ───────────────────────── */
+
+.divider-accent {
+  height: 1px;
+  background: linear-gradient(
+    to right,
+    rgba(0, 232, 157, 0.3),
+    rgba(0, 232, 157, 0.05),
+    transparent
+  );
+}
+
+/* ── LLM Interpretation Prose ─────────────────── */
+
+.llm-prose {
+  font-family: var(--font-body);
+  color: var(--color-text-secondary);
+  font-size: 0.9rem;
+  line-height: 1.8;
+}
+
+.llm-prose h2 {
+  font-family: var(--font-display);
+  color: var(--color-text-primary);
+  font-size: 1.15rem;
+  font-weight: 700;
+  margin-top: 2.5rem;
+  margin-bottom: 1rem;
+  padding-bottom: 0.6rem;
+  border-bottom: 1px solid var(--color-border-subtle);
+  letter-spacing: -0.01em;
+}
+
+.llm-prose h2:first-child {
+  margin-top: 0;
+}
+
+.llm-prose h3 {
+  font-family: var(--font-display);
+  color: var(--color-accent);
+  font-size: 0.95rem;
+  font-weight: 600;
+  margin-top: 2rem;
+  margin-bottom: 0.75rem;
+}
+
+.llm-prose h4 {
+  color: var(--color-text-primary);
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin-top: 1.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.llm-prose p {
+  margin: 0.8rem 0;
+  color: var(--color-text-secondary);
+}
+
+.llm-prose strong {
+  color: var(--color-text-primary);
+  font-weight: 600;
+}
+
+.llm-prose ul,
+.llm-prose ol {
+  margin: 0.8rem 0;
+  padding-left: 1.5rem;
+}
+
+.llm-prose li {
+  margin: 0.5rem 0;
+  padding-left: 0.25rem;
+}
+
+.llm-prose li::marker {
+  color: var(--color-accent);
+}
+
+.llm-prose code {
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  color: var(--color-accent);
+  background: rgba(0, 232, 157, 0.08);
+  padding: 0.15rem 0.45rem;
+  border-radius: 4px;
+  border: 1px solid rgba(0, 232, 157, 0.1);
+}
+
+.llm-prose pre {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: 8px;
+  padding: 1rem 1.25rem;
+  margin: 1rem 0;
+  overflow-x: auto;
+}
+
+.llm-prose pre code {
+  background: none;
+  border: none;
+  padding: 0;
+  color: var(--color-text-secondary);
+  font-size: 0.78rem;
+}
+
+.llm-prose table {
+  width: 100%;
+  margin: 1.25rem 0;
+  border-collapse: separate;
+  border-spacing: 0;
+  border: 1px solid var(--color-border-subtle);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.llm-prose thead {
+  background: var(--color-surface-overlay);
+}
+
+.llm-prose th {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--color-text-muted);
+  text-align: left;
+  padding: 0.65rem 0.85rem;
+  border-bottom: 1px solid var(--color-border-subtle);
+}
+
+.llm-prose td {
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  color: var(--color-text-secondary);
+  padding: 0.6rem 0.85rem;
+  border-bottom: 1px solid var(--color-border-subtle);
+  vertical-align: top;
+}
+
+.llm-prose tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.llm-prose tbody tr:hover {
+  background: rgba(0, 232, 157, 0.02);
+}
+
+.llm-prose hr {
+  border: none;
+  height: 1px;
+  background: linear-gradient(
+    to right,
+    var(--color-border-subtle),
+    transparent
+  );
+  margin: 2rem 0;
+}
+
+.llm-prose blockquote {
+  border-left: 3px solid var(--color-accent);
+  padding: 0.5rem 1rem;
+  margin: 1rem 0;
+  background: rgba(0, 232, 157, 0.03);
+  border-radius: 0 6px 6px 0;
+}
+
+.llm-prose blockquote p {
+  margin: 0.25rem 0;
+}
+
+.llm-prose a {
+  color: var(--color-accent);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}

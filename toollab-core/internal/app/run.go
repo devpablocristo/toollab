@@ -15,11 +15,16 @@ import (
 	"toollab-core/internal/adapter"
 	"toollab-core/internal/assertions"
 	"toollab-core/internal/chaos"
+	"toollab-core/internal/contract"
+	"toollab-core/internal/coverage"
 	"toollab-core/internal/determinism"
+	"toollab-core/internal/discovery"
 	"toollab-core/internal/evidence"
 	"toollab-core/internal/report"
 	"toollab-core/internal/runner"
 	"toollab-core/internal/scenario"
+	"toollab-core/internal/security"
+	"toollab-core/internal/understanding/comprehension"
 	explainmodel "toollab-core/internal/understanding/explain"
 	mapmodel "toollab-core/internal/understanding/map"
 )
@@ -182,11 +187,78 @@ func RunScenario(ctx context.Context, scenarioPath, outBase string) (*RunResult,
 		return nil, err
 	}
 
+	if err := emitAuditArtifacts(runDir, bundle, scn); err != nil {
+		return nil, err
+	}
+
+	systemMap := mapmodel.FromEvidence(bundle)
+
+	// Fetch rich service description if the adapter supports it.
+	var serviceDesc *discovery.ServiceDescription
+	if adapterInfo != nil && adapterInfo.HasCapability("description") && adapterClient != nil {
+		serviceDesc = adapterClient.Description(ctx)
+	}
+
+	if err := emitComprehensionReport(runDir, bundle, scn, systemMap, serviceDesc); err != nil {
+		return nil, err
+	}
+
 	if err := validateEvidenceSchema(bundle); err != nil {
 		return nil, err
 	}
 
 	return &RunResult{RunDir: runDir, Bundle: bundle, Artifacts: artifacts}, nil
+}
+
+func emitAuditArtifacts(runDir string, bundle *evidence.Bundle, scn *scenario.Scenario) error {
+	secReport := security.Audit(bundle)
+	secJSON, err := json.MarshalIndent(secReport, "", "  ")
+	if err != nil {
+		return fmt.Errorf("marshal security report: %w", err)
+	}
+	if err := os.WriteFile(filepath.Join(runDir, "security_audit.json"), secJSON, 0o644); err != nil {
+		return err
+	}
+
+	contractReport := contract.Validate(bundle)
+	contractJSON, err := json.MarshalIndent(contractReport, "", "  ")
+	if err != nil {
+		return fmt.Errorf("marshal contract report: %w", err)
+	}
+	if err := os.WriteFile(filepath.Join(runDir, "contract_validation.json"), contractJSON, 0o644); err != nil {
+		return err
+	}
+
+	covReport := coverage.Analyze(scn, bundle)
+	covJSON, err := json.MarshalIndent(covReport, "", "  ")
+	if err != nil {
+		return fmt.Errorf("marshal coverage report: %w", err)
+	}
+	if err := os.WriteFile(filepath.Join(runDir, "coverage_report.json"), covJSON, 0o644); err != nil {
+		return err
+	}
+	covMD := coverage.RenderMarkdown(covReport)
+	if err := os.WriteFile(filepath.Join(runDir, "coverage_report.md"), []byte(covMD), 0o644); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func emitComprehensionReport(runDir string, bundle *evidence.Bundle, scn *scenario.Scenario, systemMap *mapmodel.SystemMap, desc *discovery.ServiceDescription) error {
+	report := comprehension.Build(bundle, scn, systemMap, desc)
+	reportJSON, _, err := comprehension.WriteCanonical(report)
+	if err != nil {
+		return fmt.Errorf("write comprehension report: %w", err)
+	}
+	if err := os.WriteFile(filepath.Join(runDir, "comprehension.json"), reportJSON, 0o644); err != nil {
+		return err
+	}
+	reportMD := comprehension.RenderMarkdown(report)
+	if err := os.WriteFile(filepath.Join(runDir, "comprehension.md"), []byte(reportMD), 0o644); err != nil {
+		return err
+	}
+	return nil
 }
 
 func emitUnderstandingArtifacts(runDir string, bundle *evidence.Bundle) error {

@@ -12,6 +12,7 @@ import (
 
 	"toollab-core/internal/discovery"
 	"toollab-core/internal/evidence"
+	"toollab-core/internal/llm"
 	"toollab-core/internal/meta"
 	diffmodel "toollab-core/internal/understanding/diff"
 	explainmodel "toollab-core/internal/understanding/explain"
@@ -259,11 +260,25 @@ func ExplainRun(ctx context.Context, cfg ExplainConfig) (*ExplainResult, error) 
 	}
 
 	understanding := explainmodel.Build(bundle, systemMap, evidencePath)
+	var llmNarrative string
 	if cfg.LLMMode == "on" {
 		llmInput, cErr := utils.CanonicalJSON(understanding)
 		if cErr == nil {
 			understanding.Determinism.NarrativeOnly = true
 			understanding.Determinism.LLMInputSHA256 = utils.SHA256Hex(llmInput)
+		}
+
+		ollamaClient := llm.NewClient()
+		if ollamaClient.Available(ctx) {
+			summary := buildEvidenceSummary(bundle)
+			narrative, llmErr := ollamaClient.ExplainEvidence(ctx, summary)
+			if llmErr != nil {
+				warnings = append(warnings, "llm narrative failed: "+llmErr.Error())
+			} else {
+				llmNarrative = narrative
+			}
+		} else {
+			warnings = append(warnings, "llm requested but ollama not available at "+os.Getenv("OLLAMA_URL"))
 		}
 	}
 	understandingJSON, fp, err := explainmodel.WriteCanonical(understanding)
@@ -274,6 +289,9 @@ func ExplainRun(ctx context.Context, cfg ExplainConfig) (*ExplainResult, error) 
 		return nil, err
 	}
 	understandingMD := explainmodel.RenderMD(understanding)
+	if llmNarrative != "" {
+		understandingMD = append(understandingMD, []byte("\n\n---\n\n## LLM Narrative (Ollama)\n\n"+llmNarrative+"\n")...)
+	}
 
 	hashes := meta.HashesInfo{
 		EvidenceSHA256:      utils.SHA256Hex(evidenceRaw),
@@ -545,4 +563,77 @@ func normalizeOutputDir(path string) string {
 		return filepath.Dir(path)
 	}
 	return path
+}
+
+func buildEvidenceSummary(b *evidence.Bundle) string {
+	var sb strings.Builder
+
+	sb.WriteString("# Test Run Summary\n\n")
+	sb.WriteString(fmt.Sprintf("Target API: %s\n", b.ScenarioFingerprint.ScenarioPath))
+	sb.WriteString(fmt.Sprintf("Mode: %s | Concurrency: %d | Duration: %ds\n", b.Metadata.Mode, b.Execution.Concurrency, b.Execution.DurationS))
+	sb.WriteString(fmt.Sprintf("Total requests: %d (planned: %d, completed: %d)\n", b.Stats.TotalRequests, b.Execution.PlannedRequests, b.Execution.CompletedRequests))
+	sb.WriteString(fmt.Sprintf("Overall verdict: %s\n", b.Assertions.Overall))
+	sb.WriteString(fmt.Sprintf("Success rate: %.2f%% | Error rate: %.2f%%\n", b.Stats.SuccessRate*100, b.Stats.ErrorRate*100))
+	sb.WriteString(fmt.Sprintf("Latency P50: %dms | P95: %dms | P99: %dms\n", b.Stats.P50MS, b.Stats.P95MS, b.Stats.P99MS))
+
+	sb.WriteString("\n## Assertion Rules\n")
+	for _, rule := range b.Assertions.Rules {
+		status := "PASS"
+		if !rule.Passed {
+			status = "FAIL"
+		}
+		sb.WriteString(fmt.Sprintf("  [%s] %s — %s (observed: %v, threshold: %v)\n", status, rule.ID, rule.Message, rule.Observed, rule.Expected))
+	}
+
+	type flowStats struct {
+		method       string
+		path         string
+		total        int
+		byStatus     map[int]int
+		errors       int
+		totalLatency int
+	}
+	flows := map[string]*flowStats{}
+	var flowOrder []string
+	for _, o := range b.Outcomes {
+		key := o.Method + " " + o.Path
+		fs, ok := flows[key]
+		if !ok {
+			fs = &flowStats{method: o.Method, path: o.Path, byStatus: map[int]int{}}
+			flows[key] = fs
+			flowOrder = append(flowOrder, key)
+		}
+		fs.total++
+		fs.totalLatency += o.LatencyMS
+		if o.StatusCode != nil {
+			fs.byStatus[*o.StatusCode]++
+		}
+		if o.ErrorKind != "" || (o.StatusCode != nil && *o.StatusCode >= 400) {
+			fs.errors++
+		}
+	}
+
+	sb.WriteString(fmt.Sprintf("\n## Per-Flow Breakdown (%d unique endpoints tested)\n\n", len(flows)))
+	sb.WriteString("| Method | Path | Reqs | AvgMs | Err% | Status Codes |\n")
+	sb.WriteString("|--------|------|------|-------|------|--------------|\n")
+	for _, key := range flowOrder {
+		fs := flows[key]
+		avgLat := 0
+		if fs.total > 0 {
+			avgLat = fs.totalLatency / fs.total
+		}
+		errPct := float64(fs.errors) / float64(fs.total) * 100
+		var statuses []string
+		for code, count := range fs.byStatus {
+			statuses = append(statuses, fmt.Sprintf("%d×%d", count, code))
+		}
+		sb.WriteString(fmt.Sprintf("| %s | %s | %d | %d | %.0f%% | %s |\n",
+			fs.method, fs.path, fs.total, avgLat, errPct, strings.Join(statuses, ", ")))
+	}
+	sb.WriteString("\n")
+
+	if len(b.Unknowns) > 0 {
+		sb.WriteString(fmt.Sprintf("\n## Unknowns\n%s\n", strings.Join(b.Unknowns, "; ")))
+	}
+	return sb.String()
 }

@@ -25,14 +25,15 @@ type ToollabOptions struct {
 }
 
 type ToollabBuildResult struct {
-	Scenario     *scenario.Scenario
-	ManifestHash string
-	ProfileHash  string
-	OpenAPIHash  string
-	Warnings     []string
-	Unknowns     []string
-	DeclaredCaps []string
-	UsedCaps     []string
+	Scenario           *scenario.Scenario
+	ServiceDescription *discovery.ServiceDescription
+	ManifestHash       string
+	ProfileHash        string
+	OpenAPIHash        string
+	Warnings           []string
+	Unknowns           []string
+	DeclaredCaps       []string
+	UsedCaps           []string
 }
 
 var invariantRequestIDPattern = regexp.MustCompile(`^[A-Za-z0-9_.-]+$`)
@@ -187,14 +188,28 @@ func BuildFromToollab(ctx context.Context, fetcher *discovery.ToollabFetcher, op
 	}
 	applyLimitsDefaults(scn, limits)
 
+	// Fetch service description if available.
+	var serviceDesc *discovery.ServiceDescription
+	if contains(manifest.Capabilities, "description") {
+		desc, _, dWarn, dErr := fetcher.Description(ctx, auth)
+		warnings = append(warnings, dWarn...)
+		if dErr != nil {
+			unknowns = append(unknowns, "description fetch failed")
+		} else {
+			serviceDesc = desc
+			usedCaps = append(usedCaps, "description")
+		}
+	}
+
 	out := &ToollabBuildResult{
-		Scenario:     scn,
-		ManifestHash: manifestHash,
-		ProfileHash:  profileHash,
-		Warnings:     uniqueSortedStrings(warnings),
-		Unknowns:     uniqueSortedStrings(unknowns),
-		DeclaredCaps: declared,
-		UsedCaps:     uniqueSortedStrings(usedCaps),
+		Scenario:           scn,
+		ServiceDescription: serviceDesc,
+		ManifestHash:       manifestHash,
+		ProfileHash:        profileHash,
+		Warnings:           uniqueSortedStrings(warnings),
+		Unknowns:           uniqueSortedStrings(unknowns),
+		DeclaredCaps:       declared,
+		UsedCaps:           uniqueSortedStrings(usedCaps),
 	}
 	return out, nil
 }

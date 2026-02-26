@@ -74,6 +74,15 @@ func (f *ToollabFetcher) OpenAPI(ctx context.Context, auth *AuthConfig) ([]byte,
 	return raw, HashBytes(raw), nil, nil
 }
 
+func (f *ToollabFetcher) Description(ctx context.Context, auth *AuthConfig) (*ServiceDescription, string, []string, error) {
+	var out ServiceDescription
+	hash, warnings, err := f.getJSON(ctx, "/description", auth, &out)
+	if err != nil {
+		return nil, "", warnings, err
+	}
+	return &out, hash, warnings, nil
+}
+
 func (f *ToollabFetcher) RawJSON(ctx context.Context, suffix string, auth *AuthConfig) (json.RawMessage, string, []string, error) {
 	var decoded any
 	hash, warnings, err := f.getJSON(ctx, suffix, auth, &decoded)

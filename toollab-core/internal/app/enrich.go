@@ -179,6 +179,13 @@ func EnrichScenario(ctx context.Context, cfg EnrichConfig) (*EnrichResult, error
 	}
 	warnings = append(warnings, mergeResult.Warnings...)
 
+	// Resolve path parameters by querying the live API.
+	if cfg.TargetBaseURL != "" {
+		paramChanges, paramWarnings := enrich.ResolvePathParams(ctx, mergeResult.Scenario)
+		mergeResult.Changes = append(mergeResult.Changes, paramChanges...)
+		warnings = append(warnings, paramWarnings...)
+	}
+
 	scenarioYAML, scenarioSHA, err := scenariowrite.WriteCanonicalScenario(mergeResult.Scenario)
 	if err != nil {
 		return nil, err

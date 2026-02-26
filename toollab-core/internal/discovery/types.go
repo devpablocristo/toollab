@@ -43,5 +43,61 @@ type Profile struct {
 	Limits          json.RawMessage `json:"limits,omitempty"`
 	Environment     json.RawMessage `json:"environment,omitempty"`
 	OpenAPI         json.RawMessage `json:"openapi,omitempty"`
+	Description     json.RawMessage `json:"description,omitempty"`
 	Unknowns        []string        `json:"unknowns,omitempty"`
+}
+
+// ServiceDescription mirrors the adapter-side description for typed access.
+type ServiceDescription struct {
+	Purpose              string                `json:"purpose"`
+	Domain               string                `json:"domain"`
+	Consumers            string                `json:"consumers,omitempty"`
+	Models               []ModelDescription    `json:"models,omitempty"`
+	EndpointDescriptions []EndpointDescription `json:"endpoints,omitempty"`
+	Dependencies         []DependencyInfo      `json:"dependencies,omitempty"`
+}
+
+type ModelDescription struct {
+	Name        string             `json:"name"`
+	Description string             `json:"description"`
+	Fields      []FieldDescription `json:"fields,omitempty"`
+	Relations   []RelationInfo     `json:"relations,omitempty"`
+}
+
+type FieldDescription struct {
+	Name        string `json:"name"`
+	Type        string `json:"type"`
+	Required    bool   `json:"required"`
+	Description string `json:"description,omitempty"`
+	Example     string `json:"example,omitempty"`
+}
+
+type RelationInfo struct {
+	Target      string `json:"target"`
+	Type        string `json:"type"`
+	Description string `json:"description,omitempty"`
+}
+
+type EndpointDescription struct {
+	Method          string      `json:"method"`
+	Path            string      `json:"path"`
+	Summary         string      `json:"summary"`
+	Description     string      `json:"description,omitempty"`
+	Category        string      `json:"category,omitempty"`
+	RequestExample  string      `json:"request_example,omitempty"`
+	ResponseExample string      `json:"response_example,omitempty"`
+	ErrorCodes      []ErrorCode `json:"error_codes,omitempty"`
+	RequiresAuth    bool        `json:"requires_auth"`
+}
+
+type ErrorCode struct {
+	Status      int    `json:"status"`
+	Description string `json:"description"`
+}
+
+type DependencyInfo struct {
+	Name        string `json:"name"`
+	Type        string `json:"type"`
+	Description string `json:"description,omitempty"`
+	Required    bool   `json:"required"`
 }

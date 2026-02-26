@@ -2,6 +2,7 @@ package app
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -78,6 +79,7 @@ func GenerateScenario(ctx context.Context, cfg GenerateConfig) (*GenerateResult,
 
 	var (
 		scn            = (*scenario.Scenario)(nil)
+		build          *generate.ToollabBuildResult
 		warnings       []string
 		unknowns       []string
 		openapiHash    string
@@ -151,7 +153,8 @@ func GenerateScenario(ctx context.Context, cfg GenerateConfig) (*GenerateResult,
 		if err != nil {
 			return nil, err
 		}
-		build, bErr := generate.BuildFromToollab(ctx, toollabFetcher, openapiFetcher, toollabAuth, generate.ToollabOptions{
+		var bErr error
+		build, bErr = generate.BuildFromToollab(ctx, toollabFetcher, openapiFetcher, toollabAuth, generate.ToollabOptions{
 			TargetBaseURL:        cfg.TargetBaseURL,
 			ToollabURL:           toollabBase,
 			Prefer:               cfg.Prefer,
@@ -250,6 +253,15 @@ func GenerateScenario(ctx context.Context, cfg GenerateConfig) (*GenerateResult,
 		}
 		result.OutPath = filepath.Clean(cfg.OutPath)
 		result.MetaPath = filepath.Clean(metaPath)
+
+		// Persist service description if captured from adapter.
+		if cfg.From == "toollab" && build != nil && build.ServiceDescription != nil {
+			descJSON, dErr := json.MarshalIndent(build.ServiceDescription, "", "  ")
+			if dErr == nil {
+				descPath := filepath.Join(filepath.Dir(cfg.OutPath), "service_description.json")
+				_ = os.WriteFile(descPath, descJSON, 0o644)
+			}
+		}
 	}
 	return result, nil
 }

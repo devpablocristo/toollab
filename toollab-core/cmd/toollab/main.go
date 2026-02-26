@@ -2,16 +2,28 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"flag"
 	"fmt"
 	"os"
+	"path/filepath"
 	"strings"
 
 	"toollab-core/internal/app"
+	"toollab-core/internal/contract"
+	"toollab-core/internal/coverage"
 	"toollab-core/internal/enrich"
+	"toollab-core/internal/evidence"
+	"toollab-core/internal/llm"
+	"toollab-core/internal/scenario"
+	"toollab-core/internal/security"
+	"toollab-core/internal/understanding/comprehension"
+	mapmodel "toollab-core/internal/understanding/map"
 )
 
 func main() {
+	loadEnvFiles()
+
 	if len(os.Args) < 2 {
 		usage()
 		os.Exit(2)
@@ -54,6 +66,26 @@ func main() {
 		}
 	case "diff":
 		if err := handleDiff(os.Args[2:]); err != nil {
+			fmt.Fprintln(os.Stderr, err.Error())
+			os.Exit(1)
+		}
+	case "interpret":
+		if err := handleInterpret(os.Args[2:]); err != nil {
+			fmt.Fprintln(os.Stderr, err.Error())
+			os.Exit(1)
+		}
+	case "audit":
+		if err := handleAudit(os.Args[2:]); err != nil {
+			fmt.Fprintln(os.Stderr, err.Error())
+			os.Exit(1)
+		}
+	case "coverage":
+		if err := handleCoverage(os.Args[2:]); err != nil {
+			fmt.Fprintln(os.Stderr, err.Error())
+			os.Exit(1)
+		}
+	case "comprehend":
+		if err := handleComprehend(os.Args[2:]); err != nil {
 			fmt.Fprintln(os.Stderr, err.Error())
 			os.Exit(1)
 		}
@@ -126,6 +158,10 @@ func usage() {
 	fmt.Println("  toollab enrich <scenario.yaml> --from openapi|toollab [flags]")
 	fmt.Println("  toollab map --from openapi|toollab [flags]")
 	fmt.Println("  toollab explain <run_dir> [flags]")
+	fmt.Println("  toollab interpret <run_dir>              (LLM narrative via Ollama)")
+	fmt.Println("  toollab audit <run_dir>                  (security audit)")
+	fmt.Println("  toollab coverage <run_dir>               (endpoint coverage report)")
+	fmt.Println("  toollab comprehend <run_dir>             (full comprehension report)")
 	fmt.Println("  toollab diff <runA_dir> <runB_dir> [flags]")
 	fmt.Println("  toollab gen <openapi-spec> [flags] (alias)")
 }
@@ -429,4 +465,360 @@ func handleDiff(args []string) error {
 	fmt.Printf("diff_fingerprint=%s\n", res.Fingerprint)
 	fmt.Printf("diff_meta_path=%s\n", res.MetaPath)
 	return nil
+}
+
+func handleInterpret(args []string) error {
+	if len(args) == 0 {
+		return fmt.Errorf("usage: toollab interpret <run_dir>")
+	}
+	runDir := args[0]
+
+	ollamaClient := llm.NewClient()
+	if !ollamaClient.Available(context.Background()) {
+		return fmt.Errorf("ollama not available — start it with: ollama serve\n  model: %s (set OLLAMA_MODEL to change)", ollamaClient.Model())
+	}
+
+	evidencePath := filepath.Join(runDir, "evidence.json")
+	raw, err := os.ReadFile(evidencePath)
+	if err != nil {
+		return fmt.Errorf("read evidence: %w", err)
+	}
+
+	var bundle evidence.Bundle
+	if err := json.Unmarshal(raw, &bundle); err != nil {
+		return fmt.Errorf("parse evidence: %w", err)
+	}
+
+	fmt.Fprintf(os.Stderr, "interpreting run %s with %s...\n", bundle.Metadata.RunID, ollamaClient.Model())
+
+	summary := buildInterpretSummary(&bundle)
+	narrative, err := ollamaClient.ExplainEvidence(context.Background(), summary)
+	if err != nil {
+		return fmt.Errorf("llm generation failed: %w", err)
+	}
+
+	fmt.Println(narrative)
+	return nil
+}
+
+func buildInterpretSummary(b *evidence.Bundle) string {
+	var sb strings.Builder
+
+	sb.WriteString("# Test Run Summary\n\n")
+	sb.WriteString(fmt.Sprintf("Target API: %s\n", b.ScenarioFingerprint.ScenarioPath))
+	sb.WriteString(fmt.Sprintf("Mode: %s | Concurrency: %d | Duration: %ds\n", b.Metadata.Mode, b.Execution.Concurrency, b.Execution.DurationS))
+	sb.WriteString(fmt.Sprintf("Total requests: %d (planned: %d, completed: %d)\n", b.Stats.TotalRequests, b.Execution.PlannedRequests, b.Execution.CompletedRequests))
+	sb.WriteString(fmt.Sprintf("Overall verdict: %s\n", b.Assertions.Overall))
+	sb.WriteString(fmt.Sprintf("Success rate: %.2f%% | Error rate: %.2f%%\n", b.Stats.SuccessRate*100, b.Stats.ErrorRate*100))
+	sb.WriteString(fmt.Sprintf("Latency P50: %dms | P95: %dms | P99: %dms\n", b.Stats.P50MS, b.Stats.P95MS, b.Stats.P99MS))
+
+	sb.WriteString("\n## Assertion Rules\n")
+	for _, rule := range b.Assertions.Rules {
+		status := "PASS"
+		if !rule.Passed {
+			status = "FAIL"
+		}
+		sb.WriteString(fmt.Sprintf("  [%s] %s — %s (observed: %v, threshold: %v)\n", status, rule.ID, rule.Message, rule.Observed, rule.Expected))
+	}
+
+	type flowStats struct {
+		method       string
+		path         string
+		total        int
+		byStatus     map[int]int
+		errors       int
+		totalLatency int
+	}
+	flows := map[string]*flowStats{}
+	var flowOrder []string
+	for _, o := range b.Outcomes {
+		key := o.Method + " " + o.Path
+		fs, ok := flows[key]
+		if !ok {
+			fs = &flowStats{method: o.Method, path: o.Path, byStatus: map[int]int{}}
+			flows[key] = fs
+			flowOrder = append(flowOrder, key)
+		}
+		fs.total++
+		fs.totalLatency += o.LatencyMS
+		if o.StatusCode != nil {
+			fs.byStatus[*o.StatusCode]++
+		}
+		if o.ErrorKind != "" || (o.StatusCode != nil && *o.StatusCode >= 400) {
+			fs.errors++
+		}
+	}
+
+	sb.WriteString(fmt.Sprintf("\n## Per-Flow Breakdown (%d unique endpoints tested)\n\n", len(flows)))
+	sb.WriteString("| Method | Path | Reqs | AvgMs | Err% | Status Codes |\n")
+	sb.WriteString("|--------|------|------|-------|------|--------------|\n")
+	for _, key := range flowOrder {
+		fs := flows[key]
+		avgLat := 0
+		if fs.total > 0 {
+			avgLat = fs.totalLatency / fs.total
+		}
+		errPct := float64(fs.errors) / float64(fs.total) * 100
+
+		var statuses []string
+		for code, count := range fs.byStatus {
+			statuses = append(statuses, fmt.Sprintf("%d×%d", count, code))
+		}
+		sb.WriteString(fmt.Sprintf("| %s | %s | %d | %d | %.0f%% | %s |\n",
+			fs.method, fs.path, fs.total, avgLat, errPct, strings.Join(statuses, ", ")))
+	}
+	sb.WriteString("\n")
+
+	if len(b.Samples) > 0 {
+		sb.WriteString("## Request/Response Samples\n\n")
+		seen := map[string]bool{}
+		count := 0
+		for _, s := range b.Samples {
+			if count >= 15 {
+				break
+			}
+			key := s.Request.Method + " " + s.Request.URL
+			if seen[key] {
+				continue
+			}
+			seen[key] = true
+			count++
+			sc := "N/A"
+			if s.Response.StatusCode != nil {
+				sc = fmt.Sprintf("%d", *s.Response.StatusCode)
+			}
+			sb.WriteString(fmt.Sprintf("**%s %s → %s**\n", s.Request.Method, s.Request.URL, sc))
+			if s.Request.BodyPreview != "" {
+				body := s.Request.BodyPreview
+				if len(body) > 150 {
+					body = body[:150] + "…"
+				}
+				sb.WriteString(fmt.Sprintf("  Req: %s\n", body))
+			}
+			if s.Response.BodyPreview != "" {
+				body := s.Response.BodyPreview
+				if len(body) > 150 {
+					body = body[:150] + "…"
+				}
+				sb.WriteString(fmt.Sprintf("  Res: %s\n", body))
+			}
+			sb.WriteString("\n")
+		}
+	}
+
+	if len(b.Unknowns) > 0 {
+		sb.WriteString(fmt.Sprintf("\n## Unknowns\n%s\n", strings.Join(b.Unknowns, "; ")))
+	}
+	return sb.String()
+}
+
+func handleAudit(args []string) error {
+	if len(args) == 0 {
+		return fmt.Errorf("usage: toollab audit <run_dir>")
+	}
+	runDir := args[0]
+
+	evidencePath := filepath.Join(runDir, "evidence.json")
+	raw, err := os.ReadFile(evidencePath)
+	if err != nil {
+		return fmt.Errorf("read evidence: %w", err)
+	}
+
+	var bundle evidence.Bundle
+	if err := json.Unmarshal(raw, &bundle); err != nil {
+		return fmt.Errorf("parse evidence: %w", err)
+	}
+
+	report := security.Audit(&bundle)
+
+	fmt.Printf("Security Audit — Grade: %s (Score: %d/100)\n\n", report.Grade, report.Score)
+	fmt.Printf("Findings: %d total (%d critical, %d high, %d medium, %d low)\n\n",
+		report.Summary.Total, report.Summary.Critical, report.Summary.High, report.Summary.Medium, report.Summary.Low)
+
+	for _, f := range report.Findings {
+		icon := "•"
+		switch f.Severity {
+		case "critical":
+			icon = "🔴"
+		case "high":
+			icon = "🟠"
+		case "medium":
+			icon = "🟡"
+		case "low":
+			icon = "🔵"
+		}
+		fmt.Printf("%s [%s] %s\n", icon, f.Severity, f.Title)
+		fmt.Printf("   %s\n", f.Description)
+		if f.Endpoint != "" {
+			fmt.Printf("   Endpoint: %s\n", f.Endpoint)
+		}
+		fmt.Printf("   Remediación: %s\n\n", f.Remediation)
+	}
+
+	if len(report.Findings) == 0 {
+		fmt.Println("No se encontraron hallazgos de seguridad.")
+	}
+
+	reportJSON, _ := json.MarshalIndent(report, "", "  ")
+	outPath := filepath.Join(runDir, "security_audit.json")
+	if err := os.WriteFile(outPath, reportJSON, 0o644); err != nil {
+		return fmt.Errorf("write audit report: %w", err)
+	}
+	fmt.Printf("Reporte guardado en: %s\n", outPath)
+	return nil
+}
+
+func handleCoverage(args []string) error {
+	if len(args) == 0 {
+		return fmt.Errorf("usage: toollab coverage <run_dir>")
+	}
+	runDir := args[0]
+
+	evidencePath := filepath.Join(runDir, "evidence.json")
+	raw, err := os.ReadFile(evidencePath)
+	if err != nil {
+		return fmt.Errorf("read evidence: %w", err)
+	}
+
+	var bundle evidence.Bundle
+	if err := json.Unmarshal(raw, &bundle); err != nil {
+		return fmt.Errorf("parse evidence: %w", err)
+	}
+
+	scenarioPath := bundle.ScenarioFingerprint.ScenarioPath
+	scn, _, err := scenario.Load(scenarioPath)
+	if err != nil {
+		return fmt.Errorf("load scenario for coverage analysis: %w (path: %s)", err, scenarioPath)
+	}
+
+	report := coverage.Analyze(scn, &bundle)
+
+	fmt.Println(coverage.RenderMarkdown(report))
+
+	reportJSON, _ := json.MarshalIndent(report, "", "  ")
+	outPath := filepath.Join(runDir, "coverage_report.json")
+	if err := os.WriteFile(outPath, reportJSON, 0o644); err != nil {
+		return fmt.Errorf("write coverage report: %w", err)
+	}
+	fmt.Printf("Reporte guardado en: %s\n", outPath)
+
+	contractReport := contract.Validate(&bundle)
+	contractJSON, _ := json.MarshalIndent(contractReport, "", "  ")
+	contractPath := filepath.Join(runDir, "contract_validation.json")
+	if err := os.WriteFile(contractPath, contractJSON, 0o644); err != nil {
+		return fmt.Errorf("write contract report: %w", err)
+	}
+
+	fmt.Printf("\nValidación de Contratos: %s\n", func() string {
+		if contractReport.Compliant {
+			return "CONFORME"
+		}
+		return "NO CONFORME"
+	}())
+	fmt.Printf("Compliance Rate: %.1f%% (%d violaciones de %d checks)\n",
+		contractReport.ComplianceRate*100, contractReport.TotalViolations, contractReport.TotalChecks)
+
+	if len(contractReport.Violations) > 0 {
+		fmt.Println("\nViolaciones detectadas:")
+		for _, v := range contractReport.Violations {
+			fmt.Printf("  • [%d] %s — %s\n", v.StatusCode, v.Endpoint, v.Description)
+			fmt.Printf("    Esperado: %s | Actual: %s\n", v.Expected, v.Actual)
+		}
+	}
+
+	fmt.Printf("\nReporte de contratos guardado en: %s\n", contractPath)
+	return nil
+}
+
+func handleComprehend(args []string) error {
+	if len(args) == 0 {
+		return fmt.Errorf("usage: toollab comprehend <run_dir>")
+	}
+	runDir := args[0]
+
+	evidencePath := filepath.Join(runDir, "evidence.json")
+	raw, err := os.ReadFile(evidencePath)
+	if err != nil {
+		return fmt.Errorf("read evidence: %w", err)
+	}
+
+	var bundle evidence.Bundle
+	if err := json.Unmarshal(raw, &bundle); err != nil {
+		return fmt.Errorf("parse evidence: %w", err)
+	}
+
+	scenarioPath := bundle.ScenarioFingerprint.ScenarioPath
+	var scn *scenario.Scenario
+	if scenarioPath != "" {
+		loaded, _, err := scenario.Load(scenarioPath)
+		if err == nil {
+			scn = loaded
+		}
+	}
+
+	systemMap := mapmodel.FromEvidence(&bundle)
+
+	report := comprehension.Build(&bundle, scn, systemMap, nil)
+
+	md := comprehension.RenderMarkdown(report)
+	fmt.Println(md)
+
+	reportJSON, _, err := comprehension.WriteCanonical(report)
+	if err != nil {
+		return fmt.Errorf("write comprehension: %w", err)
+	}
+	outJSON := filepath.Join(runDir, "comprehension.json")
+	if err := os.WriteFile(outJSON, reportJSON, 0o644); err != nil {
+		return fmt.Errorf("write comprehension json: %w", err)
+	}
+	outMD := filepath.Join(runDir, "comprehension.md")
+	if err := os.WriteFile(outMD, []byte(md), 0o644); err != nil {
+		return fmt.Errorf("write comprehension md: %w", err)
+	}
+
+	fmt.Fprintf(os.Stderr, "\nReportes guardados en:\n  %s\n  %s\n", outJSON, outMD)
+	return nil
+}
+
+// loadEnvFiles loads variables from .env files without overwriting
+// existing environment variables. It searches: .env in the current
+// directory, then walks up to 5 parent directories looking for .env.
+func loadEnvFiles() {
+	paths := []string{".env"}
+
+	dir, err := os.Getwd()
+	if err == nil {
+		for i := 0; i < 5; i++ {
+			parent := filepath.Dir(dir)
+			if parent == dir {
+				break
+			}
+			dir = parent
+			candidate := filepath.Join(dir, ".env")
+			paths = append(paths, candidate)
+		}
+	}
+
+	for _, p := range paths {
+		raw, err := os.ReadFile(p)
+		if err != nil {
+			continue
+		}
+		for _, line := range strings.Split(string(raw), "\n") {
+			line = strings.TrimSpace(line)
+			if line == "" || strings.HasPrefix(line, "#") {
+				continue
+			}
+			key, value, ok := strings.Cut(line, "=")
+			if !ok {
+				continue
+			}
+			key = strings.TrimSpace(key)
+			value = strings.TrimSpace(value)
+			value = strings.Trim(value, "'\"")
+			if os.Getenv(key) == "" {
+				os.Setenv(key, value)
+			}
+		}
+	}
 }
