@@ -3,10 +3,10 @@ mode: black
 target:
   base_url: https://api.example.com
   headers:
-    x-client: toolab
+    x-client: toollab
   auth:
     type: api_key
-    api_key_env: TOOLAB_API_KEY
+    api_key_env: TOOLLAB_API_KEY
     in: header
     name: x-api-key
 workload:

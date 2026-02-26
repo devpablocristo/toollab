@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://toolab.dev/schemas/diff.v1.schema.json",
-  "title": "Toolab Diff v1",
+  "$id": "https://toollab.dev/schemas/diff.v1.schema.json",
+  "title": "Toollab Diff v1",
   "type": "object",
   "additionalProperties": false,
   "required": [

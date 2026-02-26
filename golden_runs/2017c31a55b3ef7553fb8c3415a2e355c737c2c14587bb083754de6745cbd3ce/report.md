@@ -1,4 +1,4 @@
-# Toolab Report
+# Toollab Report
 
 ## 1. Executive summary (30s)
 - overall: **FAIL**
@@ -25,6 +25,6 @@
 - logs_excerpt unavailable: not configured
 
 ## 6. Cómo reproducir
-- command: `toolab run ../testdata/e2e/scenario.yaml --out ../golden_runs`
+- command: `toollab run ../testdata/e2e/scenario.yaml --out ../golden_runs`
 - script: ``
 - expected fingerprint: `5deef5b7c84e8a65c66837f5f10525c4f0d71b62a42291476daccfbf51c68d98`

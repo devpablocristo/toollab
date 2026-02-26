@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <testsuites>
-  <testsuite name="toolab.assertions" tests="4" failures="0">
+  <testsuite name="toollab.assertions" tests="4" failures="0">
     <testcase name="threshold_error_rate"></testcase>
     <testcase name="threshold_p95_ms"></testcase>
     <testcase name="invariant_00_no_5xx_allowed"></testcase>

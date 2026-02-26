@@ -8,7 +8,7 @@
 ## D-002 Naming
 
 - Status: accepted
-- Decision: product and CLI naming is `toolab` (single `l`).
+- Decision: product and CLI naming is `toollab` (single `l`).
 
 ## D-003 Chaos error mode v1
 
@@ -36,22 +36,22 @@
 
 - Status: accepted
 - Decision:
-  - `profile` is the primary adapter discovery capability for Toolab audits.
+  - `profile` is the primary adapter discovery capability for Toollab audits.
   - `openapi` remains optional and is used as fallback when profile/flows are insufficient.
 
 ## D-008 API-agnostic standard packaging
 
 - Status: accepted
 - Decision:
-  - Toolab Standard is domain-agnostic and reusable for any HTTP API.
+  - Toollab Standard is domain-agnostic and reusable for any HTTP API.
   - Conformance output is standardized through a reusable report schema and checklist.
 
 ## D-009 Generate command alias
 
 - Status: accepted
 - Decision:
-  - `toolab gen` remains backward-compatible.
-  - `toolab gen` is an alias of `toolab generate --from openapi`.
+  - `toollab gen` remains backward-compatible.
+  - `toollab gen` is an alias of `toollab generate --from openapi`.
 
 ## D-010 Derived seed algorithm
 
@@ -65,7 +65,7 @@
   - Input hashing rules:
     - file inputs: `sha256(file_bytes)`
     - URL inputs: `sha256(response_bytes)` plus canonical URL
-    - TOOLAB endpoint payloads: hash `canonical_json(response_body)`
+    - TOOLLAB endpoint payloads: hash `canonical_json(response_body)`
   - `generated_at_utc` is excluded from seed derivation.
 
 ## D-011 Output path policy
@@ -79,14 +79,14 @@
 
 - Status: accepted
 - Decision:
-  - For TOOLAB discovery, `/_toolab/profile` is the primary source when available.
+  - For TOOLLAB discovery, `/_toollab/profile` is the primary source when available.
   - OpenAPI is fallback only when profile/flows are insufficient.
 
 ## D-013 Naming policy
 
 - Status: accepted
 - Decision:
-  - Product, CLI, and schemas use `toolab` (single `l`) only.
+  - Product, CLI, and schemas use `toollab` (single `l`) only.
   - The string `toollab` is prohibited in paths, schema ids, and public fields.
 
 ## D-014 Enrichment changes path format
@@ -129,12 +129,12 @@
 
 - Status: accepted
 - Decision:
-  - In `aggressive` mode, TOOLAB discovery may overwrite non-critical defaults.
-  - OpenAPI discovery never overwrites existing manual/TOOLAB values; it only fills gaps.
+  - In `aggressive` mode, TOOLLAB discovery may overwrite non-critical defaults.
+  - OpenAPI discovery never overwrites existing manual/TOOLLAB values; it only fills gaps.
 
 ## D-020 Run CLI argument order
 
 - Status: accepted
 - Decision:
-  - `toolab run` accepts `--out` before or after scenario path.
+  - `toollab run` accepts `--out` before or after scenario path.
   - Parsing is deterministic and rejects unknown flags.

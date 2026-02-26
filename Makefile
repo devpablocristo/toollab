@@ -3,10 +3,10 @@ SHELL := /bin/bash
 .PHONY: test fmt run
 
 test:
-	cd toolab-core && go test ./...
+	cd toollab-core && go test ./...
 
 fmt:
-	cd toolab-core && gofmt -w .
+	cd toollab-core && gofmt -w .
 
 run:
-	cd toolab-core && go run ./cmd/toolab run ../testdata/e2e/scenario.yaml
+	cd toollab-core && go run ./cmd/toollab run ../testdata/e2e/scenario.yaml

@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://toolab.dev/schemas/scenario.v1.schema.json",
-  "title": "Toolab Scenario v1",
+  "$id": "https://toollab.dev/schemas/scenario.v1.schema.json",
+  "title": "Toollab Scenario v1",
   "type": "object",
   "additionalProperties": false,
   "required": ["version", "mode", "target", "workload", "chaos", "expectations", "seeds"],

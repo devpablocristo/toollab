@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://toolab.dev/schemas/system_map.v1.schema.json",
-  "title": "Toolab System Map v1",
+  "$id": "https://toollab.dev/schemas/system_map.v1.schema.json",
+  "title": "Toollab System Map v1",
   "type": "object",
   "additionalProperties": false,
   "required": [

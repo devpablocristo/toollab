@@ -1,22 +1,22 @@
-# Toolab Standard Conformance (Reusable for Any API)
+# Toollab Standard Conformance (Reusable for Any API)
 
-Este checklist define como adoptar `Toolab Standard v1.1` en cualquier API sin acoplarlo al dominio.
+Este checklist define como adoptar `Toollab Standard v1.1` en cualquier API sin acoplarlo al dominio.
 
 ## 1. Scope
 
 - Este documento aplica a cualquier API HTTP.
-- El dominio de negocio no cambia el contrato `/_toolab/*`.
+- El dominio de negocio no cambia el contrato `/_toollab/*`.
 - Los nombres/paths de negocio se mantienen fuera del standard.
 
 ## 2. Required baseline
 
-Para declararte "Toolab Standard v1.1 conformant", cumplir:
+Para declararte "Toollab Standard v1.1 conformant", cumplir:
 
-- `GET /_toolab/manifest` implementado y válido.
+- `GET /_toollab/manifest` implementado y válido.
 - `standard_version=1.1`.
 - Error envelope estándar en todos los errores.
 - Solo anunciar capabilities realmente implementadas.
-- No exponer secretos en respuestas `/_toolab/*`.
+- No exponer secretos en respuestas `/_toollab/*`.
 
 ## 3. Recommended repeatable rollout
 
@@ -31,20 +31,20 @@ Para declararte "Toolab Standard v1.1 conformant", cumplir:
 
 Todos estos checks son agnósticos al dominio:
 
-- `manifest` valida contra `schemas/toolab.standard.manifest.v1.1.schema.json`.
-- `profile` valida contra `schemas/toolab.standard.profile.v1.1.schema.json` (si capability anunciada).
-- `schema` valida contra `schemas/toolab.standard.schema.v1.1.schema.json` (si capability anunciada).
-- `suggested_flows` valida contra `schemas/toolab.standard.suggested_flows.v1.1.schema.json` (si capability anunciada).
-- `invariants` valida contra `schemas/toolab.standard.invariants.v1.1.schema.json` (si capability anunciada).
-- `limits` valida contra `schemas/toolab.standard.limits.v1.1.schema.json` (si capability anunciada).
-- `environment` valida contra `schemas/toolab.standard.environment.v1.1.schema.json` (si capability anunciada).
-- Errores validan contra `schemas/toolab.standard.error.v1.1.schema.json`.
+- `manifest` valida contra `schemas/toollab.standard.manifest.v1.1.schema.json`.
+- `profile` valida contra `schemas/toollab.standard.profile.v1.1.schema.json` (si capability anunciada).
+- `schema` valida contra `schemas/toollab.standard.schema.v1.1.schema.json` (si capability anunciada).
+- `suggested_flows` valida contra `schemas/toollab.standard.suggested_flows.v1.1.schema.json` (si capability anunciada).
+- `invariants` valida contra `schemas/toollab.standard.invariants.v1.1.schema.json` (si capability anunciada).
+- `limits` valida contra `schemas/toollab.standard.limits.v1.1.schema.json` (si capability anunciada).
+- `environment` valida contra `schemas/toollab.standard.environment.v1.1.schema.json` (si capability anunciada).
+- Errores validan contra `schemas/toollab.standard.error.v1.1.schema.json`.
 
 ## 5. Conformance report
 
 La salida de validación de una API `SHOULD` persistirse como JSON y validar contra:
 
-- `schemas/toolab.standard.conformance_report.v1.1.schema.json`
+- `schemas/toollab.standard.conformance_report.v1.1.schema.json`
 
 Este reporte permite repetir auditoría y comparar APIs distintas con la misma métrica de cumplimiento.
 
@@ -54,15 +54,15 @@ Este reporte permite repetir auditoría y comparar APIs distintas con la misma m
 set -euo pipefail
 BASE_URL="${BASE_URL:-http://localhost:8080}"
 
-curl -fsS "${BASE_URL}/_toolab/manifest" > /tmp/manifest.json
+curl -fsS "${BASE_URL}/_toollab/manifest" > /tmp/manifest.json
 if jq -e '.capabilities | index("profile")' /tmp/manifest.json >/dev/null; then
-  curl -fsS "${BASE_URL}/_toolab/profile" > /tmp/profile.json
+  curl -fsS "${BASE_URL}/_toollab/profile" > /tmp/profile.json
 fi
 ```
 
 ## 7. Pass criteria
 
 - La API declara capacidades coherentes con endpoints reales.
-- Toolab puede construir escenario con `profile` sin conocimiento del dominio.
-- Toolab puede ejecutar, recolectar evidencia y producir fingerprint determinista.
+- Toollab puede construir escenario con `profile` sin conocimiento del dominio.
+- Toollab puede ejecutar, recolectar evidencia y producir fingerprint determinista.
 - OpenAPI solo se usa si `profile` no alcanza para cubrir endpoints/flows.

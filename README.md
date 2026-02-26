@@ -1,10 +1,10 @@
-# Toolab
+# Toollab
 
-Toolab v1 (black mode) is a deterministic behavior lab for HTTP APIs.
+Toollab v1 (black mode) is a deterministic behavior lab for HTTP APIs.
 
 ## Purpose
 
-Toolab executes reproducible HTTP scenarios against black-box systems, injects deterministic client-side chaos, captures structured evidence, evaluates deterministic assertions, and generates reproducible reports.
+Toollab executes reproducible HTTP scenarios against black-box systems, injects deterministic client-side chaos, captures structured evidence, evaluates deterministic assertions, and generates reproducible reports.
 
 ## Key Guarantees
 
@@ -21,33 +21,33 @@ Toolab executes reproducible HTTP scenarios against black-box systems, injects d
 - `docs/`: specs, determinism contract, decisions, runbooks
 - `schemas/`: JSON Schema contracts for scenario/evidence
 - `testdata/`: valid/invalid fixtures + e2e scenario
-- `toolab-core/`: Go CLI/runtime implementation
+- `toollab-core/`: Go CLI/runtime implementation
 
 ## CLI
 
 ```bash
-toolab run scenario.yaml
+toollab run scenario.yaml
 ```
 
 With output base directory:
 
 ```bash
-toolab run scenario.yaml --out golden_runs
+toollab run scenario.yaml --out golden_runs
 ```
 
 Generation and enrichment:
 
 ```bash
-toolab generate --from openapi --openapi-file ./openapi.yaml --out ./scenario.generated.yaml
-toolab enrich ./scenario.generated.yaml --from toolab --target-base-url http://localhost:8080 --out ./scenario.enriched.yaml
+toollab generate --from openapi --openapi-file ./openapi.yaml --out ./scenario.generated.yaml
+toollab enrich ./scenario.generated.yaml --from toollab --target-base-url http://localhost:8080 --out ./scenario.enriched.yaml
 ```
 
 Understanding layer:
 
 ```bash
-toolab map --from toolab --target-base-url http://localhost:8080 --out ./artifacts
-toolab explain ./golden_runs/<run_id> --out ./artifacts
-toolab diff ./golden_runs/<run_a> ./golden_runs/<run_b> --out ./artifacts
+toollab map --from toollab --target-base-url http://localhost:8080 --out ./artifacts
+toollab explain ./golden_runs/<run_id> --out ./artifacts
+toollab diff ./golden_runs/<run_a> ./golden_runs/<run_b> --out ./artifacts
 ```
 
 ## Build and Test

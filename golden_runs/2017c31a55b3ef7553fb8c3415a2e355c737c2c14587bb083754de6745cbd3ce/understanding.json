@@ -89,7 +89,7 @@
       ]
     },
     "how_to_reproduce": {
-      "summary": "Reproduce with: toolab run ../testdata/e2e/scenario.yaml --out ../golden_runs (expected fingerprint 5deef5b7c84e8a65c66837f5f10525c4f0d71b62a42291476daccfbf51c68d98).",
+      "summary": "Reproduce with: toollab run ../testdata/e2e/scenario.yaml --out ../golden_runs (expected fingerprint 5deef5b7c84e8a65c66837f5f10525c4f0d71b62a42291476daccfbf51c68d98).",
       "anchors": [
         {
           "type": "json_pointer",

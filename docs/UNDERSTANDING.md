@@ -1,6 +1,6 @@
 # Understanding Layer (map / explain / diff)
 
-This document defines the human-comprehension layer for TOOLAB v1.
+This document defines the human-comprehension layer for TOOLLAB v1.
 
 ## Principles
 
@@ -10,13 +10,13 @@ This document defines the human-comprehension layer for TOOLAB v1.
 
 ## Commands
 
-### `toolab map`
+### `toollab map`
 
 Builds a system map from discovery:
 
 ```bash
-toolab map --from openapi --openapi-file ./openapi.yaml --out ./artifacts
-toolab map --from toolab --target-base-url http://localhost:8080 --out ./artifacts
+toollab map --from openapi --openapi-file ./openapi.yaml --out ./artifacts
+toollab map --from toollab --target-base-url http://localhost:8080 --out ./artifacts
 ```
 
 Outputs:
@@ -25,12 +25,12 @@ Outputs:
 - `system_map.md`
 - `map.meta.json`
 
-### `toolab explain`
+### `toollab explain`
 
 Explains a completed run:
 
 ```bash
-toolab explain ./golden_runs/<run_id> --out ./artifacts
+toollab explain ./golden_runs/<run_id> --out ./artifacts
 ```
 
 Outputs:
@@ -39,12 +39,12 @@ Outputs:
 - `understanding.md`
 - `explain.meta.json`
 
-### `toolab diff`
+### `toollab diff`
 
 Compares two runs:
 
 ```bash
-toolab diff ./golden_runs/<run_a> ./golden_runs/<run_b> --out ./artifacts
+toollab diff ./golden_runs/<run_a> ./golden_runs/<run_b> --out ./artifacts
 ```
 
 Outputs:
@@ -55,6 +55,6 @@ Outputs:
 
 ## Unknowns and no-claim policy
 
-- If discovery is unavailable, TOOLAB builds partial understanding and records `unknowns`.
+- If discovery is unavailable, TOOLLAB builds partial understanding and records `unknowns`.
 - Unsupported or missing signals are reported explicitly, not inferred.
 - LLM mode (`--llm on`) is narrative-only and cannot alter PASS/FAIL.

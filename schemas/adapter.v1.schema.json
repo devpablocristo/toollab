@@ -1,8 +1,8 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://toolab.dev/schemas/adapter.v1.schema.json",
-  "title": "Toolab Adapter Manifest v1",
-  "description": "Schema for the GET /_toolab/manifest response",
+  "$id": "https://toollab.dev/schemas/adapter.v1.schema.json",
+  "title": "Toollab Adapter Manifest v1",
+  "description": "Schema for the GET /_toollab/manifest response",
   "type": "object",
   "additionalProperties": false,
   "required": ["adapter_version", "app_name", "app_version", "capabilities"],

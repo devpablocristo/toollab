@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <testsuites>
-  <testsuite name="toolab.assertions" tests="3" failures="1">
+  <testsuite name="toollab.assertions" tests="3" failures="1">
     <testcase name="threshold_error_rate">
       <failure message="error_rate 1.000000 &lt;= 0.100000">observed=1 expected=0.1</failure>
     </testcase>

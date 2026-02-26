@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "metadata": {
-    "toolab_version": "0.1.0",
+    "toollab_version": "0.1.0",
     "mode": "black",
     "run_id": "2017c31a55b3ef7553fb8c3415a2e355c737c2c14587bb083754de6745cbd3ce",
     "run_seed": "100",
@@ -669,7 +669,7 @@
           "labels": {
             "code": "200",
             "method": "GET",
-            "url": "/_toolab/manifest"
+            "url": "/_toollab/manifest"
           },
           "name": "nexus_gateway_request_duration_seconds",
           "type": "histogram",
@@ -728,7 +728,7 @@
           "labels": {
             "code": "200",
             "method": "GET",
-            "url": "/_toolab/metrics"
+            "url": "/_toollab/metrics"
           },
           "name": "nexus_gateway_request_duration_seconds",
           "type": "histogram",
@@ -787,7 +787,7 @@
           "labels": {
             "code": "200",
             "method": "GET",
-            "url": "/_toolab/state/fingerprint"
+            "url": "/_toollab/state/fingerprint"
           },
           "name": "nexus_gateway_request_duration_seconds",
           "type": "histogram",
@@ -1906,10 +1906,10 @@
         {
           "labels": {
             "code": "200",
-            "handler": "nexus-core/internal/toolab.(*Handler).manifest-fm",
+            "handler": "nexus-core/internal/toollab.(*Handler).manifest-fm",
             "host": "localhost:8080",
             "method": "GET",
-            "url": "/_toolab/manifest"
+            "url": "/_toollab/manifest"
           },
           "name": "nexus_gateway_requests_total",
           "type": "counter",
@@ -1918,10 +1918,10 @@
         {
           "labels": {
             "code": "200",
-            "handler": "nexus-core/internal/toolab.(*Handler).metrics-fm",
+            "handler": "nexus-core/internal/toollab.(*Handler).metrics-fm",
             "host": "localhost:8080",
             "method": "GET",
-            "url": "/_toolab/metrics"
+            "url": "/_toollab/metrics"
           },
           "name": "nexus_gateway_requests_total",
           "type": "counter",
@@ -1930,10 +1930,10 @@
         {
           "labels": {
             "code": "200",
-            "handler": "nexus-core/internal/toolab.(*Handler).stateFingerprint-fm",
+            "handler": "nexus-core/internal/toollab.(*Handler).stateFingerprint-fm",
             "host": "localhost:8080",
             "method": "GET",
-            "url": "/_toolab/state/fingerprint"
+            "url": "/_toollab/state/fingerprint"
           },
           "name": "nexus_gateway_requests_total",
           "type": "counter",
@@ -2503,7 +2503,7 @@
     "max_samples": 50
   },
   "repro": {
-    "command": "toolab run ../testdata/e2e/scenario.yaml --out ../golden_runs",
+    "command": "toollab run ../testdata/e2e/scenario.yaml --out ../golden_runs",
     "script_path": "../golden_runs/2017c31a55b3ef7553fb8c3415a2e355c737c2c14587bb083754de6745cbd3ce/repro.sh",
     "expected_deterministic_fingerprint": "5deef5b7c84e8a65c66837f5f10525c4f0d71b62a42291476daccfbf51c68d98"
   },

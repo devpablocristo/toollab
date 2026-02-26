@@ -1,32 +1,32 @@
-# Generation Command (toolab generate)
+# Generation Command (toollab generate)
 
-This document defines the normative behavior for scenario generation in `toolab`.
+This document defines the normative behavior for scenario generation in `toollab`.
 
 ## Scope
 
-- `toolab generate` creates a Scenario v1 YAML without changing `toolab run` semantics.
-- `toolab gen` is a backward-compatible alias of:
-  - `toolab generate --from openapi`
+- `toollab generate` creates a Scenario v1 YAML without changing `toollab run` semantics.
+- `toollab gen` is a backward-compatible alias of:
+  - `toollab generate --from openapi`
 
 ## Command forms
 
 ```bash
-toolab generate --from openapi --openapi-file <path> --out <scenario.yml> [flags]
-toolab generate --from openapi --openapi-url <url>   --out <scenario.yml> [flags]
+toollab generate --from openapi --openapi-file <path> --out <scenario.yml> [flags]
+toollab generate --from openapi --openapi-url <url>   --out <scenario.yml> [flags]
 
-toolab generate --from toolab --target-base-url <url> --out <scenario.yml> [flags]
+toollab generate --from toollab --target-base-url <url> --out <scenario.yml> [flags]
 ```
 
 ## Required/optional flags
 
 - Required:
-  - `--from openapi|toolab`
+  - `--from openapi|toollab`
   - `--out <file>` unless `--print` is set
 - Optional:
   - `--seed <decimal_string>`
   - `--mode smoke|load|chaos` (default `smoke`)
   - `--base-url <url>` (OpenAPI override)
-  - `--toolab-url <url>` (default `<target-base-url>/_toolab`)
+  - `--toollab-url <url>` (default `<target-base-url>/_toollab`)
   - `--prefer profile|endpoints` (default `profile`)
   - `--flow-source suggested_flows|openapi_fallback|manual` (default `suggested_flows`)
   - `--require-capability <cap>` (repeatable)
@@ -50,7 +50,7 @@ toolab generate --from toolab --target-base-url <url> --out <scenario.yml> [flag
 - URL input:
   - `sha256(response_bytes)` + canonical URL
   - canonical URL: lowercase host, no trailing slash, sorted query params
-- TOOLAB endpoint responses:
+- TOOLLAB endpoint responses:
   - hash `canonical_json(response_body)`
 - Include all options used by generation.
 - Exclude `generated_at_utc`.
@@ -61,7 +61,7 @@ toolab generate --from toolab --target-base-url <url> --out <scenario.yml> [flag
 
 - Source: OpenAPI file/URL.
 - Endpoint selection:
-  - exclude `/_toolab/*`
+  - exclude `/_toollab/*`
   - prefer GET in `smoke`
   - include mutations when examples or clear schemas exist
 - Request construction:
@@ -71,12 +71,12 @@ toolab generate --from toolab --target-base-url <url> --out <scenario.yml> [flag
   - `content_type` default `application/json` when body exists
   - body preference: `example` first, then minimal deterministic payload from schema
 
-### Level 2: `--from toolab`
+### Level 2: `--from toollab`
 
-- Source: TOOLAB Standard `/_toolab/*`.
+- Source: TOOLLAB Standard `/_toollab/*`.
 - Discovery flow:
-  1. `GET /_toolab/manifest`
-  2. if `profile` exists and `--prefer profile`, use `GET /_toolab/profile`
+  1. `GET /_toollab/manifest`
+  2. if `profile` exists and `--prefer profile`, use `GET /_toollab/profile`
   3. otherwise use declared endpoints individually
 - Scenario composition priority:
   - requests from `suggested_flows`

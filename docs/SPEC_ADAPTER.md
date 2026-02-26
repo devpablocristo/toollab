@@ -1,13 +1,13 @@
-# Toolab Adapter Spec v1
+# Toollab Adapter Spec v1
 
-A **Toolab Adapter** is a set of HTTP endpoints that an application exposes to enable precise, controlled, and reproducible testing with Toolab (or any compatible tool).
+A **Toollab Adapter** is a set of HTTP endpoints that an application exposes to enable precise, controlled, and reproducible testing with Toollab (or any compatible tool).
 
-Applications that implement this contract are called **toolab-ready**.
+Applications that implement this contract are called **toollab-ready**.
 
 ## Design Principles
 
-1. **Capability-based**: Apps implement only what they can. Toolab adapts.
-2. **Zero coupling**: The adapter is a sidecar concern. No toolab dependency in production code.
+1. **Capability-based**: Apps implement only what they can. Toollab adapts.
+2. **Zero coupling**: The adapter is a sidecar concern. No toollab dependency in production code.
 3. **Convention over configuration**: Fixed paths, fixed formats, predictable behavior.
 4. **Safe by default**: All adapter endpoints require explicit opt-in. Nothing is exposed unless mounted.
 
@@ -16,7 +16,7 @@ Applications that implement this contract are called **toolab-ready**.
 All adapter endpoints live under:
 
 ```
-/_toolab/
+/_toollab/
 ```
 
 This prefix is reserved. Apps MUST NOT use it for other purposes.
@@ -24,7 +24,7 @@ This prefix is reserved. Apps MUST NOT use it for other purposes.
 ## 1. Manifest (required)
 
 ```
-GET /_toolab/manifest
+GET /_toollab/manifest
 ```
 
 The only **required** endpoint. Returns what capabilities the app supports.
@@ -62,23 +62,23 @@ The only **required** endpoint. Returns what capabilities the app supports.
 
 | Capability | Endpoints | Purpose |
 |---|---|---|
-| `state.fingerprint` | `GET /_toolab/state/fingerprint` | Hash of current data state |
-| `state.snapshot` | `POST /_toolab/state/snapshot` | Save current state |
-| `state.restore` | `POST /_toolab/state/restore` | Restore a saved state |
-| `state.reset` | `POST /_toolab/state/reset` | Reset to initial/seed state |
-| `seed` | `POST /_toolab/seed` | Propagate deterministic seed |
-| `metrics` | `GET /_toolab/metrics` | Structured metrics snapshot |
-| `traces` | `GET /_toolab/traces` | Traces from last window |
-| `logs` | `GET /_toolab/logs` | Structured log lines |
+| `state.fingerprint` | `GET /_toollab/state/fingerprint` | Hash of current data state |
+| `state.snapshot` | `POST /_toollab/state/snapshot` | Save current state |
+| `state.restore` | `POST /_toollab/state/restore` | Restore a saved state |
+| `state.reset` | `POST /_toollab/state/reset` | Reset to initial/seed state |
+| `seed` | `POST /_toollab/seed` | Propagate deterministic seed |
+| `metrics` | `GET /_toollab/metrics` | Structured metrics snapshot |
+| `traces` | `GET /_toollab/traces` | Traces from last window |
+| `logs` | `GET /_toollab/logs` | Structured log lines |
 
-Toolab MUST check the manifest before calling any capability endpoint. If a capability is not listed, toolab MUST NOT call it.
+Toollab MUST check the manifest before calling any capability endpoint. If a capability is not listed, toollab MUST NOT call it.
 
 ## 2. State Management
 
 ### 2.1 State Fingerprint
 
 ```
-GET /_toolab/state/fingerprint
+GET /_toollab/state/fingerprint
 ```
 
 Returns a deterministic hash of the current application data state. Two calls against the same data MUST return the same fingerprint.
@@ -104,7 +104,7 @@ Returns a deterministic hash of the current application data state. Two calls ag
 ### 2.2 State Snapshot
 
 ```
-POST /_toolab/state/snapshot
+POST /_toollab/state/snapshot
 ```
 
 Captures the current data state for later restoration.
@@ -133,7 +133,7 @@ Captures the current data state for later restoration.
 ### 2.3 State Restore
 
 ```
-POST /_toolab/state/restore
+POST /_toollab/state/restore
 ```
 
 Restores application state to a previous snapshot.
@@ -161,7 +161,7 @@ The `fingerprint` in the response MUST match the fingerprint from when the snaps
 ### 2.4 State Reset
 
 ```
-POST /_toolab/state/reset
+POST /_toollab/state/reset
 ```
 
 Resets the application to its initial seed state (e.g., after `make seed`). Simpler than snapshot/restore — just "go back to clean."
@@ -178,7 +178,7 @@ Resets the application to its initial seed state (e.g., after `make seed`). Simp
 ## 3. Seed Propagation
 
 ```
-POST /_toolab/seed
+POST /_toollab/seed
 ```
 
 Tells the application to enter deterministic mode with a given seed. After this call, any internal randomness (UUIDs, timestamps, jitter) SHOULD use the provided seed for deterministic output.
@@ -194,7 +194,7 @@ Tells the application to enter deterministic mode with a given seed. After this 
 
 | Field | Type | Description |
 |---|---|---|
-| `run_seed` | string | Decimal seed string (same format as toolab seeds) |
+| `run_seed` | string | Decimal seed string (same format as toollab seeds) |
 | `scope` | string[] | What to make deterministic. App returns what it actually applied. |
 
 **Response (200)**:
@@ -208,12 +208,12 @@ Tells the application to enter deterministic mode with a given seed. After this 
 }
 ```
 
-The app reports honestly what it could make deterministic and what it couldn't. Toolab records this in the evidence bundle.
+The app reports honestly what it could make deterministic and what it couldn't. Toollab records this in the evidence bundle.
 
 **To exit deterministic mode**:
 
 ```
-DELETE /_toolab/seed
+DELETE /_toollab/seed
 ```
 
 **Response (200)**:
@@ -229,10 +229,10 @@ DELETE /_toolab/seed
 ### 4.1 Metrics
 
 ```
-GET /_toolab/metrics
+GET /_toollab/metrics
 ```
 
-Returns a structured metrics snapshot. Unlike Prometheus text format, this returns JSON with labeled metrics that toolab can diff between start/end of a run.
+Returns a structured metrics snapshot. Unlike Prometheus text format, this returns JSON with labeled metrics that toollab can diff between start/end of a run.
 
 **Response (200)**:
 
@@ -272,7 +272,7 @@ Returns a structured metrics snapshot. Unlike Prometheus text format, this retur
 ### 4.2 Traces
 
 ```
-GET /_toolab/traces?since=<iso8601>&limit=100
+GET /_toollab/traces?since=<iso8601>&limit=100
 ```
 
 Returns traces collected since a given timestamp.
@@ -309,7 +309,7 @@ Returns traces collected since a given timestamp.
 ### 4.3 Logs
 
 ```
-GET /_toolab/logs?since=<iso8601>&limit=500&level=WARN
+GET /_toollab/logs?since=<iso8601>&limit=500&level=WARN
 ```
 
 Returns structured log lines.
@@ -342,13 +342,13 @@ Returns structured log lines.
 }
 ```
 
-This matches toolab's existing `LogLine` format (`timestamp`, `level`, `message`, `attrs`).
+This matches toollab's existing `LogLine` format (`timestamp`, `level`, `message`, `attrs`).
 
 ## 5. Authentication
 
 Adapter endpoints MAY be protected. When protected, they MUST accept the same authentication mechanism as the main application.
 
-Toolab uses the `target.headers` and `target.auth` from the scenario to authenticate against adapter endpoints.
+Toollab uses the `target.headers` and `target.auth` from the scenario to authenticate against adapter endpoints.
 
 ## 6. Error Format
 
@@ -371,40 +371,40 @@ All adapter error responses MUST use:
 | `state_locked` | 409 | Another operation is in progress |
 | `internal` | 500 | Unexpected error |
 
-## 7. Toolab Integration
+## 7. Toollab Integration
 
-When toolab detects an adapter (via manifest), the run flow becomes:
+When toollab detects an adapter (via manifest), the run flow becomes:
 
 ```
-1. GET  /_toolab/manifest              → discover capabilities
-2. POST /_toolab/state/snapshot        → save pre-test state (if capable)
-3. POST /_toolab/seed                  → propagate seed (if capable)
-4. GET  /_toolab/state/fingerprint     → record pre-test fingerprint
-5. GET  /_toolab/metrics               → baseline metrics (start)
-6. --- toolab executes workload ---
-7. GET  /_toolab/metrics               → post-test metrics (end)
-8. GET  /_toolab/traces?since=<start>  → collect traces
-9. GET  /_toolab/logs?since=<start>    → collect logs
-10. GET /_toolab/state/fingerprint     → record post-test fingerprint
-11. DELETE /_toolab/seed               → exit deterministic mode
-12. --- toolab builds evidence ---
+1. GET  /_toollab/manifest              → discover capabilities
+2. POST /_toollab/state/snapshot        → save pre-test state (if capable)
+3. POST /_toollab/seed                  → propagate seed (if capable)
+4. GET  /_toollab/state/fingerprint     → record pre-test fingerprint
+5. GET  /_toollab/metrics               → baseline metrics (start)
+6. --- toollab executes workload ---
+7. GET  /_toollab/metrics               → post-test metrics (end)
+8. GET  /_toollab/traces?since=<start>  → collect traces
+9. GET  /_toollab/logs?since=<start>    → collect logs
+10. GET /_toollab/state/fingerprint     → record post-test fingerprint
+11. DELETE /_toollab/seed               → exit deterministic mode
+12. --- toollab builds evidence ---
 ```
 
 For reproduction:
 
 ```
-1. POST /_toolab/state/restore         → restore to snapshot
-2. POST /_toolab/seed                  → same seed
-3. --- toolab re-executes ---
+1. POST /_toollab/state/restore         → restore to snapshot
+2. POST /_toollab/seed                  → same seed
+3. --- toollab re-executes ---
 4. Compare fingerprints
 ```
 
 ## 8. SDK Contract
 
-A Toolab Adapter SDK (e.g., `toolab-go-adapter`) provides:
+A Toollab Adapter SDK (e.g., `toollab-go-adapter`) provides:
 
 ```go
-adapter := toolab.NewAdapter(toolab.Config{
+adapter := toollab.NewAdapter(toollab.Config{
     AppName:    "nexus-core",
     AppVersion: "1.1.0",
     DB:         db,                    // *sql.DB for state ops
@@ -413,7 +413,7 @@ adapter := toolab.NewAdapter(toolab.Config{
 })
 
 // Mount on your router (Gin example)
-adapter.Register(router.Group("/_toolab"))
+adapter.Register(router.Group("/_toollab"))
 ```
 
 The SDK implements all endpoint handlers. The app only provides:
@@ -426,11 +426,11 @@ Everything else (manifest, routing, error handling, JSON serialization) is handl
 
 ## 9. Capability Levels
 
-Apps can be toolab-ready at different levels:
+Apps can be toollab-ready at different levels:
 
 | Level | Capabilities | What it enables |
 |---|---|---|
-| **L0** | manifest only | Toolab knows the app exists and its version |
+| **L0** | manifest only | Toollab knows the app exists and its version |
 | **L1** | + metrics, logs | Observability collection in evidence bundle |
 | **L2** | + state.fingerprint | Can verify if state changed during test |
 | **L3** | + state.snapshot, state.restore | Full reproducibility of data state |

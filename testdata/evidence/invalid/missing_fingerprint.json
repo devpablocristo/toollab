@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "metadata": {
-    "toolab_version": "0.1.0",
+    "toollab_version": "0.1.0",
     "mode": "black",
     "run_id": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
     "run_seed": "123",
@@ -46,7 +46,7 @@
     "max_samples": 10
   },
   "repro": {
-    "command": "toolab run scenario.yaml",
+    "command": "toollab run scenario.yaml",
     "script_path": "./repro.sh",
     "expected_deterministic_fingerprint": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
   }

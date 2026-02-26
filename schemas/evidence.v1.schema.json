@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://toolab.dev/schemas/evidence.v1.schema.json",
-  "title": "Toolab Evidence v1",
+  "$id": "https://toollab.dev/schemas/evidence.v1.schema.json",
+  "title": "Toollab Evidence v1",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -23,9 +23,9 @@
     "metadata": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["toolab_version", "mode", "run_id", "run_seed", "chaos_seed"],
+      "required": ["toollab_version", "mode", "run_id", "run_seed", "chaos_seed"],
       "properties": {
-        "toolab_version": { "type": "string" },
+        "toollab_version": { "type": "string" },
         "mode": { "type": "string", "const": "black" },
         "run_id": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
         "run_seed": { "type": "string", "pattern": "^[0-9]{1,20}$" },

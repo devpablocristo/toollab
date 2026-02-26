@@ -1,16 +1,16 @@
-# Enrichment Command (toolab enrich)
+# Enrichment Command (toollab enrich)
 
-This document defines the normative behavior for scenario enrichment in `toolab`.
+This document defines the normative behavior for scenario enrichment in `toollab`.
 
 ## Scope
 
-- `toolab enrich` starts from an existing Scenario v1 YAML and enriches it using discovery data.
-- `toolab run` behavior remains unchanged.
+- `toollab enrich` starts from an existing Scenario v1 YAML and enriches it using discovery data.
+- `toollab run` behavior remains unchanged.
 
 ## Command form
 
 ```bash
-toolab enrich <scenario.yml> --out <scenario.enriched.yml> [flags]
+toollab enrich <scenario.yml> --out <scenario.enriched.yml> [flags]
 ```
 
 ## Flags
@@ -22,9 +22,9 @@ toolab enrich <scenario.yml> --out <scenario.enriched.yml> [flags]
   - `--from openapi` with one of:
     - `--openapi-file <path>`
     - `--openapi-url <url>`
-  - `--from toolab` with:
+  - `--from toollab` with:
     - `--target-base-url <url>`
-    - optional `--toolab-url <url>`
+    - optional `--toollab-url <url>`
   - `--seed <decimal_string>`
   - `--merge-strategy conservative|aggressive` (default `conservative`)
   - `--print`
@@ -41,18 +41,18 @@ toolab enrich <scenario.yml> --out <scenario.enriched.yml> [flags]
 ### `conservative` (default)
 
 1. Manual scenario values win.
-2. TOOLAB Standard fills gaps.
+2. TOOLLAB Standard fills gaps.
 3. OpenAPI fills remaining gaps.
 
 ### `aggressive`
 
-- TOOLAB may overwrite only non-critical defaults:
+- TOOLLAB may overwrite only non-critical defaults:
   - `timeout_ms`
   - `weight`
   - `tick_ms`
   - `concurrency`
   - only when current values are defaults
-- OpenAPI never overwrites manual or TOOLAB-defined values.
+- OpenAPI never overwrites manual or TOOLLAB-defined values.
 
 ## Gap definition
 
@@ -78,7 +78,7 @@ toolab enrich <scenario.yml> --out <scenario.enriched.yml> [flags]
   - `op`
   - `path` as JSON Pointer (RFC 6901)
   - `reason`
-  - `source` (`manual|toolab|openapi`)
+  - `source` (`manual|toollab|openapi`)
   - `before_hash`
   - `after_hash`
 

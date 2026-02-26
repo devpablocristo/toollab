@@ -5,7 +5,7 @@ target:
   base_url: http://localhost:8080
   headers:
     X-NEXUS-GATEWAY-KEY: nexus-tower-local-key
-    X-NEXUS-ACTOR: toolab-runner
+    X-NEXUS-ACTOR: toollab-runner
     X-NEXUS-ROLE: admin
   auth:
     type: none

@@ -1,4 +1,4 @@
-# TOOLAB Understanding
+# TOOLLAB Understanding
 
 ## 1) Que es este servicio
 Service identified as unknown-service (version 0.1.0).
@@ -22,7 +22,7 @@ Assertions did not fully pass.
 unknowns: discovery unavailable: map derived from observed outcomes only; logs_excerpt unavailable: not configured; metrics_snapshot unavailable: not configured; trace_refs unavailable: not configured
 
 ## 8) Como reproducir
-Reproduce with: toolab run ../testdata/e2e/scenario.yaml --out ../golden_runs (expected fingerprint 5deef5b7c84e8a65c66837f5f10525c4f0d71b62a42291476daccfbf51c68d98).
+Reproduce with: toollab run ../testdata/e2e/scenario.yaml --out ../golden_runs (expected fingerprint 5deef5b7c84e8a65c66837f5f10525c4f0d71b62a42291476daccfbf51c68d98).
 
 ## Claims
 - [SUPPORTED] Assertion overall result is FAIL.

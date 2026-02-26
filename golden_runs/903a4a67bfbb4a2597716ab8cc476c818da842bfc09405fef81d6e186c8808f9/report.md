@@ -1,4 +1,4 @@
-# Toolab Report
+# Toollab Report
 
 ## 1. Executive summary (30s)
 - overall: **PASS**
@@ -27,6 +27,6 @@
 - logs_excerpt unavailable: not configured
 
 ## 6. Cómo reproducir
-- command: `toolab run ../scenarios/nexus_health.yaml --out ../golden_runs`
+- command: `toollab run ../scenarios/nexus_health.yaml --out ../golden_runs`
 - script: ``
 - expected fingerprint: `316aaba15faf3f431ba5ebc85ee2068eeffffaa3e43daf29b8bf6e54c67e7d8e`

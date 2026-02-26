@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "metadata": {
-    "toolab_version": "0.1.0",
+    "toollab_version": "0.1.0",
     "mode": "black",
     "run_id": "903a4a67bfbb4a2597716ab8cc476c818da842bfc09405fef81d6e186c8808f9",
     "run_seed": "42",
@@ -722,7 +722,7 @@
         "method": "GET",
         "url": "http://localhost:8080/readyz",
         "headers": {
-          "X-NEXUS-ACTOR": "toolab-runner",
+          "X-NEXUS-ACTOR": "toollab-runner",
           "X-NEXUS-GATEWAY-KEY": "***REDACTED***",
           "X-NEXUS-ROLE": "admin"
         },
@@ -750,7 +750,7 @@
         "method": "GET",
         "url": "http://localhost:8080/readyz",
         "headers": {
-          "X-NEXUS-ACTOR": "toolab-runner",
+          "X-NEXUS-ACTOR": "toollab-runner",
           "X-NEXUS-GATEWAY-KEY": "***REDACTED***",
           "X-NEXUS-ROLE": "admin"
         },
@@ -778,7 +778,7 @@
         "method": "GET",
         "url": "http://localhost:8080/v1/tools",
         "headers": {
-          "X-NEXUS-ACTOR": "toolab-runner",
+          "X-NEXUS-ACTOR": "toollab-runner",
           "X-NEXUS-GATEWAY-KEY": "***REDACTED***",
           "X-NEXUS-ROLE": "admin"
         },
@@ -805,7 +805,7 @@
         "method": "GET",
         "url": "http://localhost:8080/healthz",
         "headers": {
-          "X-NEXUS-ACTOR": "toolab-runner",
+          "X-NEXUS-ACTOR": "toollab-runner",
           "X-NEXUS-GATEWAY-KEY": "***REDACTED***",
           "X-NEXUS-ROLE": "admin"
         },
@@ -833,7 +833,7 @@
         "method": "GET",
         "url": "http://localhost:8080/v1/audit?limit=10",
         "headers": {
-          "X-NEXUS-ACTOR": "toolab-runner",
+          "X-NEXUS-ACTOR": "toollab-runner",
           "X-NEXUS-GATEWAY-KEY": "***REDACTED***",
           "X-NEXUS-ROLE": "admin"
         },
@@ -860,7 +860,7 @@
         "method": "GET",
         "url": "http://localhost:8080/readyz",
         "headers": {
-          "X-NEXUS-ACTOR": "toolab-runner",
+          "X-NEXUS-ACTOR": "toollab-runner",
           "X-NEXUS-GATEWAY-KEY": "***REDACTED***",
           "X-NEXUS-ROLE": "admin"
         },
@@ -888,7 +888,7 @@
         "method": "GET",
         "url": "http://localhost:8080/healthz",
         "headers": {
-          "X-NEXUS-ACTOR": "toolab-runner",
+          "X-NEXUS-ACTOR": "toollab-runner",
           "X-NEXUS-GATEWAY-KEY": "***REDACTED***",
           "X-NEXUS-ROLE": "admin"
         },
@@ -916,7 +916,7 @@
         "method": "GET",
         "url": "http://localhost:8080/healthz",
         "headers": {
-          "X-NEXUS-ACTOR": "toolab-runner",
+          "X-NEXUS-ACTOR": "toollab-runner",
           "X-NEXUS-GATEWAY-KEY": "***REDACTED***",
           "X-NEXUS-ROLE": "admin"
         },
@@ -944,7 +944,7 @@
         "method": "GET",
         "url": "http://localhost:8080/v1/tools",
         "headers": {
-          "X-NEXUS-ACTOR": "toolab-runner",
+          "X-NEXUS-ACTOR": "toollab-runner",
           "X-NEXUS-GATEWAY-KEY": "***REDACTED***",
           "X-NEXUS-ROLE": "admin"
         },
@@ -971,7 +971,7 @@
         "method": "GET",
         "url": "http://localhost:8080/healthz",
         "headers": {
-          "X-NEXUS-ACTOR": "toolab-runner",
+          "X-NEXUS-ACTOR": "toollab-runner",
           "X-NEXUS-GATEWAY-KEY": "***REDACTED***",
           "X-NEXUS-ROLE": "admin"
         },
@@ -999,7 +999,7 @@
         "method": "GET",
         "url": "http://localhost:8080/readyz",
         "headers": {
-          "X-NEXUS-ACTOR": "toolab-runner",
+          "X-NEXUS-ACTOR": "toollab-runner",
           "X-NEXUS-GATEWAY-KEY": "***REDACTED***",
           "X-NEXUS-ROLE": "admin"
         },
@@ -1027,7 +1027,7 @@
         "method": "GET",
         "url": "http://localhost:8080/readyz",
         "headers": {
-          "X-NEXUS-ACTOR": "toolab-runner",
+          "X-NEXUS-ACTOR": "toollab-runner",
           "X-NEXUS-GATEWAY-KEY": "***REDACTED***",
           "X-NEXUS-ROLE": "admin"
         },
@@ -1055,7 +1055,7 @@
         "method": "GET",
         "url": "http://localhost:8080/healthz",
         "headers": {
-          "X-NEXUS-ACTOR": "toolab-runner",
+          "X-NEXUS-ACTOR": "toollab-runner",
           "X-NEXUS-GATEWAY-KEY": "***REDACTED***",
           "X-NEXUS-ROLE": "admin"
         },
@@ -1083,7 +1083,7 @@
         "method": "GET",
         "url": "http://localhost:8080/healthz",
         "headers": {
-          "X-NEXUS-ACTOR": "toolab-runner",
+          "X-NEXUS-ACTOR": "toollab-runner",
           "X-NEXUS-GATEWAY-KEY": "***REDACTED***",
           "X-NEXUS-ROLE": "admin"
         },
@@ -1111,7 +1111,7 @@
         "method": "GET",
         "url": "http://localhost:8080/healthz",
         "headers": {
-          "X-NEXUS-ACTOR": "toolab-runner",
+          "X-NEXUS-ACTOR": "toollab-runner",
           "X-NEXUS-GATEWAY-KEY": "***REDACTED***",
           "X-NEXUS-ROLE": "admin"
         },
@@ -1139,7 +1139,7 @@
         "method": "GET",
         "url": "http://localhost:8080/v1/audit?limit=10",
         "headers": {
-          "X-NEXUS-ACTOR": "toolab-runner",
+          "X-NEXUS-ACTOR": "toollab-runner",
           "X-NEXUS-GATEWAY-KEY": "***REDACTED***",
           "X-NEXUS-ROLE": "admin"
         },
@@ -1166,7 +1166,7 @@
         "method": "GET",
         "url": "http://localhost:8080/readyz",
         "headers": {
-          "X-NEXUS-ACTOR": "toolab-runner",
+          "X-NEXUS-ACTOR": "toollab-runner",
           "X-NEXUS-GATEWAY-KEY": "***REDACTED***",
           "X-NEXUS-ROLE": "admin"
         },
@@ -1194,7 +1194,7 @@
         "method": "GET",
         "url": "http://localhost:8080/readyz",
         "headers": {
-          "X-NEXUS-ACTOR": "toolab-runner",
+          "X-NEXUS-ACTOR": "toollab-runner",
           "X-NEXUS-GATEWAY-KEY": "***REDACTED***",
           "X-NEXUS-ROLE": "admin"
         },
@@ -1222,7 +1222,7 @@
         "method": "GET",
         "url": "http://localhost:8080/v1/audit?limit=10",
         "headers": {
-          "X-NEXUS-ACTOR": "toolab-runner",
+          "X-NEXUS-ACTOR": "toollab-runner",
           "X-NEXUS-GATEWAY-KEY": "***REDACTED***",
           "X-NEXUS-ROLE": "admin"
         },
@@ -1249,7 +1249,7 @@
         "method": "GET",
         "url": "http://localhost:8080/healthz",
         "headers": {
-          "X-NEXUS-ACTOR": "toolab-runner",
+          "X-NEXUS-ACTOR": "toollab-runner",
           "X-NEXUS-GATEWAY-KEY": "***REDACTED***",
           "X-NEXUS-ROLE": "admin"
         },
@@ -1277,7 +1277,7 @@
         "method": "GET",
         "url": "http://localhost:8080/v1/audit?limit=10",
         "headers": {
-          "X-NEXUS-ACTOR": "toolab-runner",
+          "X-NEXUS-ACTOR": "toollab-runner",
           "X-NEXUS-GATEWAY-KEY": "***REDACTED***",
           "X-NEXUS-ROLE": "admin"
         },
@@ -1304,7 +1304,7 @@
         "method": "GET",
         "url": "http://localhost:8080/readyz",
         "headers": {
-          "X-NEXUS-ACTOR": "toolab-runner",
+          "X-NEXUS-ACTOR": "toollab-runner",
           "X-NEXUS-GATEWAY-KEY": "***REDACTED***",
           "X-NEXUS-ROLE": "admin"
         },
@@ -1332,7 +1332,7 @@
         "method": "GET",
         "url": "http://localhost:8080/healthz",
         "headers": {
-          "X-NEXUS-ACTOR": "toolab-runner",
+          "X-NEXUS-ACTOR": "toollab-runner",
           "X-NEXUS-GATEWAY-KEY": "***REDACTED***",
           "X-NEXUS-ROLE": "admin"
         },
@@ -1360,7 +1360,7 @@
         "method": "GET",
         "url": "http://localhost:8080/readyz",
         "headers": {
-          "X-NEXUS-ACTOR": "toolab-runner",
+          "X-NEXUS-ACTOR": "toollab-runner",
           "X-NEXUS-GATEWAY-KEY": "***REDACTED***",
           "X-NEXUS-ROLE": "admin"
         },
@@ -1388,7 +1388,7 @@
         "method": "GET",
         "url": "http://localhost:8080/healthz",
         "headers": {
-          "X-NEXUS-ACTOR": "toolab-runner",
+          "X-NEXUS-ACTOR": "toollab-runner",
           "X-NEXUS-GATEWAY-KEY": "***REDACTED***",
           "X-NEXUS-ROLE": "admin"
         },
@@ -1416,7 +1416,7 @@
         "method": "GET",
         "url": "http://localhost:8080/v1/tools",
         "headers": {
-          "X-NEXUS-ACTOR": "toolab-runner",
+          "X-NEXUS-ACTOR": "toollab-runner",
           "X-NEXUS-GATEWAY-KEY": "***REDACTED***",
           "X-NEXUS-ROLE": "admin"
         },
@@ -1443,7 +1443,7 @@
         "method": "GET",
         "url": "http://localhost:8080/v1/tools",
         "headers": {
-          "X-NEXUS-ACTOR": "toolab-runner",
+          "X-NEXUS-ACTOR": "toollab-runner",
           "X-NEXUS-GATEWAY-KEY": "***REDACTED***",
           "X-NEXUS-ROLE": "admin"
         },
@@ -1466,7 +1466,7 @@
         "method": "GET",
         "url": "http://localhost:8080/healthz",
         "headers": {
-          "X-NEXUS-ACTOR": "toolab-runner",
+          "X-NEXUS-ACTOR": "toollab-runner",
           "X-NEXUS-GATEWAY-KEY": "***REDACTED***",
           "X-NEXUS-ROLE": "admin"
         },
@@ -1494,7 +1494,7 @@
         "method": "GET",
         "url": "http://localhost:8080/readyz",
         "headers": {
-          "X-NEXUS-ACTOR": "toolab-runner",
+          "X-NEXUS-ACTOR": "toollab-runner",
           "X-NEXUS-GATEWAY-KEY": "***REDACTED***",
           "X-NEXUS-ROLE": "admin"
         },
@@ -1522,7 +1522,7 @@
         "method": "GET",
         "url": "http://localhost:8080/healthz",
         "headers": {
-          "X-NEXUS-ACTOR": "toolab-runner",
+          "X-NEXUS-ACTOR": "toollab-runner",
           "X-NEXUS-GATEWAY-KEY": "***REDACTED***",
           "X-NEXUS-ROLE": "admin"
         },
@@ -1550,7 +1550,7 @@
         "method": "GET",
         "url": "http://localhost:8080/healthz",
         "headers": {
-          "X-NEXUS-ACTOR": "toolab-runner",
+          "X-NEXUS-ACTOR": "toollab-runner",
           "X-NEXUS-GATEWAY-KEY": "***REDACTED***",
           "X-NEXUS-ROLE": "admin"
         },
@@ -1578,7 +1578,7 @@
         "method": "GET",
         "url": "http://localhost:8080/healthz",
         "headers": {
-          "X-NEXUS-ACTOR": "toolab-runner",
+          "X-NEXUS-ACTOR": "toollab-runner",
           "X-NEXUS-GATEWAY-KEY": "***REDACTED***",
           "X-NEXUS-ROLE": "admin"
         },
@@ -1606,7 +1606,7 @@
         "method": "GET",
         "url": "http://localhost:8080/healthz",
         "headers": {
-          "X-NEXUS-ACTOR": "toolab-runner",
+          "X-NEXUS-ACTOR": "toollab-runner",
           "X-NEXUS-GATEWAY-KEY": "***REDACTED***",
           "X-NEXUS-ROLE": "admin"
         },
@@ -1634,7 +1634,7 @@
         "method": "GET",
         "url": "http://localhost:8080/healthz",
         "headers": {
-          "X-NEXUS-ACTOR": "toolab-runner",
+          "X-NEXUS-ACTOR": "toollab-runner",
           "X-NEXUS-GATEWAY-KEY": "***REDACTED***",
           "X-NEXUS-ROLE": "admin"
         },
@@ -1662,7 +1662,7 @@
         "method": "GET",
         "url": "http://localhost:8080/readyz",
         "headers": {
-          "X-NEXUS-ACTOR": "toolab-runner",
+          "X-NEXUS-ACTOR": "toollab-runner",
           "X-NEXUS-GATEWAY-KEY": "***REDACTED***",
           "X-NEXUS-ROLE": "admin"
         },
@@ -1690,7 +1690,7 @@
         "method": "GET",
         "url": "http://localhost:8080/healthz",
         "headers": {
-          "X-NEXUS-ACTOR": "toolab-runner",
+          "X-NEXUS-ACTOR": "toollab-runner",
           "X-NEXUS-GATEWAY-KEY": "***REDACTED***",
           "X-NEXUS-ROLE": "admin"
         },
@@ -1718,7 +1718,7 @@
         "method": "GET",
         "url": "http://localhost:8080/readyz",
         "headers": {
-          "X-NEXUS-ACTOR": "toolab-runner",
+          "X-NEXUS-ACTOR": "toollab-runner",
           "X-NEXUS-GATEWAY-KEY": "***REDACTED***",
           "X-NEXUS-ROLE": "admin"
         },
@@ -1746,7 +1746,7 @@
         "method": "GET",
         "url": "http://localhost:8080/healthz",
         "headers": {
-          "X-NEXUS-ACTOR": "toolab-runner",
+          "X-NEXUS-ACTOR": "toollab-runner",
           "X-NEXUS-GATEWAY-KEY": "***REDACTED***",
           "X-NEXUS-ROLE": "admin"
         },
@@ -1774,7 +1774,7 @@
         "method": "GET",
         "url": "http://localhost:8080/readyz",
         "headers": {
-          "X-NEXUS-ACTOR": "toolab-runner",
+          "X-NEXUS-ACTOR": "toollab-runner",
           "X-NEXUS-GATEWAY-KEY": "***REDACTED***",
           "X-NEXUS-ROLE": "admin"
         },
@@ -1802,7 +1802,7 @@
         "method": "GET",
         "url": "http://localhost:8080/v1/audit?limit=10",
         "headers": {
-          "X-NEXUS-ACTOR": "toolab-runner",
+          "X-NEXUS-ACTOR": "toollab-runner",
           "X-NEXUS-GATEWAY-KEY": "***REDACTED***",
           "X-NEXUS-ROLE": "admin"
         },
@@ -2044,7 +2044,7 @@
           "labels": {
             "code": "200",
             "method": "GET",
-            "url": "/_toolab/manifest"
+            "url": "/_toollab/manifest"
           },
           "name": "nexus_gateway_request_duration_seconds",
           "type": "histogram",
@@ -2103,7 +2103,7 @@
           "labels": {
             "code": "200",
             "method": "GET",
-            "url": "/_toolab/metrics"
+            "url": "/_toollab/metrics"
           },
           "name": "nexus_gateway_request_duration_seconds",
           "type": "histogram",
@@ -2162,7 +2162,7 @@
           "labels": {
             "code": "200",
             "method": "GET",
-            "url": "/_toolab/state/fingerprint"
+            "url": "/_toollab/state/fingerprint"
           },
           "name": "nexus_gateway_request_duration_seconds",
           "type": "histogram",
@@ -3222,10 +3222,10 @@
         {
           "labels": {
             "code": "200",
-            "handler": "nexus-core/internal/toolab.(*Handler).manifest-fm",
+            "handler": "nexus-core/internal/toollab.(*Handler).manifest-fm",
             "host": "localhost:8080",
             "method": "GET",
-            "url": "/_toolab/manifest"
+            "url": "/_toollab/manifest"
           },
           "name": "nexus_gateway_requests_total",
           "type": "counter",
@@ -3234,10 +3234,10 @@
         {
           "labels": {
             "code": "200",
-            "handler": "nexus-core/internal/toolab.(*Handler).metrics-fm",
+            "handler": "nexus-core/internal/toollab.(*Handler).metrics-fm",
             "host": "localhost:8080",
             "method": "GET",
-            "url": "/_toolab/metrics"
+            "url": "/_toollab/metrics"
           },
           "name": "nexus_gateway_requests_total",
           "type": "counter",
@@ -3246,10 +3246,10 @@
         {
           "labels": {
             "code": "200",
-            "handler": "nexus-core/internal/toolab.(*Handler).stateFingerprint-fm",
+            "handler": "nexus-core/internal/toollab.(*Handler).stateFingerprint-fm",
             "host": "localhost:8080",
             "method": "GET",
-            "url": "/_toolab/state/fingerprint"
+            "url": "/_toollab/state/fingerprint"
           },
           "name": "nexus_gateway_requests_total",
           "type": "counter",
@@ -3815,7 +3815,7 @@
     "max_samples": 50
   },
   "repro": {
-    "command": "toolab run ../scenarios/nexus_health.yaml --out ../golden_runs",
+    "command": "toollab run ../scenarios/nexus_health.yaml --out ../golden_runs",
     "script_path": "../golden_runs/903a4a67bfbb4a2597716ab8cc476c818da842bfc09405fef81d6e186c8808f9/repro.sh",
     "expected_deterministic_fingerprint": "316aaba15faf3f431ba5ebc85ee2068eeffffaa3e43daf29b8bf6e54c67e7d8e"
   },

@@ -30,4 +30,4 @@
 
 For live mutable systems (for example Nexus with changing data, background workers, or variable service latency),
 `deterministic_fingerprint` may change across runs even when `decision_tape_hash` is stable.
-That is not a Toolab engine bug; it reflects real SUT behavior changes under black-box testing.
+That is not a Toollab engine bug; it reflects real SUT behavior changes under black-box testing.

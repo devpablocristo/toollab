@@ -21,4 +21,4 @@ bash golden_runs/<run_id>/repro.sh <scenario-path> <out-base>
   - same scenario content
   - same seeds
   - deterministic mock/SUT behavior
-  - same Toolab decision engine version
+  - same Toollab decision engine version

@@ -1,4 +1,4 @@
-# Toolab Evidence Spec (V1)
+# Toollab Evidence Spec (V1)
 
 Canonical schema: `schemas/evidence.v1.schema.json`.
 
