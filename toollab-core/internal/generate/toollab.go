@@ -10,6 +10,7 @@ import (
 	"strings"
 
 	"toollab-core/internal/discovery"
+	"toollab-core/internal/gen"
 	"toollab-core/internal/scenario"
 )
 
@@ -141,6 +142,37 @@ func BuildFromToollab(ctx context.Context, fetcher *discovery.ToollabFetcher, op
 
 	if len(requests) == 0 {
 		unknowns = append(unknowns, "suggested_flows unavailable and no openapi fallback requests generated")
+	}
+
+	// Detect auth templates in default_headers (e.g. "X-KEY": "{{ENV_VAR}}")
+	// and convert to proper api_key auth config.
+	authHeader, authEnv := extractAuthFromHeaders(defaultHeaders)
+	if authHeader != "" && authEnv != "" {
+		scn.Target.Auth = scenario.Auth{
+			Type:      "api_key",
+			APIKeyEnv: authEnv,
+			In:        "header",
+			Name:      authHeader,
+		}
+		delete(defaultHeaders, authHeader)
+	}
+
+	// Enrich placeholder request bodies from OpenAPI spec when available.
+	if contains(manifest.Capabilities, "openapi") && hasPlaceholderBodies(requests) {
+		raw, openapiHash, oWarn, oErr := fetcher.OpenAPI(ctx, auth)
+		warnings = append(warnings, oWarn...)
+		if oErr == nil {
+			doc, parseErr := gen.ParseSpec(raw)
+			if parseErr == nil {
+				enrichRequestBodies(requests, doc)
+				usedCaps = append(usedCaps, "openapi")
+				_ = openapiHash
+			} else {
+				unknowns = append(unknowns, "openapi parse failed during body enrichment")
+			}
+		} else {
+			unknowns = append(unknowns, "openapi fetch failed during body enrichment")
+		}
 	}
 
 	requests = dedupeRequests(requests)
@@ -538,6 +570,124 @@ func uniqueSortedStrings(values []string) []string {
 	}
 	sort.Strings(out)
 	return out
+}
+
+var templatePattern = regexp.MustCompile(`^\{\{([A-Za-z_][A-Za-z0-9_]*)\}\}$`)
+
+func extractAuthFromHeaders(headers map[string]string) (string, string) {
+	for name, value := range headers {
+		m := templatePattern.FindStringSubmatch(value)
+		if len(m) == 2 {
+			return name, m[1]
+		}
+	}
+	return "", ""
+}
+
+func hasPlaceholderBodies(requests []scenario.RequestSpec) bool {
+	for _, req := range requests {
+		if isPlaceholderBody(req.JSONBody) {
+			return true
+		}
+	}
+	return false
+}
+
+func isPlaceholderBody(body json.RawMessage) bool {
+	if len(body) == 0 {
+		return false
+	}
+	var obj map[string]any
+	if err := json.Unmarshal(body, &obj); err != nil {
+		return false
+	}
+	if v, ok := obj["placeholder"]; ok {
+		if s, ok := v.(string); ok && strings.Contains(s, "{{") {
+			return true
+		}
+	}
+	return false
+}
+
+func enrichRequestBodies(requests []scenario.RequestSpec, doc *gen.OpenAPIDoc) {
+	opMap := buildOperationMap(doc)
+	for i := range requests {
+		if !isPlaceholderBody(requests[i].JSONBody) {
+			continue
+		}
+		key := strings.ToUpper(requests[i].Method) + " " + requests[i].Path
+		op, ok := opMap[key]
+		if !ok {
+			continue
+		}
+		body := extractJSONBodyFromOp(op, doc)
+		if body != nil {
+			raw, err := json.Marshal(body)
+			if err != nil {
+				continue
+			}
+			requests[i].JSONBody = raw
+		} else {
+			// OpenAPI says no body needed — clear placeholder.
+			requests[i].JSONBody = nil
+			empty := ""
+			requests[i].Body = &empty
+		}
+	}
+}
+
+func buildOperationMap(doc *gen.OpenAPIDoc) map[string]*gen.Operation {
+	out := map[string]*gen.Operation{}
+	for path, pi := range doc.Paths {
+		if pi.Get != nil {
+			out["GET "+path] = pi.Get
+		}
+		if pi.Post != nil {
+			out["POST "+path] = pi.Post
+		}
+		if pi.Put != nil {
+			out["PUT "+path] = pi.Put
+		}
+		if pi.Patch != nil {
+			out["PATCH "+path] = pi.Patch
+		}
+		if pi.Delete != nil {
+			out["DELETE "+path] = pi.Delete
+		}
+	}
+	return out
+}
+
+func extractJSONBodyFromOp(op *gen.Operation, doc *gen.OpenAPIDoc) any {
+	if op.RequestBody == nil || op.RequestBody.Content == nil {
+		return nil
+	}
+	mt, ok := op.RequestBody.Content["application/json"]
+	if !ok {
+		for ct, m := range op.RequestBody.Content {
+			if strings.Contains(ct, "json") {
+				mt = m
+				ok = true
+				break
+			}
+		}
+	}
+	if !ok || mt.Schema == nil {
+		return nil
+	}
+	body, err := gen.GenerateBodyAll(mt.Schema, doc)
+	if err != nil || len(body) == 0 {
+		return nil
+	}
+	raw, err := json.Marshal(body)
+	if err != nil {
+		return body
+	}
+	var result any
+	if err := json.Unmarshal(raw, &result); err != nil {
+		return body
+	}
+	return result
 }
 
 func writeTempOpenAPIRaw(raw []byte) (string, error) {

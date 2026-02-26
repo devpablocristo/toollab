@@ -1,14 +1,22 @@
 package gen
 
-import "fmt"
+import (
+	"fmt"
+	"sort"
+)
 
 const maxRecursionDepth = 10
 
 func GenerateBody(schema *SchemaObj, doc *OpenAPIDoc) (map[string]any, error) {
-	return generateBodyDepth(schema, doc, 0)
+	return generateBodyDepth(schema, doc, 0, false)
 }
 
-func generateBodyDepth(schema *SchemaObj, doc *OpenAPIDoc, depth int) (map[string]any, error) {
+// GenerateBodyAll generates a body including all properties, not just required ones.
+func GenerateBodyAll(schema *SchemaObj, doc *OpenAPIDoc) (map[string]any, error) {
+	return generateBodyDepth(schema, doc, 0, true)
+}
+
+func generateBodyDepth(schema *SchemaObj, doc *OpenAPIDoc, depth int, includeAll bool) (map[string]any, error) {
 	if depth > maxRecursionDepth {
 		return map[string]any{}, nil
 	}
@@ -32,12 +40,13 @@ func generateBodyDepth(schema *SchemaObj, doc *OpenAPIDoc, depth int) (map[strin
 	}
 
 	result := map[string]any{}
-	requiredSet := map[string]struct{}{}
-	for _, r := range resolved.Required {
-		requiredSet[r] = struct{}{}
+
+	fields := resolved.Required
+	if (len(fields) == 0 || includeAll) && len(resolved.Properties) > 0 {
+		fields = sortedKeys(resolved.Properties)
 	}
 
-	for _, fieldName := range resolved.Required {
+	for _, fieldName := range fields {
 		prop, ok := resolved.Properties[fieldName]
 		if !ok {
 			result[fieldName] = "example"
@@ -51,6 +60,15 @@ func generateBodyDepth(schema *SchemaObj, doc *OpenAPIDoc, depth int) (map[strin
 	}
 
 	return result, nil
+}
+
+func sortedKeys(m map[string]*SchemaObj) []string {
+	keys := make([]string, 0, len(m))
+	for k := range m {
+		keys = append(keys, k)
+	}
+	sort.Strings(keys)
+	return keys
 }
 
 func schemaDefault(schema *SchemaObj, doc *OpenAPIDoc, depth int) (any, error) {
@@ -101,7 +119,7 @@ func schemaDefault(schema *SchemaObj, doc *OpenAPIDoc, depth int) (any, error) {
 		if depth >= maxRecursionDepth {
 			return map[string]any{}, nil
 		}
-		return generateBodyDepth(resolved, doc, depth+1)
+		return generateBodyDepth(resolved, doc, depth+1, false)
 	default:
 		return nil, nil
 	}
