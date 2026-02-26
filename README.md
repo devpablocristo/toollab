@@ -78,6 +78,9 @@ Same scenario + same seeds + stable SUT/mock produces identical:
 - `decision_tape_hash`
 - `deterministic_fingerprint`
 
+On live mutable systems, `decision_tape_hash` is the primary determinism signal.
+`deterministic_fingerprint` can vary if SUT behavior/state changes between runs.
+
 Use generated script:
 
 ```bash
