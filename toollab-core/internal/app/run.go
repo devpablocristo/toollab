@@ -14,12 +14,14 @@ import (
 
 	"toollab-core/internal/adapter"
 	"toollab-core/internal/assertions"
+	catalogpkg "toollab-core/internal/catalog"
 	"toollab-core/internal/chaos"
 	"toollab-core/internal/contract"
 	"toollab-core/internal/coverage"
 	"toollab-core/internal/determinism"
 	"toollab-core/internal/discovery"
 	"toollab-core/internal/evidence"
+	"toollab-core/internal/gen"
 	"toollab-core/internal/report"
 	"toollab-core/internal/runner"
 	"toollab-core/internal/scenario"
@@ -193,11 +195,8 @@ func RunScenario(ctx context.Context, scenarioPath, outBase string) (*RunResult,
 
 	systemMap := mapmodel.FromEvidence(bundle)
 
-	// Fetch rich service description if the adapter supports it.
-	var serviceDesc *discovery.ServiceDescription
-	if adapterInfo != nil && adapterInfo.HasCapability("description") && adapterClient != nil {
-		serviceDesc = adapterClient.Description(ctx)
-	}
+	serviceDesc := fetchServiceDescription(ctx, adapterInfo, adapterClient, runDir)
+	emitEndpointsCatalog(ctx, adapterInfo, adapterClient, runDir)
 
 	if err := emitComprehensionReport(runDir, bundle, scn, systemMap, serviceDesc); err != nil {
 		return nil, err
@@ -259,6 +258,47 @@ func emitComprehensionReport(runDir string, bundle *evidence.Bundle, scn *scenar
 		return err
 	}
 	return nil
+}
+
+func fetchServiceDescription(ctx context.Context, info *adapter.Info, client *adapter.Client, runDir string) *discovery.ServiceDescription {
+	if info == nil || client == nil {
+		return nil
+	}
+	if !info.HasCapability("description") {
+		return nil
+	}
+	desc := client.Description(ctx)
+	if desc == nil {
+		return nil
+	}
+	raw, err := json.MarshalIndent(desc, "", "  ")
+	if err == nil {
+		_ = os.WriteFile(filepath.Join(runDir, "service_description.json"), raw, 0o644)
+	}
+	return desc
+}
+
+func emitEndpointsCatalog(ctx context.Context, info *adapter.Info, client *adapter.Client, runDir string) {
+	if info == nil || client == nil {
+		return
+	}
+	if !info.HasCapability("openapi") {
+		return
+	}
+	raw, err := client.OpenAPIRaw(ctx)
+	if err != nil || len(raw) == 0 {
+		return
+	}
+	doc, err := gen.ParseSpec(raw)
+	if err != nil {
+		return
+	}
+	cat := catalogpkg.Build(doc)
+	catJSON, err := json.MarshalIndent(cat, "", "  ")
+	if err != nil {
+		return
+	}
+	_ = os.WriteFile(filepath.Join(runDir, "endpoints_catalog.json"), catJSON, 0o644)
 }
 
 func emitUnderstandingArtifacts(runDir string, bundle *evidence.Bundle) error {

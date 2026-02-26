@@ -7,6 +7,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"strings"
 	"time"
@@ -161,6 +162,25 @@ func (c *Client) Description(ctx context.Context) *discovery.ServiceDescription 
 		return nil
 	}
 	return &desc
+}
+
+// --- OpenAPI ---
+
+// OpenAPIRaw fetches the raw OpenAPI spec bytes from the adapter.
+func (c *Client) OpenAPIRaw(ctx context.Context) ([]byte, error) {
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, c.baseURL+"/openapi", nil)
+	if err != nil {
+		return nil, err
+	}
+	resp, err := c.http.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode >= 400 {
+		return nil, fmt.Errorf("adapter GET /openapi: status %d", resp.StatusCode)
+	}
+	return io.ReadAll(io.LimitReader(resp.Body, 10<<20))
 }
 
 // --- HTTP helpers ---

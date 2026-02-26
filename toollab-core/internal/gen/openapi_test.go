@@ -58,7 +58,7 @@ func TestResolveRef(t *testing.T) {
 	if err != nil {
 		t.Fatalf("parse: %v", err)
 	}
-	schema, err := doc.resolveRef("#/components/schemas/CreatePetRequest")
+	schema, err := doc.ResolveRef("#/components/schemas/CreatePetRequest")
 	if err != nil {
 		t.Fatalf("resolveRef: %v", err)
 	}
@@ -72,7 +72,7 @@ func TestResolveRef(t *testing.T) {
 
 func TestResolveRefInvalid(t *testing.T) {
 	doc := &OpenAPIDoc{}
-	_, err := doc.resolveRef("#/components/schemas/Nonexistent")
+	_, err := doc.ResolveRef("#/components/schemas/Nonexistent")
 	if err == nil {
 		t.Fatal("expected error for missing schema")
 	}
@@ -113,14 +113,14 @@ func TestPathItemOperations(t *testing.T) {
 		Get:  &Operation{OperationID: "listPets"},
 		Post: &Operation{OperationID: "createPet"},
 	}
-	ops := pi.operations()
+	ops := pi.Operations()
 	if len(ops) != 2 {
 		t.Fatalf("expected 2 operations, got %d", len(ops))
 	}
-	if ops[0].method != "GET" {
-		t.Errorf("expected GET first, got %s", ops[0].method)
+	if ops[0].Method != "GET" {
+		t.Errorf("expected GET first, got %s", ops[0].Method)
 	}
-	if ops[1].method != "POST" {
-		t.Errorf("expected POST second, got %s", ops[1].method)
+	if ops[1].Method != "POST" {
+		t.Errorf("expected POST second, got %s", ops[1].Method)
 	}
 }

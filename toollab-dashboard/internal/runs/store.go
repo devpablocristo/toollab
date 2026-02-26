@@ -108,3 +108,22 @@ func (s *Store) GetAssertions(runID string) ([]AssertionResult, error) {
 	}
 	return out, nil
 }
+
+func (s *Store) Delete(id string) error {
+	tx, err := s.db.Begin()
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+
+	if _, err := tx.Exec("DELETE FROM assertion_results WHERE run_id = ?", id); err != nil {
+		return err
+	}
+	if _, err := tx.Exec("DELETE FROM interpretations WHERE run_id = ?", id); err != nil {
+		return err
+	}
+	if _, err := tx.Exec("DELETE FROM runs WHERE id = ?", id); err != nil {
+		return err
+	}
+	return tx.Commit()
+}

@@ -60,6 +60,7 @@ func (r *Router) routes() {
 
 	r.mux.HandleFunc("GET /api/v1/runs", r.listRuns)
 	r.mux.HandleFunc("GET /api/v1/runs/{id}", r.getRun)
+	r.mux.HandleFunc("DELETE /api/v1/runs/{id}", r.deleteRun)
 	r.mux.HandleFunc("POST /api/v1/runs/ingest", r.ingestRun)
 
 	r.mux.HandleFunc("GET /api/v1/runs/{id}/interpretation", r.getInterpretation)
@@ -73,10 +74,12 @@ func (r *Router) routes() {
 	r.mux.HandleFunc("POST /api/v1/exec/enrich", r.execEnrich)
 	r.mux.HandleFunc("POST /api/v1/exec/audit", r.execAudit)
 	r.mux.HandleFunc("POST /api/v1/exec/coverage", r.execCoverage)
+	r.mux.HandleFunc("POST /api/v1/exec/full-audit", r.execFullAudit)
 	r.mux.HandleFunc("GET /api/v1/runs/{id}/audit", r.getRunAudit)
 	r.mux.HandleFunc("GET /api/v1/runs/{id}/coverage", r.getRunCoverage)
 	r.mux.HandleFunc("GET /api/v1/runs/{id}/contract", r.getRunContract)
 	r.mux.HandleFunc("GET /api/v1/runs/{id}/comprehension", r.getRunComprehension)
+	r.mux.HandleFunc("GET /api/v1/runs/{id}/endpoints", r.getRunEndpoints)
 }
 
 // ── Data endpoints ──────────────────────────────────
@@ -172,6 +175,14 @@ func (r *Router) getRun(w http.ResponseWriter, req *http.Request) {
 		Assertions:     assertions,
 		Interpretation: narrative,
 	})
+}
+
+func (r *Router) deleteRun(w http.ResponseWriter, req *http.Request) {
+	if err := r.runs.Delete(req.PathValue("id")); err != nil {
+		writeError(w, http.StatusInternalServerError, err)
+		return
+	}
+	w.WriteHeader(http.StatusNoContent)
 }
 
 func (r *Router) ingestRun(w http.ResponseWriter, req *http.Request) {
@@ -449,6 +460,154 @@ func (r *Router) execCoverage(w http.ResponseWriter, req *http.Request) {
 	writeJSON(w, http.StatusOK, map[string]any{"exec": result})
 }
 
+func (r *Router) execFullAudit(w http.ResponseWriter, req *http.Request) {
+	var body struct {
+		BaseURL    string `json:"base_url"`
+		TargetName string `json:"target_name"`
+		TargetID   string `json:"target_id"`
+		Mode       string `json:"mode"`
+	}
+	if err := json.NewDecoder(req.Body).Decode(&body); err != nil {
+		writeError(w, http.StatusBadRequest, err)
+		return
+	}
+	if body.TargetID == "" || body.BaseURL == "" {
+		writeError(w, http.StatusBadRequest, fmt.Errorf("target_id and base_url required"))
+		return
+	}
+	if body.Mode == "" {
+		body.Mode = "smoke"
+	}
+
+	type stepResult struct {
+		Step   string `json:"step"`
+		Status string `json:"status"`
+		Output string `json:"output,omitempty"`
+		Error  string `json:"error,omitempty"`
+	}
+	steps := make([]stepResult, 0, 6)
+	appendStep := func(name string, result executor.Result) bool {
+		step := stepResult{
+			Step:   name,
+			Status: "ok",
+			Output: result.Output,
+			Error:  result.Error,
+		}
+		if !result.Success {
+			step.Status = "error"
+		}
+		steps = append(steps, step)
+		return result.Success
+	}
+
+	ctxGen, cancelGen := context.WithTimeout(req.Context(), 45*time.Second)
+	generateRes := r.exec.Run(ctxGen, "generate", "--from", "toollab", "--mode", body.Mode, "--target-base-url", body.BaseURL)
+	cancelGen()
+	if !appendStep("generate", generateRes) {
+		writeJSON(w, http.StatusOK, map[string]any{"steps": steps, "target_id": body.TargetID})
+		return
+	}
+
+	scenarioPath := extractScenarioPath(generateRes.Output)
+	if scenarioPath == "" {
+		latestPath, err := latestScenarioPath(r.exec.CoreDir())
+		if err != nil {
+			writeJSON(w, http.StatusOK, map[string]any{
+				"steps":     append(steps, stepResult{Step: "resolve-scenario", Status: "error", Error: err.Error()}),
+				"target_id": body.TargetID,
+			})
+			return
+		}
+		scenarioPath = latestPath
+	}
+	if !filepath.IsAbs(scenarioPath) {
+		scenarioPath = filepath.Join(r.exec.CoreDir(), scenarioPath)
+	}
+
+	ctxEnrich, cancelEnrich := context.WithTimeout(req.Context(), 60*time.Second)
+	enrichRes := r.exec.Run(ctxEnrich, "enrich", scenarioPath, "--from", "toollab", "--target-base-url", body.BaseURL)
+	cancelEnrich()
+	if !appendStep("enrich", enrichRes) {
+		writeJSON(w, http.StatusOK, map[string]any{"steps": steps, "target_id": body.TargetID})
+		return
+	}
+
+	ctxRun, cancelRun := context.WithTimeout(req.Context(), 3*time.Minute)
+	runRes := r.exec.Run(ctxRun, "run", scenarioPath)
+	cancelRun()
+	if !appendStep("run", runRes) {
+		writeJSON(w, http.StatusOK, map[string]any{"steps": steps, "target_id": body.TargetID})
+		return
+	}
+
+	runDir := extractRunDir(runRes.Output)
+	if runDir == "" {
+		writeJSON(w, http.StatusOK, map[string]any{
+			"steps": append(steps, stepResult{
+				Step:   "extract-run-dir",
+				Status: "error",
+				Error:  "run completed but run_dir was not found in command output",
+			}),
+			"target_id": body.TargetID,
+		})
+		return
+	}
+	if !filepath.IsAbs(runDir) {
+		runDir = filepath.Join(r.exec.CoreDir(), runDir)
+	}
+
+	runID := ""
+	ingested, err := runs.IngestFromDir(r.runs, runDir, body.TargetID)
+	if err == nil {
+		runID = ingested.ID
+		steps = append(steps, stepResult{Step: "ingest", Status: "ok", Output: "run_id=" + runID})
+	} else if strings.Contains(err.Error(), "UNIQUE constraint") {
+		runID = filepath.Base(runDir)
+		steps = append(steps, stepResult{Step: "ingest", Status: "ok", Output: "run already ingested, run_id=" + runID})
+	} else {
+		steps = append(steps, stepResult{Step: "ingest", Status: "error", Error: err.Error()})
+		writeJSON(w, http.StatusOK, map[string]any{"steps": steps, "target_id": body.TargetID})
+		return
+	}
+
+	ctxAudit, cancelAudit := context.WithTimeout(req.Context(), 45*time.Second)
+	auditRes := r.exec.Run(ctxAudit, "audit", runDir)
+	cancelAudit()
+	if !appendStep("audit", auditRes) {
+		writeJSON(w, http.StatusOK, map[string]any{"steps": steps, "target_id": body.TargetID, "run_id": runID})
+		return
+	}
+
+	ctxCoverage, cancelCoverage := context.WithTimeout(req.Context(), 45*time.Second)
+	coverageRes := r.exec.Run(ctxCoverage, "coverage", runDir)
+	cancelCoverage()
+	if !appendStep("coverage", coverageRes) {
+		writeJSON(w, http.StatusOK, map[string]any{"steps": steps, "target_id": body.TargetID, "run_id": runID})
+		return
+	}
+
+	ctxComprehend, cancelComprehend := context.WithTimeout(req.Context(), 45*time.Second)
+	comprehendRes := r.exec.Run(ctxComprehend, "comprehend", runDir)
+	cancelComprehend()
+	if !appendStep("comprehend", comprehendRes) {
+		writeJSON(w, http.StatusOK, map[string]any{"steps": steps, "target_id": body.TargetID, "run_id": runID})
+		return
+	}
+
+	steps = append(steps, stepResult{
+		Step:   "interpret",
+		Status: "queued",
+		Output: "Interpretación LLM en segundo plano (async)",
+	})
+	go r.runInterpretationAsync(runID, runDir)
+
+	writeJSON(w, http.StatusOK, map[string]any{
+		"steps":     steps,
+		"target_id": body.TargetID,
+		"run_id":    runID,
+	})
+}
+
 func (r *Router) getRunAudit(w http.ResponseWriter, req *http.Request) {
 	run, err := r.runs.GetByID(req.PathValue("id"))
 	if err != nil {
@@ -539,6 +698,29 @@ func (r *Router) getRunComprehension(w http.ResponseWriter, req *http.Request) {
 	writeJSON(w, http.StatusOK, map[string]string{"markdown": string(raw)})
 }
 
+func (r *Router) getRunEndpoints(w http.ResponseWriter, req *http.Request) {
+	run, err := r.runs.GetByID(req.PathValue("id"))
+	if err != nil {
+		writeError(w, http.StatusNotFound, err)
+		return
+	}
+	runDir := run.GoldenRunDir
+	if runDir == "" {
+		runDir = "golden_runs/" + run.ID
+	}
+	if !filepath.IsAbs(runDir) {
+		runDir = filepath.Join(r.exec.CoreDir(), runDir)
+	}
+	raw, err := os.ReadFile(filepath.Join(runDir, "endpoints_catalog.json"))
+	if err != nil {
+		writeError(w, http.StatusNotFound, fmt.Errorf("endpoints catalog not available"))
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	w.Write(raw)
+}
+
 // ── Helpers ─────────────────────────────────────────
 
 func extractRunDir(output string) string {
@@ -548,6 +730,62 @@ func extractRunDir(output string) string {
 		}
 	}
 	return ""
+}
+
+func extractScenarioPath(output string) string {
+	for _, line := range strings.Split(output, "\n") {
+		line = strings.TrimSpace(line)
+		switch {
+		case strings.HasPrefix(line, "scenario_path="):
+			return strings.TrimPrefix(line, "scenario_path=")
+		case strings.HasPrefix(line, "scenario="):
+			return strings.TrimPrefix(line, "scenario=")
+		case strings.HasPrefix(line, "written:"):
+			return strings.TrimSpace(strings.TrimPrefix(line, "written:"))
+		}
+	}
+	return ""
+}
+
+func latestScenarioPath(coreDir string) (string, error) {
+	scenariosDir := filepath.Join(coreDir, "scenarios")
+	entries, err := os.ReadDir(scenariosDir)
+	if err != nil {
+		return "", err
+	}
+	latestTime := time.Time{}
+	latestPath := ""
+	for _, e := range entries {
+		if e.IsDir() || (!strings.HasSuffix(e.Name(), ".yaml") && !strings.HasSuffix(e.Name(), ".yml")) {
+			continue
+		}
+		info, err := e.Info()
+		if err != nil {
+			continue
+		}
+		if info.ModTime().After(latestTime) {
+			latestTime = info.ModTime()
+			latestPath = filepath.Join(scenariosDir, e.Name())
+		}
+	}
+	if latestPath == "" {
+		return "", fmt.Errorf("no scenario file found in %s", scenariosDir)
+	}
+	return latestPath, nil
+}
+
+func (r *Router) runInterpretationAsync(runID, runDir string) {
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Minute)
+	defer cancel()
+
+	result := r.exec.Run(ctx, "interpret", runDir)
+	if !result.Success {
+		fmt.Printf("full-audit interpret async failed for run %s: %s\n", runID, result.Error)
+		return
+	}
+	if _, err := r.interpretations.Insert(runID, "llm", result.Output, ""); err != nil && !strings.Contains(err.Error(), "UNIQUE constraint") {
+		fmt.Printf("full-audit interpret async persist failed for run %s: %v\n", runID, err)
+	}
 }
 
 func writeJSON(w http.ResponseWriter, status int, v any) {

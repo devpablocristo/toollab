@@ -34,24 +34,34 @@ type PathItem struct {
 }
 
 type Operation struct {
-	OperationID string       `yaml:"operationId"`
-	Tags        []string     `yaml:"tags"`
-	Parameters  []Parameter  `yaml:"parameters"`
-	RequestBody *RequestBody `yaml:"requestBody"`
-	Summary     string       `yaml:"summary"`
+	OperationID string                 `yaml:"operationId"`
+	Tags        []string               `yaml:"tags"`
+	Parameters  []Parameter            `yaml:"parameters"`
+	RequestBody *RequestBody           `yaml:"requestBody"`
+	Summary     string                 `yaml:"summary"`
+	Description string                 `yaml:"description"`
+	Responses   map[string]ResponseObj `yaml:"responses"`
+	Deprecated  bool                   `yaml:"deprecated"`
+}
+
+type ResponseObj struct {
+	Description string                  `yaml:"description"`
+	Content     map[string]MediaTypeObj `yaml:"content"`
 }
 
 type Parameter struct {
-	Name     string     `yaml:"name"`
-	In       string     `yaml:"in"`
-	Required bool       `yaml:"required"`
-	Schema   *SchemaObj `yaml:"schema"`
-	Example  any        `yaml:"example"`
+	Name        string     `yaml:"name"`
+	In          string     `yaml:"in"`
+	Required    bool       `yaml:"required"`
+	Schema      *SchemaObj `yaml:"schema"`
+	Example     any        `yaml:"example"`
+	Description string     `yaml:"description"`
 }
 
 type RequestBody struct {
-	Required bool                    `yaml:"required"`
-	Content  map[string]MediaTypeObj `yaml:"content"`
+	Required    bool                    `yaml:"required"`
+	Content     map[string]MediaTypeObj `yaml:"content"`
+	Description string                  `yaml:"description"`
 }
 
 type MediaTypeObj struct {
@@ -59,15 +69,17 @@ type MediaTypeObj struct {
 }
 
 type SchemaObj struct {
-	Type       string                `yaml:"type"`
-	Format     string                `yaml:"format"`
-	Properties map[string]*SchemaObj `yaml:"properties"`
-	Required   []string              `yaml:"required"`
-	Items      *SchemaObj            `yaml:"items"`
-	Example    any                   `yaml:"example"`
-	Enum       []any                 `yaml:"enum"`
-	Ref        string                `yaml:"$ref"`
-	AllOf      []*SchemaObj          `yaml:"allOf"`
+	Type        string                `yaml:"type"`
+	Format      string                `yaml:"format"`
+	Properties  map[string]*SchemaObj `yaml:"properties"`
+	Required    []string              `yaml:"required"`
+	Items       *SchemaObj            `yaml:"items"`
+	Example     any                   `yaml:"example"`
+	Enum        []any                 `yaml:"enum"`
+	Ref         string                `yaml:"$ref"`
+	AllOf       []*SchemaObj          `yaml:"allOf"`
+	Description string                `yaml:"description"`
+	Nullable    bool                  `yaml:"nullable"`
 }
 
 type Components struct {
@@ -129,7 +141,7 @@ func ParseSpec(data []byte) (*OpenAPIDoc, error) {
 	return &doc, nil
 }
 
-func (doc *OpenAPIDoc) resolveRef(ref string) (*SchemaObj, error) {
+func (doc *OpenAPIDoc) ResolveRef(ref string) (*SchemaObj, error) {
 	const prefix = "#/components/schemas/"
 	if !strings.HasPrefix(ref, prefix) {
 		return nil, fmt.Errorf("unsupported $ref %q (only %s... refs supported)", ref, prefix)
@@ -145,22 +157,15 @@ func (doc *OpenAPIDoc) resolveRef(ref string) (*SchemaObj, error) {
 	return schema, nil
 }
 
-type resolvedOp struct {
-	Method    string
-	Path      string
-	Operation *Operation
+type MethodOp struct {
+	Method string
+	Op     *Operation
 }
 
 var methodOrder = []string{"GET", "POST", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS"}
 
-func (pi *PathItem) operations() []struct {
-	method string
-	op     *Operation
-} {
-	candidates := []struct {
-		method string
-		op     *Operation
-	}{
+func (pi *PathItem) Operations() []MethodOp {
+	candidates := []MethodOp{
 		{"GET", pi.Get},
 		{"POST", pi.Post},
 		{"PUT", pi.Put},
@@ -169,12 +174,9 @@ func (pi *PathItem) operations() []struct {
 		{"HEAD", pi.Head},
 		{"OPTIONS", pi.Options},
 	}
-	var out []struct {
-		method string
-		op     *Operation
-	}
+	var out []MethodOp
 	for _, c := range candidates {
-		if c.op != nil {
+		if c.Op != nil {
 			out = append(out, c)
 		}
 	}

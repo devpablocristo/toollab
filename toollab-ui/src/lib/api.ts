@@ -137,6 +137,67 @@ export interface ContractReport {
   violations: ContractViolation[];
 }
 
+export interface EndpointParam {
+  name: string;
+  in: string;
+  required: boolean;
+  type: string;
+  format?: string;
+  description?: string;
+  example?: unknown;
+}
+
+export interface SchemaField {
+  name: string;
+  type: string;
+  format?: string;
+  required: boolean;
+  description?: string;
+  example?: unknown;
+  enum?: unknown[];
+  nullable?: boolean;
+  items?: EndpointSchema;
+}
+
+export interface EndpointSchema {
+  type: string;
+  format?: string;
+  fields?: SchemaField[];
+  items?: EndpointSchema;
+  example?: unknown;
+}
+
+export interface EndpointBody {
+  content_type: string;
+  required: boolean;
+  description?: string;
+  schema?: EndpointSchema;
+}
+
+export interface EndpointResponse {
+  status: string;
+  description?: string;
+  schema?: EndpointSchema;
+}
+
+export interface CatalogEndpoint {
+  method: string;
+  path: string;
+  operation_id?: string;
+  summary?: string;
+  description?: string;
+  tags?: string[];
+  deprecated?: boolean;
+  parameters?: EndpointParam[];
+  request_body?: EndpointBody;
+  responses?: EndpointResponse[];
+}
+
+export interface EndpointsCatalog {
+  total: number;
+  endpoints: CatalogEndpoint[];
+}
+
 export const api = {
   getStats: () => request<Stats>("/api/v1/stats"),
 
@@ -187,4 +248,27 @@ export const api = {
   getRunCoverage: (id: string) => request<CoverageReport>(`/api/v1/runs/${id}/coverage`),
   getRunContract: (id: string) => request<ContractReport>(`/api/v1/runs/${id}/contract`),
   getRunComprehension: (id: string) => request<{ markdown: string }>(`/api/v1/runs/${id}/comprehension`),
+  getRunEndpoints: (id: string) => request<EndpointsCatalog>(`/api/v1/runs/${id}/endpoints`),
+
+  deleteRun: (id: string) => request<void>(`/api/v1/runs/${id}`, { method: "DELETE" }),
+
+  execFullAudit: (data: {
+    base_url: string;
+    target_id?: string;
+    target_name?: string;
+    mode?: string;
+  }) => request<FullAuditResult>("/api/v1/exec/full-audit", { method: "POST", body: JSON.stringify(data) }),
 };
+
+export interface AuditStep {
+  step: string;
+  status: string;
+  output?: string;
+  error?: string;
+}
+
+export interface FullAuditResult {
+  steps: AuditStep[];
+  run_id?: string;
+  target_id?: string;
+}

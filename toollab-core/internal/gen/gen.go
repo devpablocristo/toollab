@@ -250,14 +250,14 @@ func buildRequests(doc *OpenAPIDoc, opts Options) ([]requestYAML, error) {
 		pi := doc.Paths[path]
 		pathParams := pi.Parameters
 
-		for _, entry := range pi.operations() {
-			op := entry.op
+		for _, entry := range pi.Operations() {
+			op := entry.Op
 
 			if !matchesTags(op.Tags, includeSet, excludeSet) {
 				continue
 			}
 
-			id := operationID(entry.method, path, op)
+			id := operationID(entry.Method, path, op)
 			idCounts[id]++
 			if idCounts[id] > 1 {
 				id = fmt.Sprintf("%s_%d", id, idCounts[id])
@@ -265,9 +265,9 @@ func buildRequests(doc *OpenAPIDoc, opts Options) ([]requestYAML, error) {
 
 			req := requestYAML{
 				ID:     id,
-				Method: entry.method,
+				Method: entry.Method,
 				Path:   path,
-				Weight: weightForMethod(entry.method),
+				Weight: weightForMethod(entry.Method),
 			}
 
 			allParams := mergeParams(pathParams, op.Parameters)
@@ -279,7 +279,7 @@ func buildRequests(doc *OpenAPIDoc, opts Options) ([]requestYAML, error) {
 				req.Headers = hdrs
 			}
 
-			if isReadMethod(entry.method) {
+			if isReadMethod(entry.Method) {
 				empty := ""
 				req.Body = &empty
 			} else {

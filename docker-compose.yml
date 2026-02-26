@@ -8,6 +8,12 @@ services:
       TOOLLAB_DASHBOARD_PORT: "${TOOLLAB_DASHBOARD_PORT:-8090}"
       TOOLLAB_DB_PATH: "/app/data/toollab.db"
       TOOLLAB_CORE_DIR: "/app/core"
+      LLM_PROVIDER: "${LLM_PROVIDER:-gemini}"
+      GEMINI_API_KEY: "${GEMINI_API_KEY:-}"
+      GEMINI_MODEL: "${GEMINI_MODEL:-gemini-2.0-flash}"
+      GOOGLE_PROJECT_ID: "${GOOGLE_PROJECT_ID:-}"
+      GOOGLE_REGION: "${GOOGLE_REGION:-us-central1}"
+      VERTEX_MODEL: "${VERTEX_MODEL:-gemini-2.0-flash}"
       OLLAMA_URL: "${OLLAMA_URL:-http://host.docker.internal:11434}"
       OLLAMA_MODEL: "${OLLAMA_MODEL:-llama3.2}"
     ports:

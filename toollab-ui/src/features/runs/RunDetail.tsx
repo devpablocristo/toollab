@@ -1,41 +1,20 @@
 import { useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from "recharts";
-import { api } from "../../lib/api";
+import { api, type CatalogEndpoint, type EndpointSchema, type SchemaField } from "../../lib/api";
 import { VerdictBadge } from "../../components/VerdictBadge";
 import { StatCard } from "../../components/StatCard";
 
-type Tab = "comprehension" | "overview" | "security" | "coverage" | "contract" | "interpretation";
-
-function TabButton({ label, active, onClick, badge }: { label: string; active: boolean; onClick: () => void; badge?: string }) {
-  return (
-    <button
-      onClick={onClick}
-      className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
-        active
-          ? "bg-accent/10 text-accent border border-accent/20"
-          : "text-text-secondary hover:text-text-primary hover:bg-surface-overlay"
-      }`}
-    >
-      {label}
-      {badge && (
-        <span className={`ml-2 text-xs px-1.5 py-0.5 rounded-full ${
-          badge === "A" || badge === "B" ? "bg-pass/10 text-pass"
-          : badge === "C" ? "bg-warning/10 text-warning"
-          : "bg-fail/10 text-fail"
-        }`}>{badge}</span>
-      )}
-    </button>
-  );
-}
+type Tab = "datos" | "interpretacion";
 
 export function RunDetail() {
   const { id } = useParams<{ id: string }>();
   const qc = useQueryClient();
-  const [tab, setTab] = useState<Tab>("comprehension");
+  const navigate = useNavigate();
+  const [tab, setTab] = useState<Tab>("datos");
 
   const { data, isLoading } = useQuery({
     queryKey: ["run", id],
@@ -46,6 +25,15 @@ export function RunDetail() {
   const interpret = useMutation({
     mutationFn: () => api.execInterpret({ run_id: id! }),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["run", id] }),
+  });
+
+  const remove = useMutation({
+    mutationFn: () => api.deleteRun(id!),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["runs"] });
+      qc.invalidateQueries({ queryKey: ["stats"] });
+      navigate("/runs");
+    },
   });
 
   const { data: auditData } = useQuery({
@@ -69,9 +57,9 @@ export function RunDetail() {
     retry: false,
   });
 
-  const { data: comprehensionData } = useQuery({
-    queryKey: ["run-comprehension", id],
-    queryFn: () => api.getRunComprehension(id!),
+  const { data: endpointsData } = useQuery({
+    queryKey: ["run-endpoints", id],
+    queryFn: () => api.getRunEndpoints(id!),
     enabled: !!id,
     retry: false,
   });
@@ -94,55 +82,100 @@ export function RunDetail() {
           <p className="font-mono text-text-secondary text-sm">{run.id}</p>
         </div>
         <div className="flex items-center gap-3">
-          {!interpretation && (
-            <button
-              onClick={() => interpret.mutate()}
-              disabled={interpret.isPending}
-              className="bg-surface-raised border border-accent/30 text-accent px-4 py-2 rounded-lg font-semibold text-sm hover:bg-accent/10 transition-colors disabled:opacity-40"
-            >
-              {interpret.isPending ? "Interpretando…" : "Interpretar con LLM"}
-            </button>
-          )}
+          <button
+            onClick={() => { if (confirm("¿Eliminar este run?")) remove.mutate(); }}
+            disabled={remove.isPending}
+            className="bg-surface-raised border border-fail/20 text-fail px-4 py-2 rounded-lg font-semibold text-sm hover:bg-fail/10 transition-colors disabled:opacity-40"
+          >
+            Eliminar
+          </button>
           <p className="text-text-muted text-sm">{new Date(run.created_at).toLocaleString()}</p>
         </div>
       </div>
 
-      {/* Stats */}
+      {/* Métricas principales */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-4 animate-fade-in stagger-1">
         <StatCard label="Requests" value={run.total_requests} />
-        <StatCard label="Success" value={`${(run.success_rate * 100).toFixed(1)}%`} accent={run.success_rate > 0.9} />
+        <StatCard label="Éxito" value={`${(run.success_rate * 100).toFixed(1)}%`} accent={run.success_rate > 0.9} />
         <StatCard label="P50" value={`${run.p50_ms}ms`} />
         <StatCard label="P95" value={`${run.p95_ms}ms`} />
         <StatCard label="P99" value={`${run.p99_ms}ms`} />
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-2 flex-wrap animate-fade-in stagger-2">
-        <TabButton label="Comprensión" active={tab === "comprehension"} onClick={() => setTab("comprehension")} />
-        <TabButton label="Overview" active={tab === "overview"} onClick={() => setTab("overview")} />
-        <TabButton label="Seguridad" active={tab === "security"} onClick={() => setTab("security")} badge={auditData?.grade} />
-        <TabButton label="Cobertura" active={tab === "coverage"} onClick={() => setTab("coverage")} />
-        <TabButton label="Contratos" active={tab === "contract"} onClick={() => setTab("contract")} />
-        <TabButton label="Interpretación LLM" active={tab === "interpretation"} onClick={() => setTab("interpretation")} />
+      <div className="flex gap-2 animate-fade-in stagger-2">
+        <button
+          onClick={() => setTab("datos")}
+          className={`px-5 py-2.5 text-sm font-semibold rounded-lg transition-colors ${
+            tab === "datos"
+              ? "bg-accent/10 text-accent border border-accent/20"
+              : "text-text-secondary hover:text-text-primary hover:bg-surface-overlay"
+          }`}
+        >
+          Datos de la auditoría
+        </button>
+        <button
+          onClick={() => setTab("interpretacion")}
+          className={`px-5 py-2.5 text-sm font-semibold rounded-lg transition-colors flex items-center gap-2 ${
+            tab === "interpretacion"
+              ? "bg-accent/10 text-accent border border-accent/20"
+              : "text-text-secondary hover:text-text-primary hover:bg-surface-overlay"
+          }`}
+        >
+          Interpretación LLM
+          {interpretation && <span className="w-2 h-2 rounded-full bg-accent" />}
+        </button>
       </div>
 
-      {/* Tab Content */}
-      {tab === "comprehension" && <ComprehensionTab markdown={comprehensionData?.markdown} />}
-      {tab === "overview" && <OverviewTab histogram={histogram} assertions={assertions} run={run} />}
-      {tab === "security" && <SecurityTab data={auditData} />}
-      {tab === "coverage" && <CoverageTab data={coverageData} />}
-      {tab === "contract" && <ContractTab data={contractData} />}
-      {tab === "interpretation" && <InterpretationTab interpretation={interpretation} isPending={interpret.isPending} />}
+      {tab === "datos" && (
+        <DataTab
+          run={run}
+          histogram={histogram}
+          assertions={assertions}
+          auditData={auditData}
+          coverageData={coverageData}
+          contractData={contractData}
+          endpoints={endpointsData?.endpoints}
+        />
+      )}
+
+      {tab === "interpretacion" && (
+        <InterpretationTab
+          interpretation={interpretation}
+          isPending={interpret.isPending}
+          onInterpret={() => interpret.mutate()}
+        />
+      )}
     </div>
   );
 }
 
-function OverviewTab({ histogram, assertions, run }: { histogram: Record<string, number>; assertions: any[]; run: any }) {
+/* ═══════════════════════════════════════════════════════
+   DATOS PUROS
+   ═══════════════════════════════════════════════════════ */
+
+function DataTab({ run, histogram, assertions, auditData, coverageData, contractData, endpoints }: {
+  run: any; histogram: Record<string, number>; assertions: any[];
+  auditData: any; coverageData: any; contractData: any;
+  endpoints?: CatalogEndpoint[];
+}) {
   return (
-    <div className="space-y-8">
+    <div className="space-y-10 animate-fade-in">
+
+      {/* Catálogo de endpoints (Swagger) */}
+      {endpoints && endpoints.length > 0 && (
+        <Section title={`Endpoints documentados (${endpoints.length})`}>
+          <div className="space-y-2">
+            {endpoints.map((ep, i) => (
+              <EndpointCard key={`${ep.method}-${ep.path}-${i}`} endpoint={ep} />
+            ))}
+          </div>
+        </Section>
+      )}
+
+      {/* Distribución HTTP */}
       {Object.keys(histogram).length > 0 && (
-        <div className="animate-fade-in">
-          <h2 className="text-lg font-semibold mb-3">Distribución de Respuestas</h2>
+        <Section title="Distribución de respuestas HTTP">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="bg-surface-raised border border-border-subtle rounded-xl p-5">
               <ResponsiveContainer width="100%" height={200}>
@@ -171,7 +204,7 @@ function OverviewTab({ histogram, assertions, run }: { histogram: Record<string,
                     <span className={`w-2.5 h-2.5 rounded-full ${is2xx ? "bg-pass" : is5xx ? "bg-fail" : is4xx ? "bg-warning" : "bg-text-muted"}`} />
                     <span className="font-mono text-sm text-text-primary w-16">HTTP {code}</span>
                     <div className="flex-1 h-1.5 bg-surface-overlay rounded-full overflow-hidden">
-                      <div className={`h-full rounded-full ${is2xx ? "bg-pass" : is5xx ? "bg-fail" : is4xx ? "bg-warning" : "bg-text-muted"}`} style={{ width: `${pct}%`, animation: "bar-fill 0.6s ease-out both" }} />
+                      <div className={`h-full rounded-full ${is2xx ? "bg-pass" : is5xx ? "bg-fail" : is4xx ? "bg-warning" : "bg-text-muted"}`} style={{ width: `${pct}%` }} />
                     </div>
                     <span className="font-mono text-sm text-text-secondary w-10 text-right">{count}</span>
                     <span className="font-mono text-xs text-text-muted w-12 text-right">{pct}%</span>
@@ -180,285 +213,361 @@ function OverviewTab({ histogram, assertions, run }: { histogram: Record<string,
               })}
             </div>
           </div>
-        </div>
+        </Section>
       )}
 
-      <div className="animate-fade-in">
-        <h2 className="text-lg font-semibold mb-3">Assertions</h2>
-        <div className="space-y-2">
-          {assertions.map((a: any, i: number) => (
-            <div key={i} className={`bg-surface-raised border rounded-lg px-4 py-3 flex items-center justify-between ${a.passed ? "border-pass/10" : "border-fail/20"}`}>
-              <div className="flex items-center gap-3">
-                <span className={`w-2 h-2 rounded-full ${a.passed ? "bg-pass" : "bg-fail"}`} />
-                <span className="font-mono text-sm">{a.rule_id}</span>
-                <span className="text-text-secondary text-sm">{a.message}</span>
-              </div>
-              <div className="font-mono text-xs text-text-muted">{a.observed} / {a.expected}</div>
-            </div>
-          ))}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function SecurityTab({ data }: { data: any }) {
-  if (!data) {
-    return (
-      <div className="lab-card lab-card--neutral p-12 text-center">
-        <p className="text-text-muted font-mono">Auditoría de seguridad no disponible para este run.</p>
-        <p className="text-text-secondary text-sm mt-2">Los runs nuevos generan el reporte automáticamente.</p>
-      </div>
-    );
-  }
-
-  const gradeColor = data.grade === "A" || data.grade === "B" ? "text-pass" : data.grade === "C" ? "text-warning" : "text-fail";
-
-  return (
-    <div className="space-y-6 animate-fade-in">
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div className="bg-surface-raised border border-border-subtle rounded-xl p-5 text-center">
-          <p className={`text-4xl font-bold ${gradeColor}`}>{data.grade}</p>
-          <p className="text-xs text-text-muted mt-1 uppercase tracking-widest">Grade</p>
-        </div>
-        <div className="bg-surface-raised border border-border-subtle rounded-xl p-5 text-center">
-          <p className="text-4xl font-bold text-text-primary">{data.score}</p>
-          <p className="text-xs text-text-muted mt-1 uppercase tracking-widest">Score /100</p>
-        </div>
-        <div className="bg-surface-raised border border-border-subtle rounded-xl p-5 text-center">
-          <p className="text-4xl font-bold text-text-primary">{data.summary.total}</p>
-          <p className="text-xs text-text-muted mt-1 uppercase tracking-widest">Hallazgos</p>
-        </div>
-        <div className="bg-surface-raised border border-border-subtle rounded-xl p-5">
-          <div className="flex justify-between text-xs font-mono">
-            {data.summary.critical > 0 && <span className="text-fail">Critical: {data.summary.critical}</span>}
-            {data.summary.high > 0 && <span className="text-warning">High: {data.summary.high}</span>}
-            {data.summary.medium > 0 && <span className="text-text-secondary">Medium: {data.summary.medium}</span>}
-            {data.summary.low > 0 && <span className="text-text-muted">Low: {data.summary.low}</span>}
+      {/* Cobertura */}
+      {coverageData && (
+        <Section title="Cobertura de endpoints">
+          <div className="grid grid-cols-3 gap-4 mb-4">
+            <MiniStat label="Testeados" value={coverageData.tested_endpoints} />
+            <MiniStat label="Total" value={coverageData.total_endpoints} />
+            <MiniStat label="Cobertura" value={`${(coverageData.coverage_rate * 100).toFixed(1)}%`} />
           </div>
-          <p className="text-xs text-text-muted mt-2 uppercase tracking-widest text-center">Por severidad</p>
-        </div>
-      </div>
-
-      {data.findings.length > 0 && (
-        <div className="space-y-3">
-          <h3 className="text-sm font-semibold text-text-muted uppercase tracking-widest">Hallazgos</h3>
-          {data.findings.map((f: any, i: number) => (
-            <div key={i} className={`bg-surface-raised border rounded-xl p-5 ${
-              f.severity === "critical" ? "border-fail/30" : f.severity === "high" ? "border-warning/30" : "border-border-subtle"
-            }`}>
-              <div className="flex items-start justify-between mb-2">
-                <div className="flex items-center gap-2">
-                  <span className={`text-xs font-mono px-2 py-0.5 rounded ${
-                    f.severity === "critical" ? "bg-fail/10 text-fail"
-                    : f.severity === "high" ? "bg-warning/10 text-warning"
-                    : "bg-surface-overlay text-text-muted"
-                  }`}>{f.severity}</span>
-                  <span className="font-semibold text-sm text-text-primary">{f.title}</span>
-                </div>
-                <span className="text-xs font-mono text-text-muted">{f.id}</span>
-              </div>
-              <p className="text-sm text-text-secondary mb-3">{f.description}</p>
-              {f.endpoint && <p className="text-xs font-mono text-text-muted mb-2">Endpoint: {f.endpoint}</p>}
-              <div className="bg-surface-overlay rounded-lg px-3 py-2">
-                <p className="text-xs text-accent">{f.remediation}</p>
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
-
-      {data.findings.length === 0 && (
-        <div className="lab-card p-12 text-center">
-          <p className="text-pass text-2xl font-bold mb-2">Sin hallazgos</p>
-          <p className="text-text-secondary text-sm">No se detectaron problemas de seguridad.</p>
-        </div>
-      )}
-    </div>
-  );
-}
-
-function CoverageTab({ data }: { data: any }) {
-  if (!data) {
-    return (
-      <div className="lab-card lab-card--neutral p-12 text-center">
-        <p className="text-text-muted font-mono">Reporte de cobertura no disponible.</p>
-      </div>
-    );
-  }
-
-  const pct = (data.coverage_rate * 100).toFixed(1);
-
-  return (
-    <div className="space-y-6 animate-fade-in">
-      <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-        <div className="bg-surface-raised border border-border-subtle rounded-xl p-5 text-center">
-          <p className={`text-4xl font-bold ${+pct >= 90 ? "text-pass" : +pct >= 70 ? "text-warning" : "text-fail"}`}>{pct}%</p>
-          <p className="text-xs text-text-muted mt-1 uppercase tracking-widest">Cobertura</p>
-        </div>
-        <div className="bg-surface-raised border border-border-subtle rounded-xl p-5 text-center">
-          <p className="text-4xl font-bold text-text-primary">{data.tested_endpoints}</p>
-          <p className="text-xs text-text-muted mt-1 uppercase tracking-widest">Testeados</p>
-        </div>
-        <div className="bg-surface-raised border border-border-subtle rounded-xl p-5 text-center">
-          <p className="text-4xl font-bold text-text-primary">{data.total_endpoints}</p>
-          <p className="text-xs text-text-muted mt-1 uppercase tracking-widest">Total</p>
-        </div>
-      </div>
-
-      <div>
-        <h3 className="text-sm font-semibold text-text-muted uppercase tracking-widest mb-3">Endpoints</h3>
-        <div className="lab-card overflow-hidden">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-border text-text-muted text-[10px] font-mono uppercase tracking-[0.15em]">
-                <th className="text-left px-4 py-3">Método</th>
-                <th className="text-left px-4 py-3">Path</th>
-                <th className="text-right px-4 py-3">Hits</th>
-                <th className="text-right px-4 py-3">OK</th>
-                <th className="text-right px-4 py-3">Errores</th>
-                <th className="text-center px-4 py-3">Estado</th>
-              </tr>
-            </thead>
-            <tbody>
-              {data.endpoints.map((ep: any, i: number) => (
-                <tr key={i} className="border-b border-border-subtle/50 hover:bg-surface-overlay/30 transition-colors">
-                  <td className="px-4 py-2.5 font-mono text-accent text-xs">{ep.method}</td>
-                  <td className="px-4 py-2.5 font-mono text-text-secondary text-xs">{ep.path}</td>
-                  <td className="px-4 py-2.5 text-right font-mono text-text-secondary">{ep.hits}</td>
-                  <td className="px-4 py-2.5 text-right font-mono text-pass">{ep.success}</td>
-                  <td className="px-4 py-2.5 text-right font-mono text-fail">{ep.errors}</td>
-                  <td className="px-4 py-2.5 text-center">
-                    <span className={`w-2 h-2 rounded-full inline-block ${ep.tested ? "bg-pass" : "bg-fail"}`} />
-                  </td>
+          <div className="lab-card overflow-hidden">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-border text-text-muted text-[10px] font-mono uppercase tracking-[0.15em]">
+                  <th className="text-left px-4 py-3">Método</th>
+                  <th className="text-left px-4 py-3">Path</th>
+                  <th className="text-right px-4 py-3">Hits</th>
+                  <th className="text-right px-4 py-3">OK</th>
+                  <th className="text-right px-4 py-3">Errores</th>
+                  <th className="text-center px-4 py-3">Probado</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
+              </thead>
+              <tbody>
+                {coverageData.endpoints.map((ep: any, i: number) => (
+                  <tr key={i} className="border-b border-border-subtle/50 hover:bg-surface-overlay/30 transition-colors">
+                    <td className="px-4 py-2.5 font-mono text-accent text-xs">{ep.method}</td>
+                    <td className="px-4 py-2.5 font-mono text-text-secondary text-xs">{ep.path}</td>
+                    <td className="px-4 py-2.5 text-right font-mono text-text-secondary">{ep.hits}</td>
+                    <td className="px-4 py-2.5 text-right font-mono text-pass">{ep.success}</td>
+                    <td className="px-4 py-2.5 text-right font-mono text-fail">{ep.errors}</td>
+                    <td className="px-4 py-2.5 text-center">
+                      <span className={`w-2 h-2 rounded-full inline-block ${ep.tested ? "bg-pass" : "bg-fail"}`} />
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </Section>
+      )}
 
-      {data.by_method.length > 0 && (
-        <div>
-          <h3 className="text-sm font-semibold text-text-muted uppercase tracking-widest mb-3">Por método HTTP</h3>
-          <div className="flex gap-3 flex-wrap">
-            {data.by_method.map((m: any) => (
-              <div key={m.method} className="bg-surface-raised border border-border-subtle rounded-lg px-4 py-3 text-center min-w-[100px]">
-                <p className="font-mono text-accent text-sm font-bold">{m.method}</p>
-                <p className="text-xs text-text-muted mt-1">{m.tested}/{m.total} ({(m.rate * 100).toFixed(0)}%)</p>
+      {/* Seguridad */}
+      {auditData && (
+        <Section title="Seguridad">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+            <MiniStat label="Nota" value={auditData.grade} />
+            <MiniStat label="Puntaje" value={`${auditData.score}/100`} />
+            <MiniStat label="Hallazgos" value={auditData.summary.total} />
+            <div className="bg-surface-raised border border-border-subtle rounded-xl p-4">
+              <div className="flex flex-wrap gap-2 text-xs font-mono">
+                {auditData.summary.critical > 0 && <span className="text-fail">Crítico: {auditData.summary.critical}</span>}
+                {auditData.summary.high > 0 && <span className="text-warning">Alto: {auditData.summary.high}</span>}
+                {auditData.summary.medium > 0 && <span className="text-text-secondary">Medio: {auditData.summary.medium}</span>}
+                {auditData.summary.low > 0 && <span className="text-text-muted">Bajo: {auditData.summary.low}</span>}
+              </div>
+              <p className="text-[10px] text-text-muted mt-1 uppercase tracking-widest">Por severidad</p>
+            </div>
+          </div>
+          {auditData.findings.length > 0 && (
+            <div className="lab-card overflow-hidden">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-border text-text-muted text-[10px] font-mono uppercase tracking-[0.15em]">
+                    <th className="text-left px-4 py-3">Severidad</th>
+                    <th className="text-left px-4 py-3">Hallazgo</th>
+                    <th className="text-left px-4 py-3">Endpoint</th>
+                    <th className="text-left px-4 py-3">Remediación</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {auditData.findings.map((f: any, i: number) => (
+                    <tr key={i} className="border-b border-border-subtle/50 hover:bg-surface-overlay/30 transition-colors align-top">
+                      <td className="px-4 py-2.5">
+                        <span className={`text-xs font-mono px-2 py-0.5 rounded ${
+                          f.severity === "critical" ? "bg-fail/10 text-fail"
+                          : f.severity === "high" ? "bg-warning/10 text-warning"
+                          : "bg-surface-overlay text-text-muted"
+                        }`}>{f.severity}</span>
+                      </td>
+                      <td className="px-4 py-2.5">
+                        <p className="text-sm text-text-primary font-medium">{f.title}</p>
+                        <p className="text-xs text-text-muted mt-0.5">{f.description}</p>
+                      </td>
+                      <td className="px-4 py-2.5 font-mono text-xs text-text-secondary">{f.endpoint || "—"}</td>
+                      <td className="px-4 py-2.5 text-xs text-accent">{f.remediation}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+          {auditData.findings.length === 0 && <p className="text-pass text-sm font-mono">Sin hallazgos de seguridad</p>}
+        </Section>
+      )}
+
+      {/* Contratos */}
+      {contractData && (
+        <Section title="Validación de contratos">
+          <div className="grid grid-cols-3 gap-4 mb-4">
+            <MiniStat label="Estado" value={contractData.compliant ? "Conforme" : "No conforme"} />
+            <MiniStat label="Cumplimiento" value={`${(contractData.compliance_rate * 100).toFixed(1)}%`} />
+            <MiniStat label="Violaciones" value={contractData.total_violations} />
+          </div>
+          {contractData.violations.length > 0 && (
+            <div className="lab-card overflow-hidden">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-border text-text-muted text-[10px] font-mono uppercase tracking-[0.15em]">
+                    <th className="text-left px-4 py-3">Endpoint</th>
+                    <th className="text-left px-4 py-3">Campo</th>
+                    <th className="text-left px-4 py-3">Esperado</th>
+                    <th className="text-left px-4 py-3">Actual</th>
+                    <th className="text-left px-4 py-3">Descripción</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {contractData.violations.map((v: any, i: number) => (
+                    <tr key={i} className="border-b border-border-subtle/50 hover:bg-surface-overlay/30 transition-colors align-top">
+                      <td className="px-4 py-2.5 font-mono text-xs text-text-secondary">{v.endpoint}</td>
+                      <td className="px-4 py-2.5 font-mono text-xs text-fail">{v.field}</td>
+                      <td className="px-4 py-2.5 font-mono text-xs text-pass">{v.expected}</td>
+                      <td className="px-4 py-2.5 font-mono text-xs text-fail">{v.actual}</td>
+                      <td className="px-4 py-2.5 text-xs text-text-muted">{v.description}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+          {contractData.violations.length === 0 && <p className="text-pass text-sm font-mono">Sin violaciones de contrato</p>}
+        </Section>
+      )}
+
+      {/* Assertions */}
+      {assertions.length > 0 && (
+        <Section title="Reglas y assertions">
+          <div className="space-y-2">
+            {assertions.map((a: any, i: number) => (
+              <div key={i} className={`bg-surface-raised border rounded-lg px-4 py-3 flex items-center justify-between ${a.passed ? "border-pass/10" : "border-fail/20"}`}>
+                <div className="flex items-center gap-3">
+                  <span className={`w-2 h-2 rounded-full ${a.passed ? "bg-pass" : "bg-fail"}`} />
+                  <span className="font-mono text-sm">{a.rule_id}</span>
+                  <span className="text-text-secondary text-sm">{a.message}</span>
+                </div>
+                <div className="font-mono text-xs text-text-muted">{a.observed} / {a.expected}</div>
               </div>
             ))}
           </div>
-        </div>
+        </Section>
       )}
+
+      {/* Metadata */}
+      <Section title="Metadata del run">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <MetaItem label="Duración" value={`${run.duration_s}s`} />
+          <MetaItem label="Concurrencia" value={run.concurrency} />
+          <MetaItem label="Inicio" value={new Date(run.started_at).toLocaleString()} />
+          <MetaItem label="Fin" value={new Date(run.finished_at).toLocaleString()} />
+        </div>
+      </Section>
     </div>
   );
 }
 
-function ContractTab({ data }: { data: any }) {
-  if (!data) {
-    return (
-      <div className="lab-card lab-card--neutral p-12 text-center">
-        <p className="text-text-muted font-mono">Validación de contratos no disponible.</p>
-      </div>
-    );
-  }
+/* ═══════════════════════════════════════════════════════
+   ENDPOINT CARD — Detalle expandible del swagger
+   ═══════════════════════════════════════════════════════ */
+
+const methodColors: Record<string, string> = {
+  GET: "bg-blue-500/10 text-blue-400 border-blue-500/20",
+  POST: "bg-green-500/10 text-green-400 border-green-500/20",
+  PUT: "bg-amber-500/10 text-amber-400 border-amber-500/20",
+  PATCH: "bg-orange-500/10 text-orange-400 border-orange-500/20",
+  DELETE: "bg-red-500/10 text-red-400 border-red-500/20",
+  HEAD: "bg-purple-500/10 text-purple-400 border-purple-500/20",
+  OPTIONS: "bg-gray-500/10 text-gray-400 border-gray-500/20",
+};
+
+function EndpointCard({ endpoint: ep }: { endpoint: CatalogEndpoint }) {
+  const [open, setOpen] = useState(false);
+  const mc = methodColors[ep.method] || "bg-surface-overlay text-text-muted border-border-subtle";
+  const hasDetails = (ep.parameters && ep.parameters.length > 0) || ep.request_body || (ep.responses && ep.responses.length > 0);
 
   return (
-    <div className="space-y-6 animate-fade-in">
-      <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-        <div className="bg-surface-raised border border-border-subtle rounded-xl p-5 text-center">
-          <p className={`text-3xl font-bold ${data.compliant ? "text-pass" : "text-fail"}`}>
-            {data.compliant ? "CONFORME" : "NO CONFORME"}
-          </p>
-          <p className="text-xs text-text-muted mt-1 uppercase tracking-widest">Estado</p>
-        </div>
-        <div className="bg-surface-raised border border-border-subtle rounded-xl p-5 text-center">
-          <p className="text-4xl font-bold text-text-primary">{(data.compliance_rate * 100).toFixed(1)}%</p>
-          <p className="text-xs text-text-muted mt-1 uppercase tracking-widest">Compliance</p>
-        </div>
-        <div className="bg-surface-raised border border-border-subtle rounded-xl p-5 text-center">
-          <p className={`text-4xl font-bold ${data.total_violations > 0 ? "text-fail" : "text-pass"}`}>{data.total_violations}</p>
-          <p className="text-xs text-text-muted mt-1 uppercase tracking-widest">Violaciones</p>
-        </div>
-      </div>
+    <div className={`border border-border-subtle rounded-xl overflow-hidden transition-all ${ep.deprecated ? "opacity-60" : ""}`}>
+      <button
+        onClick={() => hasDetails && setOpen(!open)}
+        className={`w-full flex items-center gap-3 px-4 py-3 text-left ${hasDetails ? "hover:bg-surface-overlay/30 cursor-pointer" : "cursor-default"} transition-colors`}
+      >
+        <span className={`px-2 py-0.5 text-[11px] font-mono font-bold rounded border ${mc}`}>
+          {ep.method}
+        </span>
+        <span className="font-mono text-sm text-text-primary flex-1">{ep.path}</span>
+        {ep.summary && <span className="text-xs text-text-muted truncate max-w-[300px]">{ep.summary}</span>}
+        {ep.deprecated && <span className="text-[10px] text-warning bg-warning/10 px-1.5 py-0.5 rounded">deprecated</span>}
+        {ep.tags && ep.tags.map(t => (
+          <span key={t} className="text-[10px] text-text-muted bg-surface-overlay px-1.5 py-0.5 rounded">{t}</span>
+        ))}
+        {hasDetails && (
+          <span className={`text-text-muted text-sm transition-transform duration-200 ${open ? "rotate-180" : ""}`}>&#x25BE;</span>
+        )}
+      </button>
 
-      {data.violations.length > 0 && (
-        <div className="space-y-3">
-          <h3 className="text-sm font-semibold text-text-muted uppercase tracking-widest">Violaciones de Contrato</h3>
-          {data.violations.map((v: any, i: number) => (
-            <div key={i} className="bg-surface-raised border border-fail/15 rounded-xl p-5">
-              <div className="flex items-center gap-2 mb-2">
-                <span className="text-xs font-mono bg-fail/10 text-fail px-2 py-0.5 rounded">{v.field}</span>
-                <span className="font-mono text-xs text-text-muted">{v.endpoint}</span>
-              </div>
-              <p className="text-sm text-text-secondary mb-3">{v.description}</p>
-              <div className="grid grid-cols-2 gap-3 text-xs font-mono">
-                <div className="bg-surface-overlay rounded-lg px-3 py-2">
-                  <span className="text-text-muted">Esperado:</span> <span className="text-pass">{v.expected}</span>
-                </div>
-                <div className="bg-surface-overlay rounded-lg px-3 py-2">
-                  <span className="text-text-muted">Actual:</span> <span className="text-fail">{v.actual}</span>
-                </div>
-              </div>
+      {open && (
+        <div className="border-t border-border-subtle/50 bg-surface/50">
+          {ep.description && (
+            <div className="px-4 py-3 border-b border-border-subtle/30">
+              <p className="text-sm text-text-secondary">{ep.description}</p>
             </div>
-          ))}
-        </div>
-      )}
+          )}
 
-      {data.violations.length === 0 && (
-        <div className="lab-card p-12 text-center">
-          <p className="text-pass text-2xl font-bold mb-2">Sin violaciones</p>
-          <p className="text-text-secondary text-sm">Todas las respuestas cumplen con el contrato.</p>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-0 divide-y md:divide-y-0 md:divide-x divide-border-subtle/30">
+            {/* Parámetros + Request Body */}
+            <div className="p-4 space-y-4">
+              {ep.parameters && ep.parameters.length > 0 && (
+                <div>
+                  <h4 className="text-[10px] font-mono text-text-muted uppercase tracking-widest mb-2">Parámetros</h4>
+                  <div className="space-y-1.5">
+                    {ep.parameters.map((p, i) => (
+                      <div key={i} className="flex items-start gap-2 text-xs">
+                        <span className="font-mono text-accent font-medium">{p.name}</span>
+                        <span className="text-text-muted">({p.in})</span>
+                        <span className="text-text-muted">{p.type}{p.format ? ` / ${p.format}` : ""}</span>
+                        {p.required && <span className="text-fail text-[10px]">*</span>}
+                        {p.description && <span className="text-text-secondary ml-auto">{p.description}</span>}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {ep.request_body && (
+                <div>
+                  <h4 className="text-[10px] font-mono text-text-muted uppercase tracking-widest mb-2">
+                    Request body
+                    <span className="ml-2 text-text-secondary normal-case">{ep.request_body.content_type}</span>
+                    {ep.request_body.required && <span className="text-fail ml-1">*</span>}
+                  </h4>
+                  {ep.request_body.description && (
+                    <p className="text-xs text-text-secondary mb-2">{ep.request_body.description}</p>
+                  )}
+                  {ep.request_body.schema && <SchemaView schema={ep.request_body.schema} />}
+                </div>
+              )}
+
+              {!ep.parameters?.length && !ep.request_body && (
+                <p className="text-xs text-text-muted">Sin parámetros ni body</p>
+              )}
+            </div>
+
+            {/* Responses */}
+            <div className="p-4">
+              <h4 className="text-[10px] font-mono text-text-muted uppercase tracking-widest mb-2">Respuestas</h4>
+              {ep.responses && ep.responses.length > 0 ? (
+                <div className="space-y-3">
+                  {ep.responses.map((r, i) => (
+                    <div key={i}>
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className={`font-mono text-xs font-bold ${
+                          r.status.startsWith("2") ? "text-pass"
+                          : r.status.startsWith("4") ? "text-warning"
+                          : r.status.startsWith("5") ? "text-fail"
+                          : "text-text-muted"
+                        }`}>{r.status}</span>
+                        {r.description && <span className="text-xs text-text-secondary">{r.description}</span>}
+                      </div>
+                      {r.schema && <SchemaView schema={r.schema} />}
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-xs text-text-muted">Sin respuestas documentadas</p>
+              )}
+            </div>
+          </div>
         </div>
       )}
     </div>
   );
 }
 
-function ComprehensionTab({ markdown }: { markdown?: string }) {
-  if (!markdown) {
+function SchemaView({ schema, depth = 0 }: { schema: EndpointSchema; depth?: number }) {
+  if (depth > 3) return null;
+
+  if (schema.type === "array" && schema.items) {
     return (
-      <div className="lab-card lab-card--neutral p-12 text-center">
-        <p className="text-text-muted font-mono">Reporte de comprensión no disponible.</p>
-        <p className="text-text-secondary text-sm mt-2">Los runs nuevos lo generan automáticamente.</p>
+      <div className="text-xs">
+        <span className="text-text-muted font-mono">array of:</span>
+        <div className="ml-3 mt-1">
+          <SchemaView schema={schema.items} depth={depth + 1} />
+        </div>
       </div>
     );
   }
 
+  if (!schema.fields || schema.fields.length === 0) {
+    return <span className="text-xs font-mono text-text-muted">{schema.type}{schema.format ? ` (${schema.format})` : ""}</span>;
+  }
+
   return (
-    <div className="animate-fade-in">
-      <div className="flex items-center gap-3 mb-4">
-        <div className="w-8 h-8 rounded-lg bg-accent/10 border border-accent/20 flex items-center justify-center">
-          <span className="text-accent text-base font-bold">?</span>
-        </div>
-        <div>
-          <h2 className="text-lg font-semibold">Comprensión del Servicio</h2>
-          <p className="text-xs text-text-muted">Todo lo que necesitás saber sobre este servicio, generado desde la evidencia</p>
-        </div>
-      </div>
-      <div className="bg-surface-raised border border-accent/10 rounded-xl overflow-hidden">
-        <div className="h-1 bg-gradient-to-r from-accent/40 via-accent/20 to-transparent" />
-        <div className="p-8 llm-prose">
-          <ReactMarkdown remarkPlugins={[remarkGfm]}>{markdown}</ReactMarkdown>
-        </div>
-      </div>
+    <div className="bg-surface-overlay/50 rounded-lg overflow-hidden">
+      <table className="w-full text-xs">
+        <thead>
+          <tr className="text-text-muted text-[9px] font-mono uppercase tracking-widest">
+            <th className="text-left px-3 py-1.5">Campo</th>
+            <th className="text-left px-3 py-1.5">Tipo</th>
+            <th className="text-left px-3 py-1.5">Info</th>
+          </tr>
+        </thead>
+        <tbody>
+          {schema.fields.map((f: SchemaField, i: number) => (
+            <tr key={i} className="border-t border-border-subtle/20">
+              <td className="px-3 py-1.5 font-mono text-accent">
+                {f.name}
+                {f.required && <span className="text-fail ml-0.5">*</span>}
+              </td>
+              <td className="px-3 py-1.5 font-mono text-text-muted">
+                {f.type}{f.format ? ` (${f.format})` : ""}
+                {f.nullable && <span className="text-text-muted/50 ml-1">nullable</span>}
+              </td>
+              <td className="px-3 py-1.5 text-text-secondary">
+                {f.description || (f.enum ? `enum: ${f.enum.join(", ")}` : "") || (f.example !== undefined ? `ej: ${JSON.stringify(f.example)}` : "")}
+                {f.items && (
+                  <div className="mt-1">
+                    <SchemaView schema={f.items} depth={depth + 1} />
+                  </div>
+                )}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </div>
   );
 }
 
-function InterpretationTab({ interpretation, isPending }: { interpretation: string | null; isPending: boolean }) {
+/* ═══════════════════════════════════════════════════════
+   INTERPRETACIÓN LLM
+   ═══════════════════════════════════════════════════════ */
+
+function InterpretationTab({ interpretation, isPending, onInterpret }: {
+  interpretation: string | null; isPending: boolean; onInterpret: () => void;
+}) {
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 animate-fade-in">
       {interpretation && (
-        <div className="animate-fade-in">
+        <div>
           <div className="flex items-center gap-3 mb-4">
             <div className="w-8 h-8 rounded-lg bg-accent/10 border border-accent/20 flex items-center justify-center">
-              <span className="text-accent text-sm">AI</span>
+              <span className="text-accent text-sm font-bold">AI</span>
             </div>
             <div>
-              <h2 className="text-lg font-semibold">Interpretación LLM</h2>
-              <p className="text-xs text-text-muted">Generada por <span className="font-mono text-accent/70">ollama</span> — análisis automático de la evidencia</p>
+              <h2 className="text-lg font-semibold">Interpretación del servicio</h2>
+              <p className="text-xs text-text-muted">Análisis generado por LLM a partir de todos los datos de la auditoría</p>
             </div>
           </div>
           <div className="bg-surface-raised border border-accent/10 rounded-xl overflow-hidden">
@@ -471,19 +580,59 @@ function InterpretationTab({ interpretation, isPending }: { interpretation: stri
       )}
 
       {isPending && (
-        <div className="animate-fade-in bg-surface-raised border border-accent/20 rounded-xl p-6 text-center">
+        <div className="bg-surface-raised border border-accent/20 rounded-xl p-8 text-center">
           <div className="inline-block w-5 h-5 border-2 border-accent border-t-transparent rounded-full animate-spin mb-3" />
-          <p className="text-text-secondary text-sm">Ollama está interpretando los resultados…</p>
+          <p className="text-text-secondary text-sm">El LLM está analizando todos los datos…</p>
           <p className="text-text-muted text-xs mt-1">Esto puede tardar 1-2 min en CPU</p>
         </div>
       )}
 
       {!interpretation && !isPending && (
-        <div className="lab-card lab-card--neutral p-12 text-center">
-          <p className="text-text-muted font-mono">Sin interpretación LLM.</p>
-          <p className="text-text-secondary text-sm mt-2">Usa el botón "Interpretar con LLM" en la cabecera.</p>
+        <div className="bg-surface-raised border border-border-subtle rounded-xl p-12 text-center space-y-4">
+          <p className="text-text-muted text-sm">
+            Los datos puros están en la pestaña anterior.<br />
+            Acá el LLM analiza todo y genera una interpretación completa en lenguaje natural.
+          </p>
+          <button
+            onClick={onInterpret}
+            className="bg-accent text-surface px-6 py-3 rounded-xl font-bold text-sm hover:bg-accent-dim transition-colors"
+            style={{ boxShadow: "0 0 20px rgba(0,232,157,0.15)" }}
+          >
+            Generar interpretación con LLM
+          </button>
         </div>
       )}
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════
+   Componentes auxiliares
+   ═══════════════════════════════════════════════════════ */
+
+function Section({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <div>
+      <h2 className="text-sm font-mono text-text-muted uppercase tracking-widest mb-4">{title}</h2>
+      {children}
+    </div>
+  );
+}
+
+function MiniStat({ label, value }: { label: string; value: string | number }) {
+  return (
+    <div className="bg-surface-raised border border-border-subtle rounded-xl p-4 text-center">
+      <p className="text-2xl font-bold text-text-primary">{value}</p>
+      <p className="text-[10px] text-text-muted mt-1 uppercase tracking-widest">{label}</p>
+    </div>
+  );
+}
+
+function MetaItem({ label, value }: { label: string; value: string | number }) {
+  return (
+    <div className="bg-surface-raised border border-border-subtle rounded-lg px-3 py-2.5">
+      <p className="text-[10px] text-text-muted uppercase tracking-widest">{label}</p>
+      <p className="font-mono text-sm text-text-primary mt-0.5 truncate" title={String(value)}>{value}</p>
     </div>
   );
 }

@@ -268,17 +268,17 @@ func ExplainRun(ctx context.Context, cfg ExplainConfig) (*ExplainResult, error) 
 			understanding.Determinism.LLMInputSHA256 = utils.SHA256Hex(llmInput)
 		}
 
-		ollamaClient := llm.NewClient()
-		if ollamaClient.Available(ctx) {
-			summary := buildEvidenceSummary(bundle)
-			narrative, llmErr := ollamaClient.ExplainEvidence(ctx, summary)
+		provider := llm.NewProvider()
+		if provider.Available(ctx) {
+			summary := buildFullContext(cfg.RunDir, bundle)
+			narrative, llmErr := provider.Interpret(ctx, summary)
 			if llmErr != nil {
 				warnings = append(warnings, "llm narrative failed: "+llmErr.Error())
 			} else {
 				llmNarrative = narrative
 			}
 		} else {
-			warnings = append(warnings, "llm requested but ollama not available at "+os.Getenv("OLLAMA_URL"))
+			warnings = append(warnings, "llm provider "+provider.Name()+" not available")
 		}
 	}
 	understandingJSON, fp, err := explainmodel.WriteCanonical(understanding)
@@ -565,33 +565,30 @@ func normalizeOutputDir(path string) string {
 	return path
 }
 
-func buildEvidenceSummary(b *evidence.Bundle) string {
+func buildFullContext(runDir string, b *evidence.Bundle) string {
 	var sb strings.Builder
 
-	sb.WriteString("# Test Run Summary\n\n")
-	sb.WriteString(fmt.Sprintf("Target API: %s\n", b.ScenarioFingerprint.ScenarioPath))
-	sb.WriteString(fmt.Sprintf("Mode: %s | Concurrency: %d | Duration: %ds\n", b.Metadata.Mode, b.Execution.Concurrency, b.Execution.DurationS))
-	sb.WriteString(fmt.Sprintf("Total requests: %d (planned: %d, completed: %d)\n", b.Stats.TotalRequests, b.Execution.PlannedRequests, b.Execution.CompletedRequests))
-	sb.WriteString(fmt.Sprintf("Overall verdict: %s\n", b.Assertions.Overall))
-	sb.WriteString(fmt.Sprintf("Success rate: %.2f%% | Error rate: %.2f%%\n", b.Stats.SuccessRate*100, b.Stats.ErrorRate*100))
-	sb.WriteString(fmt.Sprintf("Latency P50: %dms | P95: %dms | P99: %dms\n", b.Stats.P50MS, b.Stats.P95MS, b.Stats.P99MS))
+	sb.WriteString("# Datos de la auditoría\n\n")
+	sb.WriteString(fmt.Sprintf("Escenario: %s\n", b.ScenarioFingerprint.ScenarioPath))
+	sb.WriteString(fmt.Sprintf("Modo: %s | Concurrencia: %d | Duración: %ds\n", b.Metadata.Mode, b.Execution.Concurrency, b.Execution.DurationS))
+	sb.WriteString(fmt.Sprintf("Total requests: %d | Completados: %d\n", b.Stats.TotalRequests, b.Execution.CompletedRequests))
+	sb.WriteString(fmt.Sprintf("Veredicto: %s\n", b.Assertions.Overall))
+	sb.WriteString(fmt.Sprintf("Tasa de éxito: %.2f%% | Tasa de error: %.2f%%\n", b.Stats.SuccessRate*100, b.Stats.ErrorRate*100))
+	sb.WriteString(fmt.Sprintf("Latencia P50: %dms | P95: %dms | P99: %dms\n\n", b.Stats.P50MS, b.Stats.P95MS, b.Stats.P99MS))
 
-	sb.WriteString("\n## Assertion Rules\n")
+	sb.WriteString("## Reglas evaluadas\n")
 	for _, rule := range b.Assertions.Rules {
-		status := "PASS"
+		status := "OK"
 		if !rule.Passed {
-			status = "FAIL"
+			status = "FALLA"
 		}
-		sb.WriteString(fmt.Sprintf("  [%s] %s — %s (observed: %v, threshold: %v)\n", status, rule.ID, rule.Message, rule.Observed, rule.Expected))
+		sb.WriteString(fmt.Sprintf("  [%s] %s — %s (observado: %v, umbral: %v)\n", status, rule.ID, rule.Message, rule.Observed, rule.Expected))
 	}
 
 	type flowStats struct {
-		method       string
-		path         string
-		total        int
-		byStatus     map[int]int
-		errors       int
-		totalLatency int
+		method, path                string
+		total, errors, totalLatency int
+		byStatus                    map[int]int
 	}
 	flows := map[string]*flowStats{}
 	var flowOrder []string
@@ -613,9 +610,9 @@ func buildEvidenceSummary(b *evidence.Bundle) string {
 		}
 	}
 
-	sb.WriteString(fmt.Sprintf("\n## Per-Flow Breakdown (%d unique endpoints tested)\n\n", len(flows)))
-	sb.WriteString("| Method | Path | Reqs | AvgMs | Err% | Status Codes |\n")
-	sb.WriteString("|--------|------|------|-------|------|--------------|\n")
+	sb.WriteString(fmt.Sprintf("\n## Endpoints probados (%d)\n\n", len(flows)))
+	sb.WriteString("| Método | Path | Requests | Latencia prom. | Error%% | Status codes |\n")
+	sb.WriteString("|--------|------|----------|----------------|--------|--------------|\n")
 	for _, key := range flowOrder {
 		fs := flows[key]
 		avgLat := 0
@@ -627,13 +624,63 @@ func buildEvidenceSummary(b *evidence.Bundle) string {
 		for code, count := range fs.byStatus {
 			statuses = append(statuses, fmt.Sprintf("%d×%d", count, code))
 		}
-		sb.WriteString(fmt.Sprintf("| %s | %s | %d | %d | %.0f%% | %s |\n",
+		sb.WriteString(fmt.Sprintf("| %s | %s | %d | %dms | %.0f%% | %s |\n",
 			fs.method, fs.path, fs.total, avgLat, errPct, strings.Join(statuses, ", ")))
 	}
-	sb.WriteString("\n")
 
-	if len(b.Unknowns) > 0 {
-		sb.WriteString(fmt.Sprintf("\n## Unknowns\n%s\n", strings.Join(b.Unknowns, "; ")))
+	if len(b.Samples) > 0 {
+		sb.WriteString("\n## Muestras de request/response\n\n")
+		seen := map[string]bool{}
+		count := 0
+		for _, s := range b.Samples {
+			if count >= 20 {
+				break
+			}
+			key := s.Request.Method + " " + s.Request.URL
+			if seen[key] {
+				continue
+			}
+			seen[key] = true
+			count++
+			sc := "N/A"
+			if s.Response.StatusCode != nil {
+				sc = fmt.Sprintf("%d", *s.Response.StatusCode)
+			}
+			sb.WriteString(fmt.Sprintf("### %s %s → %s\n", s.Request.Method, s.Request.URL, sc))
+			if s.Request.BodyPreview != "" {
+				body := s.Request.BodyPreview
+				if len(body) > 300 {
+					body = body[:300] + "…"
+				}
+				sb.WriteString(fmt.Sprintf("Request body: ```%s```\n", body))
+			}
+			if s.Response.BodyPreview != "" {
+				body := s.Response.BodyPreview
+				if len(body) > 300 {
+					body = body[:300] + "…"
+				}
+				sb.WriteString(fmt.Sprintf("Response body: ```%s```\n", body))
+			}
+			sb.WriteString("\n")
+		}
 	}
+
+	appendRunArtifact(&sb, runDir, "service_description.json", "Descripción del servicio")
+	appendRunArtifact(&sb, runDir, "security_audit.json", "Auditoría de seguridad")
+	appendRunArtifact(&sb, runDir, "coverage_report.json", "Cobertura de endpoints")
+	appendRunArtifact(&sb, runDir, "contract_validation.json", "Validación de contratos")
+
 	return sb.String()
+}
+
+func appendRunArtifact(sb *strings.Builder, runDir, filename, title string) {
+	raw, err := os.ReadFile(filepath.Join(runDir, filename))
+	if err != nil {
+		return
+	}
+	content := string(raw)
+	if len(content) > 3000 {
+		content = content[:3000] + "\n… (truncado)"
+	}
+	sb.WriteString(fmt.Sprintf("\n## %s\n```json\n%s\n```\n", title, content))
 }

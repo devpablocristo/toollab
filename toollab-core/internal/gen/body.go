@@ -129,7 +129,7 @@ func resolveSchema(schema *SchemaObj, doc *OpenAPIDoc) (*SchemaObj, error) {
 	if schema.Ref == "" {
 		return schema, nil
 	}
-	resolved, err := doc.resolveRef(schema.Ref)
+	resolved, err := doc.ResolveRef(schema.Ref)
 	if err != nil {
 		return nil, err
 	}

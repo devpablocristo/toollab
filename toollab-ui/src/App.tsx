@@ -3,7 +3,6 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Overview } from "./features/overview/Overview";
 import { RunsList } from "./features/runs/RunsList";
 import { RunDetail } from "./features/runs/RunDetail";
-import { TargetsList } from "./features/targets/TargetsList";
 import { Execute } from "./features/execute/Execute";
 import { Trends } from "./features/trends/Trends";
 
@@ -34,10 +33,9 @@ function Nav() {
           toollab
         </span>
         {link("/", "Overview")}
-        {link("/execute", "Ejecutar")}
+        {link("/execute", "Auditar")}
         {link("/runs", "Runs")}
         {link("/trends", "Tendencias")}
-        {link("/targets", "Targets")}
       </div>
     </nav>
   );
@@ -55,7 +53,6 @@ export default function App() {
             <Route path="/runs" element={<RunsList />} />
             <Route path="/runs/:id" element={<RunDetail />} />
             <Route path="/trends" element={<Trends />} />
-            <Route path="/targets" element={<TargetsList />} />
           </Routes>
         </main>
       </BrowserRouter>
