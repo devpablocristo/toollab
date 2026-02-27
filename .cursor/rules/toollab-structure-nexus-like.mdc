@@ -1,0 +1,25 @@
+---
+description: Estructura de carpetas estilo Nexus para servicios ToolLab
+alwaysApply: true
+---
+
+# Regla de organización de carpetas (estilo Nexus)
+
+Objetivo: mantener una estructura de servicio idéntica a Nexus en organización de directorios.
+
+- La división de `internal` se hace por dominio/capacidad del negocio.
+- Cada dominio usa exactamente esta estructura interna (como nexus-core):
+  ```
+  internal/{dominio}/
+      handler/          # HTTP handlers
+          dto/           # Request/response DTOs
+      usecases/          # Lógica de negocio
+          domain/        # Entidades, interfaces (ports), invariantes
+      repository/        # Persistencia (SQLite, filesystem, etc.)
+          models/        # Row models / DB models
+  ```
+- NO usar nombres como `api/`, `app/`, `infra/`, `domain/` sueltos en la raíz del dominio.
+- Código compartido real va en `internal/shared/` (mínimo y estable).
+- Evitar dependencias circulares entre dominios.
+- Stubs de dominios futuros solo tienen `usecases/domain/` con interfaces.
+- Nuevos módulos deben respetar esta organización desde su creación.

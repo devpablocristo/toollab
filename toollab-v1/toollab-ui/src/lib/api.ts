@@ -1,0 +1,226 @@
+const BASE = import.meta.env.VITE_DASHBOARD_URL || "http://localhost:8090";
+
+async function request<T>(path: string, opts?: RequestInit): Promise<T> {
+  const res = await fetch(`${BASE}${path}`, {
+    headers: { "Content-Type": "application/json" },
+    ...opts,
+  });
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    throw new Error(body.error || `HTTP ${res.status}`);
+  }
+  if (res.status === 204) return undefined as T;
+  return res.json();
+}
+
+export interface Target {
+  id: string;
+  name: string;
+  base_url: string;
+  description: string;
+  created_at: string;
+}
+
+export interface Run {
+  id: string;
+  target_id: string;
+  verdict: string;
+  total_requests: number;
+  completed_requests: number;
+  success_rate: number;
+  error_rate: number;
+  p50_ms: number;
+  p95_ms: number;
+  p99_ms: number;
+  duration_s: number;
+  concurrency: number;
+  status_histogram: string;
+  deterministic_fingerprint: string;
+  started_at: string;
+  finished_at: string;
+  created_at: string;
+}
+
+export interface AssertionResult {
+  rule_id: string;
+  rule_type: string;
+  passed: boolean;
+  observed: string;
+  expected: string;
+  message: string;
+}
+
+export interface RunDetail {
+  run: Run;
+  assertions: AssertionResult[];
+  interpretation: string | null;
+}
+
+export interface Stats {
+  total_targets: number;
+  total_runs: number;
+  passed: number;
+  failed: number;
+}
+
+export interface ExecResult {
+  success: boolean;
+  output: string;
+  error?: string;
+  elapsed: string;
+}
+
+export interface SecurityFinding {
+  id: string;
+  category: string;
+  severity: string;
+  title: string;
+  description: string;
+  endpoint?: string;
+  remediation: string;
+}
+
+export interface SecurityAudit {
+  score: number;
+  grade: string;
+  findings: SecurityFinding[];
+  summary: { total: number; critical: number; high: number; medium: number; low: number; info: number };
+}
+
+export interface CoverageEndpoint {
+  method: string;
+  path: string;
+  tested: boolean;
+  hits: number;
+  success: number;
+  errors: number;
+}
+
+export interface CoverageReport {
+  total_endpoints: number;
+  tested_endpoints: number;
+  coverage_rate: number;
+  endpoints: CoverageEndpoint[];
+  untested: CoverageEndpoint[];
+  by_method: { method: string; total: number; tested: number; rate: number }[];
+  status_codes: { status_code: number; observed: boolean }[];
+}
+
+export interface ContractViolation {
+  endpoint: string;
+  status_code: number;
+  field: string;
+  expected: string;
+  actual: string;
+  description: string;
+}
+
+export interface ContractReport {
+  compliant: boolean;
+  total_checks: number;
+  total_violations: number;
+  compliance_rate: number;
+  violations: ContractViolation[];
+}
+
+export interface EndpointParam {
+  name: string;
+  in: string;
+  required: boolean;
+  type: string;
+  format?: string;
+  description?: string;
+  example?: unknown;
+}
+
+export interface SchemaField {
+  name: string;
+  type: string;
+  format?: string;
+  required: boolean;
+  description?: string;
+  example?: unknown;
+  enum?: unknown[];
+  nullable?: boolean;
+  items?: EndpointSchema;
+}
+
+export interface EndpointSchema {
+  type: string;
+  format?: string;
+  fields?: SchemaField[];
+  items?: EndpointSchema;
+  example?: unknown;
+}
+
+export interface EndpointBody {
+  content_type: string;
+  required: boolean;
+  description?: string;
+  schema?: EndpointSchema;
+}
+
+export interface EndpointResponse {
+  status: string;
+  description?: string;
+  schema?: EndpointSchema;
+}
+
+export interface CatalogEndpoint {
+  method: string;
+  path: string;
+  operation_id?: string;
+  summary?: string;
+  description?: string;
+  tags?: string[];
+  deprecated?: boolean;
+  parameters?: EndpointParam[];
+  request_body?: EndpointBody;
+  responses?: EndpointResponse[];
+}
+
+export interface EndpointsCatalog {
+  total: number;
+  endpoints: CatalogEndpoint[];
+}
+
+export const api = {
+  getStats: () => request<Stats>("/api/v1/stats"),
+
+  listTargets: () => request<Target[]>("/api/v1/targets"),
+  createTarget: (data: { name: string; base_url: string; description?: string }) =>
+    request<Target>("/api/v1/targets", { method: "POST", body: JSON.stringify(data) }),
+  deleteTarget: (id: string) =>
+    request<void>(`/api/v1/targets/${id}`, { method: "DELETE" }),
+
+  listRuns: (targetId?: string) =>
+    request<Run[]>(`/api/v1/runs${targetId ? `?target_id=${targetId}` : ""}`),
+  getRun: (id: string) => request<RunDetail>(`/api/v1/runs/${id}`),
+
+  getRunAudit: (id: string) => request<SecurityAudit>(`/api/v1/runs/${id}/audit`),
+  getRunCoverage: (id: string) => request<CoverageReport>(`/api/v1/runs/${id}/coverage`),
+  getRunContract: (id: string) => request<ContractReport>(`/api/v1/runs/${id}/contract`),
+  getRunEndpoints: (id: string) => request<EndpointsCatalog>(`/api/v1/runs/${id}/endpoints`),
+
+  deleteRun: (id: string) => request<void>(`/api/v1/runs/${id}`, { method: "DELETE" }),
+
+  execFullAudit: (data: {
+    base_url: string;
+    target_id?: string;
+    target_name?: string;
+    mode?: string;
+  }) => request<FullAuditResult>("/api/v1/exec/full-audit", { method: "POST", body: JSON.stringify(data) }),
+};
+
+export interface AuditStep {
+  step: string;
+  status: string;
+  output?: string;
+  error?: string;
+}
+
+export interface FullAuditResult {
+  steps: AuditStep[];
+  run_id?: string;
+  target_id?: string;
+}
