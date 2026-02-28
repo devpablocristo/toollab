@@ -30,7 +30,7 @@ func NewVertexProvider() *VertexProvider {
 	}
 	model := os.Getenv("VERTEX_MODEL")
 	if model == "" {
-		model = "gemini-2.5-flash"
+		model = "gemini-2.5-pro"
 	}
 	return &VertexProvider{
 		projectID: os.Getenv("GOOGLE_PROJECT_ID"),

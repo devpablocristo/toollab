@@ -18,9 +18,9 @@ import (
 )
 
 const (
-	defaultTopEndpoints    = 10
-	defaultTopFindings     = 10
-	defaultMaxSnippetBytes = 2048
+	defaultTopEndpoints    = 30
+	defaultTopFindings     = 20
+	defaultMaxSnippetBytes = 4096
 )
 
 type DossierBuilder struct {
@@ -335,6 +335,8 @@ func collectReferencedEvidenceIDs(highlights []domain.AuditHighlight) map[string
 	return ids
 }
 
+const maxEvidenceSamples = 60
+
 func selectEvidenceSamples(
 	pack *evidenceDomain.EvidencePack,
 	referenced map[string]bool,
@@ -353,18 +355,47 @@ func selectEvidenceSamples(
 	seen := make(map[string]bool)
 	var samples []domain.EvidenceSample
 
+	add := func(item evidenceDomain.EvidenceItem) {
+		if seen[item.EvidenceID] || len(samples) >= maxEvidenceSamples {
+			return
+		}
+		seen[item.EvidenceID] = true
+		samples = append(samples, buildSample(item, maxSnippet))
+	}
+
+	// Pass 1: audit-referenced evidence (highest priority)
 	for _, item := range pack.Items {
-		if referenced[item.EvidenceID] && !seen[item.EvidenceID] {
-			seen[item.EvidenceID] = true
-			samples = append(samples, buildSample(item, maxSnippet))
+		if referenced[item.EvidenceID] {
+			add(item)
 		}
 	}
 
+	// Pass 2: one sample per top endpoint
 	for _, item := range pack.Items {
 		key := endpointKeyFromURL(item.Request.Method, item.Request.URL)
-		if endpointKeys[key] && !seen[item.EvidenceID] {
-			seen[item.EvidenceID] = true
-			samples = append(samples, buildSample(item, maxSnippet))
+		if endpointKeys[key] {
+			add(item)
+		}
+	}
+
+	// Pass 3: diverse status codes — ensure 2xx, 4xx, 5xx, errors are represented
+	endpointSeen := make(map[string]map[int]bool)
+	for _, item := range pack.Items {
+		if len(samples) >= maxEvidenceSamples {
+			break
+		}
+		key := endpointKeyFromURL(item.Request.Method, item.Request.URL)
+		status := 0
+		if item.Response != nil {
+			status = item.Response.Status
+		}
+		if endpointSeen[key] == nil {
+			endpointSeen[key] = make(map[int]bool)
+		}
+		statusBucket := (status / 100) * 100
+		if !endpointSeen[key][statusBucket] || item.Error != "" {
+			endpointSeen[key][statusBucket] = true
+			add(item)
 		}
 	}
 

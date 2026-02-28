@@ -45,6 +45,14 @@ export default function TargetDetail() {
     })
   }, [targetId, running])
 
+  const started = useRef(false)
+  useEffect(() => {
+    if (target && !started.current) {
+      started.current = true
+      startAnalysis()
+    }
+  }, [target, startAnalysis])
+
   const maxRetries = 90
 
   const [docRetries, setDocRetries] = useState(0)
@@ -104,12 +112,8 @@ export default function TargetDetail() {
   return (
     <div className="p-6 max-w-7xl mx-auto">
       <button onClick={() => navigate('/targets')} className="text-xs text-gray-500 hover:text-gray-300 mb-4 block">&larr; All Targets</button>
-      <div className="flex items-center justify-between mb-2">
+      <div className="mb-2">
         <h1 className="text-xl font-semibold">{target?.name}</h1>
-        <button onClick={startAnalysis} disabled={running}
-          className="px-5 py-2 text-sm bg-blue-600 hover:bg-blue-500 rounded-lg font-medium disabled:opacity-40">
-          {running ? 'Analyzing...' : 'Analyze'}
-        </button>
       </div>
       <p className="text-sm text-gray-500 mb-6">{target?.source.type}: {target?.source.value}</p>
 
@@ -157,11 +161,11 @@ export default function TargetDetail() {
           <div className="flex gap-1 mt-6 mb-4 border-b border-gray-800">
             <TabBtn active={tab === 'dashboard'} onClick={() => setTab('dashboard')}>Dashboard</TabBtn>
             <TabBtn active={tab === 'docs'} onClick={() => setTab('docs')}>
-              Documentaci&oacute;n
+              Documentation
               {!documentation && !!runId && !docFailed && <span className="ml-1.5 inline-block w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse" />}
             </TabBtn>
             <TabBtn active={tab === 'analysis'} onClick={() => setTab('analysis')}>
-              An&aacute;lisis
+              Analysis
               {!interpretation && !!runId && !analysisFailed && <span className="ml-1.5 inline-block w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse" />}
             </TabBtn>
           </div>
@@ -627,8 +631,8 @@ function LLMLoadingState({ label, loading, failed, retries }: { label: string; l
   if (failed) {
     return (
       <div className="p-8 text-center">
-        <p className="text-sm text-red-400 font-medium mb-1">No se pudo generar: {label}</p>
-        <p className="text-xs text-gray-500">El LLM no respondi&oacute; a tiempo. Los datos del dashboard siguen disponibles.</p>
+        <p className="text-sm text-red-400 font-medium mb-1">Could not generate {label}</p>
+        <p className="text-xs text-gray-500">The LLM timed out or failed. Dashboard data is still available above.</p>
       </div>
     )
   }
@@ -636,8 +640,8 @@ function LLMLoadingState({ label, loading, failed, retries }: { label: string; l
     return (
       <div className="p-8 text-center">
         <Spinner />
-        <p className="text-sm text-gray-400 mt-3">Generando {label}...</p>
-        <p className="text-xs text-gray-600 mt-1">Esto corre en segundo plano, puede tardar 1-2 minutos</p>
+        <p className="text-sm text-gray-400 mt-3">Generating {label}...</p>
+        <p className="text-xs text-gray-600 mt-1">Running in background, may take 1-3 minutes</p>
         <div className="mt-3 w-48 mx-auto bg-gray-800 rounded-full h-1.5 overflow-hidden">
           <div className="bg-blue-500/60 h-full rounded-full transition-all duration-1000"
             style={{ width: `${Math.min((retries / 24) * 100, 95)}%` }} />
@@ -649,7 +653,7 @@ function LLMLoadingState({ label, loading, failed, retries }: { label: string; l
 }
 
 function DocTab({ data, loading, failed, retries }: { data: LLMInterpretation | null; loading: boolean; failed: boolean; retries: number }) {
-  if (!data) return <LLMLoadingState label="documentaci&oacute;n" loading={loading} failed={failed} retries={retries} />
+  if (!data) return <LLMLoadingState label="documentation" loading={loading} failed={failed} retries={retries} />
 
   const ov = data.overview
   const models = data.data_models ?? []
@@ -667,7 +671,7 @@ function DocTab({ data, loading, failed, retries }: { data: LLMInterpretation | 
           </div>
           {ov.architecture_notes && (
             <div className="mt-3 p-3 rounded border border-gray-800 bg-gray-900/30">
-              <p className="text-xs text-gray-500 font-semibold mb-1">Arquitectura</p>
+              <p className="text-xs text-gray-500 font-semibold mb-1">Architecture</p>
               <p className="text-xs text-gray-400 leading-relaxed">{ov.architecture_notes}</p>
             </div>
           )}
@@ -675,7 +679,7 @@ function DocTab({ data, loading, failed, retries }: { data: LLMInterpretation | 
       )}
 
       {models.length > 0 && (
-        <Section title={`Modelos de Datos (${models.length})`}>
+        <Section title={`Data Models (${models.length})`}>
           <div className="grid grid-cols-2 gap-3">
             {models.map((m, i) => (
               <div key={i} className="p-3 rounded border border-gray-800 bg-gray-900/30">
@@ -684,7 +688,7 @@ function DocTab({ data, loading, failed, retries }: { data: LLMInterpretation | 
                 <div className="space-y-1 mb-2">
                   {m.fields.map((f, j) => <p key={j} className="text-xs font-mono text-gray-300">{f}</p>)}
                 </div>
-                <p className="text-xs text-gray-600">Usado por: {m.used_by.join(', ')}</p>
+                <p className="text-xs text-gray-600">Used by: {m.used_by.join(', ')}</p>
               </div>
             ))}
           </div>
@@ -692,7 +696,7 @@ function DocTab({ data, loading, failed, retries }: { data: LLMInterpretation | 
       )}
 
       {flows.length > 0 && (
-        <Section title={`Flujos de Negocio (${flows.length})`}>
+        <Section title={`Service Flows (${flows.length})`}>
           <div className="space-y-4">
             {flows.map((f, i) => (
               <div key={i} className="p-4 rounded border border-gray-800 bg-gray-900/30">
@@ -707,7 +711,7 @@ function DocTab({ data, loading, failed, retries }: { data: LLMInterpretation | 
                 </div>
                 {(f.example_requests ?? []).length > 0 && (
                   <div className="space-y-2">
-                    <p className="text-xs text-gray-500 font-semibold">Ejemplos de Request:</p>
+                    <p className="text-xs text-gray-500 font-semibold">Example Requests:</p>
                     {(f.example_requests ?? []).map((ex, k) => (
                       <div key={k} className="bg-gray-950 rounded p-3">
                         <p className="text-xs text-gray-400 mb-1">{ex.step}</p>
@@ -719,7 +723,7 @@ function DocTab({ data, loading, failed, retries }: { data: LLMInterpretation | 
                           {ex.body != null && <pre className="text-gray-500 mt-1 whitespace-pre-wrap">{typeof ex.body === 'string' ? ex.body : JSON.stringify(ex.body, null, 2)}</pre>}
                         </div>
                         <div className="mt-1 text-xs">
-                          <span className="text-green-400">Esperado: {ex.expected_status}</span>
+                          <span className="text-green-400">Expected: {ex.expected_status}</span>
                           {ex.expected_response_snippet != null && <pre className="text-gray-500 mt-1 whitespace-pre-wrap">{typeof ex.expected_response_snippet === 'string' ? ex.expected_response_snippet : JSON.stringify(ex.expected_response_snippet, null, 2)}</pre>}
                           {ex.notes && <p className="text-yellow-400/70 mt-1">{ex.notes}</p>}
                         </div>
@@ -734,7 +738,7 @@ function DocTab({ data, loading, failed, retries }: { data: LLMInterpretation | 
       )}
 
       {questions.length > 0 && (
-        <Section title="Preguntas Abiertas">
+        <Section title="Open Questions">
           {questions.map((q, i) => (
             <div key={i} className="p-3 rounded border border-gray-800 bg-gray-900/30 mb-2">
               <p className="text-sm text-gray-300">{q.question}</p>
@@ -748,7 +752,7 @@ function DocTab({ data, loading, failed, retries }: { data: LLMInterpretation | 
 }
 
 function AnalysisTab({ data, loading, failed, retries }: { data: LLMInterpretation | null; loading: boolean; failed: boolean; retries: number }) {
-  if (!data) return <LLMLoadingState label="an&aacute;lisis" loading={loading} failed={failed} retries={retries} />
+  if (!data) return <LLMLoadingState label="analysis" loading={loading} failed={failed} retries={retries} />
 
   const secAssess = data.security_assessment
   const behAssess = data.behavior_assessment
@@ -761,24 +765,24 @@ function AnalysisTab({ data, loading, failed, retries }: { data: LLMInterpretati
   return (
     <div className="space-y-6">
       {secAssess && (
-        <Section title="Evaluaci&oacute;n de Seguridad">
+        <Section title="Security Assessment">
           <div className={`p-4 rounded border ${secAssess.overall_risk === 'critical' ? 'border-red-700 bg-red-900/10' : secAssess.overall_risk === 'high' ? 'border-red-800 bg-red-900/10' : secAssess.overall_risk === 'medium' ? 'border-yellow-800 bg-yellow-900/10' : 'border-green-800 bg-green-900/10'}`}>
             <div className="flex items-center gap-2 mb-2">
               <SeverityBadge severity={secAssess.overall_risk} />
-              <span className="text-sm font-semibold">Riesgo General</span>
+              <span className="text-sm font-semibold">Overall Risk</span>
             </div>
             <p className="text-sm text-gray-300 mb-3">{secAssess.summary}</p>
             {secAssess.attack_surface && <p className="text-xs text-gray-400 mb-3">{secAssess.attack_surface}</p>}
             <div className="grid grid-cols-2 gap-3">
               {secAssess.critical_findings?.length > 0 && (
                 <div>
-                  <p className="text-xs text-red-400 font-semibold mb-1">Hallazgos Cr&iacute;ticos</p>
+                  <p className="text-xs text-red-400 font-semibold mb-1">Critical Findings</p>
                   {secAssess.critical_findings.map((f, i) => <p key={i} className="text-xs text-gray-400 mb-1">- {f}</p>)}
                 </div>
               )}
               {secAssess.positive_findings?.length > 0 && (
                 <div>
-                  <p className="text-xs text-green-400 font-semibold mb-1">Hallazgos Positivos</p>
+                  <p className="text-xs text-green-400 font-semibold mb-1">Positive Findings</p>
                   {secAssess.positive_findings.map((f, i) => <p key={i} className="text-xs text-gray-400 mb-1">- {f}</p>)}
                 </div>
               )}
@@ -788,18 +792,18 @@ function AnalysisTab({ data, loading, failed, retries }: { data: LLMInterpretati
       )}
 
       {behAssess && (
-        <Section title="Evaluaci&oacute;n de Comportamiento">
+        <Section title="Behavior Assessment">
           <div className="grid grid-cols-2 gap-3">
-            <AssessmentCard title="Validaci&oacute;n de Entrada" text={behAssess.input_validation} />
-            <AssessmentCard title="Autenticaci&oacute;n" text={behAssess.auth_enforcement} />
-            <AssessmentCard title="Manejo de Errores" text={behAssess.error_handling} />
-            <AssessmentCard title="Robustez" text={behAssess.robustness} />
+            <AssessmentCard title="Input Validation" text={behAssess.input_validation} />
+            <AssessmentCard title="Auth Enforcement" text={behAssess.auth_enforcement} />
+            <AssessmentCard title="Error Handling" text={behAssess.error_handling} />
+            <AssessmentCard title="Robustness" text={behAssess.robustness} />
           </div>
         </Section>
       )}
 
       {facts.length > 0 && (
-        <Section title={`Hechos Observados (${facts.length})`}>
+        <Section title={`Observed Facts (${facts.length})`}>
           <div className="space-y-2">
             {facts.map((f, i) => (
               <div key={i} className="p-3 rounded border border-gray-800 bg-gray-900/30 flex items-start gap-3">
@@ -817,13 +821,13 @@ function AnalysisTab({ data, loading, failed, retries }: { data: LLMInterpretati
       )}
 
       {inferences.length > 0 && (
-        <Section title={`Inferencias (${inferences.length})`}>
+        <Section title={`Inferences (${inferences.length})`}>
           <div className="space-y-2">
             {inferences.map((inf, i) => (
               <div key={i} className="p-3 rounded border border-gray-800 bg-gray-900/30">
                 <div className="flex items-center gap-2 mb-1">
                   <span className="text-xs px-2 py-0.5 bg-purple-900/30 text-purple-400 rounded font-mono">{inf.rule_of_inference}</span>
-                  <span className="text-[10px] text-gray-600">{Math.round(inf.confidence * 100)}% confianza</span>
+                  <span className="text-[10px] text-gray-600">{Math.round(inf.confidence * 100)}% confidence</span>
                 </div>
                 <p className="text-xs text-gray-300 leading-relaxed">{inf.text}</p>
               </div>
@@ -833,7 +837,7 @@ function AnalysisTab({ data, loading, failed, retries }: { data: LLMInterpretati
       )}
 
       {improvements.length > 0 && (
-        <Section title={`Mejoras Sugeridas (${improvements.length})`}>
+        <Section title={`Improvements (${improvements.length})`}>
           <div className="space-y-2">
             {improvements.map((imp, i) => (
               <div key={i} className="p-3 rounded border border-gray-800 bg-gray-900/30">
@@ -851,7 +855,7 @@ function AnalysisTab({ data, loading, failed, retries }: { data: LLMInterpretati
       )}
 
       {tests.length > 0 && (
-        <Section title={`Tests Sugeridos (${tests.length})`}>
+        <Section title={`Suggested Tests (${tests.length})`}>
           <div className="space-y-3">
             {tests.map((t, i) => (
               <div key={i} className="p-4 rounded border border-gray-800 bg-gray-900/30">
@@ -866,7 +870,7 @@ function AnalysisTab({ data, loading, failed, retries }: { data: LLMInterpretati
                   {t.request.body != null && <pre className="text-gray-500 mt-1 whitespace-pre-wrap">{String(JSON.stringify(t.request.body, null, 2))}</pre>}
                 </div>
                 <div className="mt-2 text-xs">
-                  <span className="text-green-400">Esperado: {t.expected.status}</span>
+                  <span className="text-green-400">Expected: {t.expected.status}</span>
                   <span className="text-gray-500 ml-2">{t.expected.description}</span>
                 </div>
               </div>
@@ -876,7 +880,7 @@ function AnalysisTab({ data, loading, failed, retries }: { data: LLMInterpretati
       )}
 
       {questions.length > 0 && (
-        <Section title="Preguntas Abiertas">
+        <Section title="Open Questions">
           {questions.map((q, i) => (
             <div key={i} className="p-3 rounded border border-gray-800 bg-gray-900/30 mb-2">
               <p className="text-sm text-gray-300">{q.question}</p>
