@@ -13,7 +13,7 @@ export default function TargetDetail() {
 
   const [analysis, setAnalysis] = useState<Analysis | null>(null)
   const [runId, setRunId] = useState<string | null>(null)
-  const [tab, setTab] = useState<'dashboard' | 'docs'>('dashboard')
+  const [tab, setTab] = useState<'dashboard' | 'docs' | 'analysis'>('dashboard')
   const [running, setRunning] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [logs, setLogs] = useState<ProgressEvent[]>([])
@@ -45,40 +45,54 @@ export default function TargetDetail() {
     })
   }, [targetId, running])
 
-  const [interpRetries, setInterpRetries] = useState(0)
-  const [interpFailed, setInterpFailed] = useState(false)
-  const maxInterpRetries = 90 // 3s * 90 = ~4.5 min max wait
+  const maxRetries = 90
 
+  const [docRetries, setDocRetries] = useState(0)
+  const [docFailed, setDocFailed] = useState(false)
+  const { data: documentation } = useQuery({
+    queryKey: ['documentation', runId],
+    queryFn: async () => {
+      try {
+        return await api.runs.documentation(runId!)
+      } catch (e: any) {
+        if ((e?.message ?? '').startsWith('503')) { setDocFailed(true); throw e }
+        setDocRetries(prev => prev + 1)
+        throw e
+      }
+    },
+    enabled: !!runId && !docFailed,
+    retry: false,
+    refetchInterval: (q) => {
+      if (q.state.data || docFailed || docRetries >= maxRetries) return false
+      return 3000
+    },
+  })
+
+  const [analysisRetries, setAnalysisRetries] = useState(0)
+  const [analysisFailed, setAnalysisFailed] = useState(false)
   const { data: interpretation } = useQuery({
     queryKey: ['interpretation', runId],
     queryFn: async () => {
       try {
         return await api.runs.interpretation(runId!)
       } catch (e: any) {
-        const msg = e?.message ?? ''
-        // 503 = LLM failed permanently, stop polling
-        if (msg.startsWith('503')) {
-          setInterpFailed(true)
-          throw e
-        }
-        setInterpRetries(prev => prev + 1)
+        if ((e?.message ?? '').startsWith('503')) { setAnalysisFailed(true); throw e }
+        setAnalysisRetries(prev => prev + 1)
         throw e
       }
     },
-    enabled: !!runId && !interpFailed,
+    enabled: !!runId && !analysisFailed,
     retry: false,
     refetchInterval: (q) => {
-      if (q.state.data) return false
-      if (interpFailed) return false
-      if (interpRetries >= maxInterpRetries) return false
+      if (q.state.data || analysisFailed || analysisRetries >= maxRetries) return false
       return 3000
     },
   })
 
   useEffect(() => {
     if (runId) {
-      setInterpRetries(0)
-      setInterpFailed(false)
+      setDocRetries(0); setDocFailed(false)
+      setAnalysisRetries(0); setAnalysisFailed(false)
     }
   }, [runId])
 
@@ -142,11 +156,19 @@ export default function TargetDetail() {
 
           <div className="flex gap-1 mt-6 mb-4 border-b border-gray-800">
             <TabBtn active={tab === 'dashboard'} onClick={() => setTab('dashboard')}>Dashboard</TabBtn>
-            <TabBtn active={tab === 'docs'} onClick={() => setTab('docs')}>AI Documentation</TabBtn>
+            <TabBtn active={tab === 'docs'} onClick={() => setTab('docs')}>
+              Documentaci&oacute;n
+              {!documentation && !!runId && !docFailed && <span className="ml-1.5 inline-block w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse" />}
+            </TabBtn>
+            <TabBtn active={tab === 'analysis'} onClick={() => setTab('analysis')}>
+              An&aacute;lisis
+              {!interpretation && !!runId && !analysisFailed && <span className="ml-1.5 inline-block w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse" />}
+            </TabBtn>
           </div>
 
           {tab === 'dashboard' && <Dashboard analysis={analysis} />}
-          {tab === 'docs' && <Documentation interpretation={interpretation ?? null} loading={!!runId && !interpretation && !interpFailed && interpRetries < maxInterpRetries} failed={interpFailed || interpRetries >= maxInterpRetries} retries={interpRetries} />}
+          {tab === 'docs' && <DocTab data={documentation ?? null} loading={!!runId && !documentation && !docFailed && docRetries < maxRetries} failed={docFailed || docRetries >= maxRetries} retries={docRetries} />}
+          {tab === 'analysis' && <AnalysisTab data={interpretation ?? null} loading={!!runId && !interpretation && !analysisFailed && analysisRetries < maxRetries} failed={analysisFailed || analysisRetries >= maxRetries} retries={analysisRetries} />}
         </>
       )}
     </div>
@@ -601,92 +623,60 @@ function BehaviorCard({ title, obs }: { title: string; obs: { quality: string; s
   )
 }
 
-function Documentation({ interpretation, loading, failed, retries }: { interpretation: LLMInterpretation | null; loading: boolean; failed: boolean; retries: number }) {
-  if (!interpretation) {
-    if (failed) {
-      return (
-        <div className="p-8 text-center">
-          <p className="text-sm text-red-400 font-medium mb-1">AI documentation could not be generated</p>
-          <p className="text-xs text-gray-500">The LLM interpretation timed out or failed. The dashboard data is still available above.</p>
-        </div>
-      )
-    }
-    if (loading) {
-      return (
-        <div className="p-8 text-center">
-          <Spinner />
-          <p className="text-sm text-gray-400 mt-3">Generating AI documentation...</p>
-          <p className="text-xs text-gray-600 mt-1">This runs in the background and may take 1-2 minutes</p>
-          <div className="mt-3 w-48 mx-auto bg-gray-800 rounded-full h-1.5 overflow-hidden">
-            <div className="bg-blue-500/60 h-full rounded-full transition-all duration-1000"
-              style={{ width: `${Math.min((retries / 24) * 100, 95)}%` }} />
-          </div>
-        </div>
-      )
-    }
-    return null
+function LLMLoadingState({ label, loading, failed, retries }: { label: string; loading: boolean; failed: boolean; retries: number }) {
+  if (failed) {
+    return (
+      <div className="p-8 text-center">
+        <p className="text-sm text-red-400 font-medium mb-1">No se pudo generar: {label}</p>
+        <p className="text-xs text-gray-500">El LLM no respondi&oacute; a tiempo. Los datos del dashboard siguen disponibles.</p>
+      </div>
+    )
   }
+  if (loading) {
+    return (
+      <div className="p-8 text-center">
+        <Spinner />
+        <p className="text-sm text-gray-400 mt-3">Generando {label}...</p>
+        <p className="text-xs text-gray-600 mt-1">Esto corre en segundo plano, puede tardar 1-2 minutos</p>
+        <div className="mt-3 w-48 mx-auto bg-gray-800 rounded-full h-1.5 overflow-hidden">
+          <div className="bg-blue-500/60 h-full rounded-full transition-all duration-1000"
+            style={{ width: `${Math.min((retries / 24) * 100, 95)}%` }} />
+        </div>
+      </div>
+    )
+  }
+  return null
+}
 
-  const ov = interpretation.overview
-  const models = interpretation.data_models ?? []
-  const flows = interpretation.flows ?? []
-  const secAssess = interpretation.security_assessment
-  const behAssess = interpretation.behavior_assessment
-  const improvements = interpretation.improvements ?? []
-  const tests = interpretation.tests ?? []
-  const questions = interpretation.open_questions ?? []
+function DocTab({ data, loading, failed, retries }: { data: LLMInterpretation | null; loading: boolean; failed: boolean; retries: number }) {
+  if (!data) return <LLMLoadingState label="documentaci&oacute;n" loading={loading} failed={failed} retries={retries} />
+
+  const ov = data.overview
+  const models = data.data_models ?? []
+  const flows = data.flows ?? []
+  const questions = data.open_questions ?? []
 
   return (
     <div className="space-y-6">
       {ov && (
         <Section title={ov.service_name}>
           <p className="text-sm text-gray-300 mb-2">{ov.description}</p>
-          <p className="text-xs text-gray-500">Framework: {ov.framework} | Endpoints: {ov.total_endpoints}</p>
-          {ov.architecture_notes && <p className="text-xs text-gray-400 mt-2">{ov.architecture_notes}</p>}
-        </Section>
-      )}
-
-      {secAssess && (
-        <Section title="Security Assessment">
-          <div className={`p-4 rounded border ${secAssess.overall_risk === 'critical' ? 'border-red-700 bg-red-900/10' : secAssess.overall_risk === 'high' ? 'border-red-800 bg-red-900/10' : secAssess.overall_risk === 'medium' ? 'border-yellow-800 bg-yellow-900/10' : 'border-green-800 bg-green-900/10'}`}>
-            <div className="flex items-center gap-2 mb-2">
-              <SeverityBadge severity={secAssess.overall_risk} />
-              <span className="text-sm font-semibold">Overall Risk</span>
-            </div>
-            <p className="text-sm text-gray-300 mb-3">{secAssess.summary}</p>
-            {secAssess.attack_surface && <p className="text-xs text-gray-400 mb-3">{secAssess.attack_surface}</p>}
-            <div className="grid grid-cols-2 gap-3">
-              {secAssess.critical_findings?.length > 0 && (
-                <div>
-                  <p className="text-xs text-red-400 font-semibold mb-1">Critical Findings</p>
-                  {secAssess.critical_findings.map((f, i) => <p key={i} className="text-xs text-gray-400 mb-1">- {f}</p>)}
-                </div>
-              )}
-              {secAssess.positive_findings?.length > 0 && (
-                <div>
-                  <p className="text-xs text-green-400 font-semibold mb-1">Positive Findings</p>
-                  {secAssess.positive_findings.map((f, i) => <p key={i} className="text-xs text-gray-400 mb-1">- {f}</p>)}
-                </div>
-              )}
-            </div>
+          <div className="flex gap-4 mt-2">
+            <span className="text-xs px-2.5 py-1 rounded bg-blue-900/30 text-blue-400 border border-blue-800/40">{ov.framework}</span>
+            <span className="text-xs text-gray-500">{ov.total_endpoints} endpoints</span>
           </div>
-        </Section>
-      )}
-
-      {behAssess && (
-        <Section title="Behavior Assessment">
-          <div className="grid grid-cols-2 gap-3">
-            <AssessmentCard title="Input Validation" text={behAssess.input_validation} />
-            <AssessmentCard title="Auth Enforcement" text={behAssess.auth_enforcement} />
-            <AssessmentCard title="Error Handling" text={behAssess.error_handling} />
-            <AssessmentCard title="Robustness" text={behAssess.robustness} />
-          </div>
+          {ov.architecture_notes && (
+            <div className="mt-3 p-3 rounded border border-gray-800 bg-gray-900/30">
+              <p className="text-xs text-gray-500 font-semibold mb-1">Arquitectura</p>
+              <p className="text-xs text-gray-400 leading-relaxed">{ov.architecture_notes}</p>
+            </div>
+          )}
         </Section>
       )}
 
       {models.length > 0 && (
-        <Section title="Data Models">
-          <div className="space-y-3">
+        <Section title={`Modelos de Datos (${models.length})`}>
+          <div className="grid grid-cols-2 gap-3">
             {models.map((m, i) => (
               <div key={i} className="p-3 rounded border border-gray-800 bg-gray-900/30">
                 <h4 className="text-sm font-semibold text-blue-400 mb-1">{m.name}</h4>
@@ -694,7 +684,7 @@ function Documentation({ interpretation, loading, failed, retries }: { interpret
                 <div className="space-y-1 mb-2">
                   {m.fields.map((f, j) => <p key={j} className="text-xs font-mono text-gray-300">{f}</p>)}
                 </div>
-                <p className="text-xs text-gray-600">Used by: {m.used_by.join(', ')}</p>
+                <p className="text-xs text-gray-600">Usado por: {m.used_by.join(', ')}</p>
               </div>
             ))}
           </div>
@@ -702,7 +692,7 @@ function Documentation({ interpretation, loading, failed, retries }: { interpret
       )}
 
       {flows.length > 0 && (
-        <Section title="Service Flows">
+        <Section title={`Flujos de Negocio (${flows.length})`}>
           <div className="space-y-4">
             {flows.map((f, i) => (
               <div key={i} className="p-4 rounded border border-gray-800 bg-gray-900/30">
@@ -711,13 +701,13 @@ function Documentation({ interpretation, loading, failed, retries }: { interpret
                   <h4 className="font-medium">{f.name}</h4>
                 </div>
                 <p className="text-sm text-gray-300 mb-2">{f.description}</p>
-                <p className="text-xs text-gray-400 mb-3">{f.sequence}</p>
+                <p className="text-xs text-gray-400 mb-3 leading-relaxed">{f.sequence}</p>
                 <div className="flex flex-wrap gap-1 mb-3">
                   {f.endpoints.map((ep, j) => <span key={j} className="px-2 py-0.5 bg-gray-800 rounded text-xs font-mono">{ep}</span>)}
                 </div>
                 {(f.example_requests ?? []).length > 0 && (
                   <div className="space-y-2">
-                    <p className="text-xs text-gray-500 font-semibold">Example Requests:</p>
+                    <p className="text-xs text-gray-500 font-semibold">Ejemplos de Request:</p>
                     {(f.example_requests ?? []).map((ex, k) => (
                       <div key={k} className="bg-gray-950 rounded p-3">
                         <p className="text-xs text-gray-400 mb-1">{ex.step}</p>
@@ -726,11 +716,11 @@ function Documentation({ interpretation, loading, failed, retries }: { interpret
                           {ex.headers && Object.keys(ex.headers).length > 0 && (
                             <div className="text-gray-600 mt-1">{Object.entries(ex.headers).map(([k, v]) => <p key={k}>{k}: {v}</p>)}</div>
                           )}
-                          {ex.body != null && <pre className="text-gray-500 mt-1">{typeof ex.body === 'string' ? ex.body : JSON.stringify(ex.body, null, 2)}</pre>}
+                          {ex.body != null && <pre className="text-gray-500 mt-1 whitespace-pre-wrap">{typeof ex.body === 'string' ? ex.body : JSON.stringify(ex.body, null, 2)}</pre>}
                         </div>
                         <div className="mt-1 text-xs">
-                          <span className="text-green-400">Expected: {ex.expected_status}</span>
-                          {ex.expected_response_snippet != null && <pre className="text-gray-500 mt-1">{typeof ex.expected_response_snippet === 'string' ? ex.expected_response_snippet : JSON.stringify(ex.expected_response_snippet, null, 2)}</pre>}
+                          <span className="text-green-400">Esperado: {ex.expected_status}</span>
+                          {ex.expected_response_snippet != null && <pre className="text-gray-500 mt-1 whitespace-pre-wrap">{typeof ex.expected_response_snippet === 'string' ? ex.expected_response_snippet : JSON.stringify(ex.expected_response_snippet, null, 2)}</pre>}
                           {ex.notes && <p className="text-yellow-400/70 mt-1">{ex.notes}</p>}
                         </div>
                       </div>
@@ -743,8 +733,107 @@ function Documentation({ interpretation, loading, failed, retries }: { interpret
         </Section>
       )}
 
+      {questions.length > 0 && (
+        <Section title="Preguntas Abiertas">
+          {questions.map((q, i) => (
+            <div key={i} className="p-3 rounded border border-gray-800 bg-gray-900/30 mb-2">
+              <p className="text-sm text-gray-300">{q.question}</p>
+              {q.why_missing && <p className="text-xs text-gray-500 mt-1">{q.why_missing}</p>}
+            </div>
+          ))}
+        </Section>
+      )}
+    </div>
+  )
+}
+
+function AnalysisTab({ data, loading, failed, retries }: { data: LLMInterpretation | null; loading: boolean; failed: boolean; retries: number }) {
+  if (!data) return <LLMLoadingState label="an&aacute;lisis" loading={loading} failed={failed} retries={retries} />
+
+  const secAssess = data.security_assessment
+  const behAssess = data.behavior_assessment
+  const facts = data.facts ?? []
+  const inferences = data.inferences ?? []
+  const improvements = data.improvements ?? []
+  const tests = data.tests ?? []
+  const questions = data.open_questions ?? []
+
+  return (
+    <div className="space-y-6">
+      {secAssess && (
+        <Section title="Evaluaci&oacute;n de Seguridad">
+          <div className={`p-4 rounded border ${secAssess.overall_risk === 'critical' ? 'border-red-700 bg-red-900/10' : secAssess.overall_risk === 'high' ? 'border-red-800 bg-red-900/10' : secAssess.overall_risk === 'medium' ? 'border-yellow-800 bg-yellow-900/10' : 'border-green-800 bg-green-900/10'}`}>
+            <div className="flex items-center gap-2 mb-2">
+              <SeverityBadge severity={secAssess.overall_risk} />
+              <span className="text-sm font-semibold">Riesgo General</span>
+            </div>
+            <p className="text-sm text-gray-300 mb-3">{secAssess.summary}</p>
+            {secAssess.attack_surface && <p className="text-xs text-gray-400 mb-3">{secAssess.attack_surface}</p>}
+            <div className="grid grid-cols-2 gap-3">
+              {secAssess.critical_findings?.length > 0 && (
+                <div>
+                  <p className="text-xs text-red-400 font-semibold mb-1">Hallazgos Cr&iacute;ticos</p>
+                  {secAssess.critical_findings.map((f, i) => <p key={i} className="text-xs text-gray-400 mb-1">- {f}</p>)}
+                </div>
+              )}
+              {secAssess.positive_findings?.length > 0 && (
+                <div>
+                  <p className="text-xs text-green-400 font-semibold mb-1">Hallazgos Positivos</p>
+                  {secAssess.positive_findings.map((f, i) => <p key={i} className="text-xs text-gray-400 mb-1">- {f}</p>)}
+                </div>
+              )}
+            </div>
+          </div>
+        </Section>
+      )}
+
+      {behAssess && (
+        <Section title="Evaluaci&oacute;n de Comportamiento">
+          <div className="grid grid-cols-2 gap-3">
+            <AssessmentCard title="Validaci&oacute;n de Entrada" text={behAssess.input_validation} />
+            <AssessmentCard title="Autenticaci&oacute;n" text={behAssess.auth_enforcement} />
+            <AssessmentCard title="Manejo de Errores" text={behAssess.error_handling} />
+            <AssessmentCard title="Robustez" text={behAssess.robustness} />
+          </div>
+        </Section>
+      )}
+
+      {facts.length > 0 && (
+        <Section title={`Hechos Observados (${facts.length})`}>
+          <div className="space-y-2">
+            {facts.map((f, i) => (
+              <div key={i} className="p-3 rounded border border-gray-800 bg-gray-900/30 flex items-start gap-3">
+                <div className="shrink-0 mt-0.5">
+                  <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold"
+                    style={{ background: `rgba(${Math.round((1 - f.confidence) * 255)}, ${Math.round(f.confidence * 200)}, 80, 0.15)`, color: `rgba(${Math.round((1 - f.confidence) * 255)}, ${Math.round(f.confidence * 200)}, 80, 0.9)` }}>
+                    {Math.round(f.confidence * 100)}
+                  </div>
+                </div>
+                <p className="text-xs text-gray-300 leading-relaxed">{f.text}</p>
+              </div>
+            ))}
+          </div>
+        </Section>
+      )}
+
+      {inferences.length > 0 && (
+        <Section title={`Inferencias (${inferences.length})`}>
+          <div className="space-y-2">
+            {inferences.map((inf, i) => (
+              <div key={i} className="p-3 rounded border border-gray-800 bg-gray-900/30">
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="text-xs px-2 py-0.5 bg-purple-900/30 text-purple-400 rounded font-mono">{inf.rule_of_inference}</span>
+                  <span className="text-[10px] text-gray-600">{Math.round(inf.confidence * 100)}% confianza</span>
+                </div>
+                <p className="text-xs text-gray-300 leading-relaxed">{inf.text}</p>
+              </div>
+            ))}
+          </div>
+        </Section>
+      )}
+
       {improvements.length > 0 && (
-        <Section title={`Improvements (${improvements.length})`}>
+        <Section title={`Mejoras Sugeridas (${improvements.length})`}>
           <div className="space-y-2">
             {improvements.map((imp, i) => (
               <div key={i} className="p-3 rounded border border-gray-800 bg-gray-900/30">
@@ -762,7 +851,7 @@ function Documentation({ interpretation, loading, failed, retries }: { interpret
       )}
 
       {tests.length > 0 && (
-        <Section title={`Suggested Tests (${tests.length})`}>
+        <Section title={`Tests Sugeridos (${tests.length})`}>
           <div className="space-y-3">
             {tests.map((t, i) => (
               <div key={i} className="p-4 rounded border border-gray-800 bg-gray-900/30">
@@ -774,10 +863,10 @@ function Documentation({ interpretation, loading, failed, retries }: { interpret
                 <p className="text-xs text-gray-300 mb-3">{t.description}</p>
                 <div className="bg-gray-950 rounded p-3 font-mono text-xs">
                   <span className="text-blue-400">{t.request.method}</span> <span className="text-gray-300">{t.request.path}</span>
-                  {t.request.body != null && <pre className="text-gray-500 mt-1">{String(JSON.stringify(t.request.body, null, 2))}</pre>}
+                  {t.request.body != null && <pre className="text-gray-500 mt-1 whitespace-pre-wrap">{String(JSON.stringify(t.request.body, null, 2))}</pre>}
                 </div>
                 <div className="mt-2 text-xs">
-                  <span className="text-green-400">Expected: {t.expected.status}</span>
+                  <span className="text-green-400">Esperado: {t.expected.status}</span>
                   <span className="text-gray-500 ml-2">{t.expected.description}</span>
                 </div>
               </div>
@@ -787,7 +876,7 @@ function Documentation({ interpretation, loading, failed, retries }: { interpret
       )}
 
       {questions.length > 0 && (
-        <Section title="Open Questions">
+        <Section title="Preguntas Abiertas">
           {questions.map((q, i) => (
             <div key={i} className="p-3 rounded border border-gray-800 bg-gray-900/30 mb-2">
               <p className="text-sm text-gray-300">{q.question}</p>

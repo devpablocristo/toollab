@@ -26,11 +26,12 @@ func NewService(dossierBuilder *DossierBuilder, provider Provider, artifactSvc *
 }
 
 type InterpretOptions struct {
-	Mode            string `json:"mode,omitempty"`
-	TopEndpoints    int    `json:"top_endpoints,omitempty"`
-	TopFindings     int    `json:"top_findings,omitempty"`
-	MaxSnippetBytes int    `json:"max_snippet_bytes,omitempty"`
-	ProviderName    string `json:"provider,omitempty"`
+	Kind            InterpretKind `json:"kind,omitempty"`
+	Mode            string        `json:"mode,omitempty"`
+	TopEndpoints    int           `json:"top_endpoints,omitempty"`
+	TopFindings     int           `json:"top_findings,omitempty"`
+	MaxSnippetBytes int           `json:"max_snippet_bytes,omitempty"`
+	ProviderName    string        `json:"provider,omitempty"`
 }
 
 type InterpretResult struct {
@@ -45,12 +46,17 @@ type InterpretResult struct {
 }
 
 func (s *Service) Interpret(ctx context.Context, runID string, opts InterpretOptions) (InterpretResult, error) {
+	kind := opts.Kind
+	if kind == "" {
+		kind = KindAnalysis
+	}
+
 	mode := ModeLenient
 	if opts.Mode == "strict" {
 		mode = ModeStrict
 	}
 
-	log.Printf("interpret: building dossier for run %s", runID)
+	log.Printf("interpret [%s]: building dossier for run %s", kind, runID)
 
 	dossierOpts := DossierOptions{
 		TopEndpoints:    opts.TopEndpoints,
@@ -62,15 +68,15 @@ func (s *Service) Interpret(ctx context.Context, runID string, opts InterpretOpt
 		return InterpretResult{}, fmt.Errorf("dossier build: %w", err)
 	}
 
-	log.Printf("interpret: dossier built — %d samples, %d highlights, sending to %s",
-		len(dossier.EvidenceSamples), len(dossier.AuditHighlights), s.provider.Name())
+	log.Printf("interpret [%s]: dossier built — %d samples, %d highlights, sending to %s",
+		kind, len(dossier.EvidenceSamples), len(dossier.AuditHighlights), s.provider.Name())
 
-	rawResponse, err := s.provider.Interpret(ctx, dossier)
+	rawResponse, err := s.provider.Interpret(ctx, dossier, kind)
 	if err != nil {
 		return InterpretResult{}, fmt.Errorf("provider error: %w", err)
 	}
 
-	log.Printf("interpret: provider returned %d bytes, parsing...", len(rawResponse))
+	log.Printf("interpret [%s]: provider returned %d bytes, parsing...", kind, len(rawResponse))
 
 	var interp domain.LLMInterpretation
 	if err := json.Unmarshal(rawResponse, &interp); err != nil {
@@ -87,7 +93,7 @@ func (s *Service) Interpret(ctx context.Context, runID string, opts InterpretOpt
 
 	vr, err := Validate(interp, mode, arts.pack, arts.audit, arts.model)
 	if err != nil {
-		log.Printf("interpret: validation failed (mode=%s): %v — saving raw interpretation anyway", mode, err)
+		log.Printf("interpret [%s]: validation failed (mode=%s): %v — saving raw anyway", kind, mode, err)
 		vr = ValidateResult{Interp: interp, RejectedClaimsCount: 0}
 	}
 
@@ -106,13 +112,18 @@ func (s *Service) Interpret(ctx context.Context, runID string, opts InterpretOpt
 		return InterpretResult{}, fmt.Errorf("marshaling interpretation: %w", err)
 	}
 
-	putResult, err := s.artifactSvc.Put(runID, shared.ArtifactLLMInterpretation, interpJSON)
-	if err != nil {
-		return InterpretResult{}, fmt.Errorf("saving interpretation: %w", err)
+	artifactType := shared.ArtifactLLMInterpretation
+	if kind == KindDocumentation {
+		artifactType = shared.ArtifactLLMDocumentation
 	}
 
-	log.Printf("interpret: saved interpretation (rev %d) — %d facts, %d inferences, %d rejected",
-		putResult.Revision, interp.Stats.FactsCount, interp.Stats.InferencesCount, vr.RejectedClaimsCount)
+	putResult, err := s.artifactSvc.Put(runID, artifactType, interpJSON)
+	if err != nil {
+		return InterpretResult{}, fmt.Errorf("saving %s: %w", kind, err)
+	}
+
+	log.Printf("interpret [%s]: saved (rev %d) — %d facts, %d inferences, %d rejected",
+		kind, putResult.Revision, interp.Stats.FactsCount, interp.Stats.InferencesCount, vr.RejectedClaimsCount)
 
 	return InterpretResult{
 		RunID:                runID,

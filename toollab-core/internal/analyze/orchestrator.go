@@ -266,21 +266,28 @@ func (o *Orchestrator) Analyze(ctx context.Context, targetID string, emit Progre
 	_ = o.runRepo.UpdateStatusCompleted(run.ID, runDomain.StatusCompleted, shared.Now())
 	emit.phase("done", "Analysis complete! AI documentation generating in background...")
 
-	// 9. LLM Interpretation (async — doesn't block the response)
-	go func() {
-		bgCtx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
-		defer cancel()
-		if _, err := o.interpSvc.Interpret(bgCtx, run.ID, interpretUC.InterpretOptions{}); err != nil {
-			log.Printf("LLM interpretation failed (run %s): %v", run.ID, err)
-			errJSON, _ := json.Marshal(map[string]string{
-				"error":  err.Error(),
-				"status": "failed",
-			})
-			o.artifactSvc.Put(run.ID, shared.ArtifactLLMInterpretation, errJSON)
-		} else {
-			log.Printf("LLM interpretation completed (run %s)", run.ID)
-		}
-	}()
+	// 9. LLM Documentation + Analysis (async, in parallel — doesn't block the response)
+	for _, kind := range []interpretUC.InterpretKind{interpretUC.KindDocumentation, interpretUC.KindAnalysis} {
+		go func(k interpretUC.InterpretKind) {
+			bgCtx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
+			defer cancel()
+			opts := interpretUC.InterpretOptions{Kind: k}
+			if _, err := o.interpSvc.Interpret(bgCtx, run.ID, opts); err != nil {
+				log.Printf("LLM %s failed (run %s): %v", k, run.ID, err)
+				errJSON, _ := json.Marshal(map[string]string{
+					"error":  err.Error(),
+					"status": "failed",
+				})
+				artifactType := shared.ArtifactLLMInterpretation
+				if k == interpretUC.KindDocumentation {
+					artifactType = shared.ArtifactLLMDocumentation
+				}
+				o.artifactSvc.Put(run.ID, artifactType, errJSON)
+			} else {
+				log.Printf("LLM %s completed (run %s)", k, run.ID)
+			}
+		}(kind)
+	}
 
 	return AnalyzeResult{
 		TargetID: targetID,

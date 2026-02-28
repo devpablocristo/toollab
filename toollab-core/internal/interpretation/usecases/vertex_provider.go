@@ -52,7 +52,7 @@ func (p *VertexProvider) Available() bool {
 	return err == nil
 }
 
-func (p *VertexProvider) Interpret(ctx context.Context, dossier domain.Dossier) ([]byte, error) {
+func (p *VertexProvider) Interpret(ctx context.Context, dossier domain.Dossier, kind InterpretKind) ([]byte, error) {
 	if p.projectID == "" {
 		return nil, fmt.Errorf("GOOGLE_PROJECT_ID not set")
 	}
@@ -62,9 +62,14 @@ func (p *VertexProvider) Interpret(ctx context.Context, dossier domain.Dossier) 
 		return nil, fmt.Errorf("marshaling dossier: %w", err)
 	}
 
-	log.Printf("vertex: dossier size = %d bytes, sending to %s", len(dossierJSON), p.model)
+	promptTemplate := vertexAnalysisPrompt
+	if kind == KindDocumentation {
+		promptTemplate = vertexDocPrompt
+	}
 
-	prompt := fmt.Sprintf(vertexInterpretPrompt, string(dossierJSON))
+	log.Printf("vertex: kind=%s dossier=%d bytes model=%s", kind, len(dossierJSON), p.model)
+
+	prompt := fmt.Sprintf(promptTemplate, string(dossierJSON))
 
 	reqBody := vertexRequest{
 		Contents: []vertexContent{
@@ -80,7 +85,7 @@ func (p *VertexProvider) Interpret(ctx context.Context, dossier domain.Dossier) 
 	var lastErr error
 	for attempt := 0; attempt < 2; attempt++ {
 		if attempt > 0 {
-			log.Printf("vertex: retrying (attempt %d)", attempt+1)
+			log.Printf("vertex: retrying %s (attempt %d)", kind, attempt+1)
 			select {
 			case <-ctx.Done():
 				return nil, ctx.Err()
@@ -91,12 +96,12 @@ func (p *VertexProvider) Interpret(ctx context.Context, dossier domain.Dossier) 
 		result, err := p.doRequest(ctx, reqBody)
 		if err != nil {
 			lastErr = err
-			log.Printf("vertex: attempt %d failed: %v", attempt+1, err)
+			log.Printf("vertex: %s attempt %d failed: %v", kind, attempt+1, err)
 			continue
 		}
 		return result, nil
 	}
-	return nil, fmt.Errorf("vertex: all attempts failed: %w", lastErr)
+	return nil, fmt.Errorf("vertex: all %s attempts failed: %w", kind, lastErr)
 }
 
 func (p *VertexProvider) doRequest(ctx context.Context, reqBody vertexRequest) ([]byte, error) {
@@ -215,135 +220,201 @@ type vertexResponse struct {
 	} `json:"candidates"`
 }
 
-// NOTE: This is a Go raw string literal delimited by backticks.
-// You CANNOT use backticks inside it. Use single quotes instead for emphasis.
-var vertexInterpretPrompt = `Eres un analista senior de APIs, auditor de seguridad (AppSec) y especialista en documentacion tecnica. Recibes un DOSSIER con evidencia (modelo, auditoria determinista y muestras de requests/responses) generado por una herramienta automatica. Tu tarea es producir DOCUMENTACION VIVIENTE + AUDITORIA INTERPRETADA de una API HTTP.
+// NOTE: These are Go raw string literals delimited by backticks.
+// You CANNOT use backticks inside them. Use single quotes instead.
+
+// vertexDocPrompt generates API documentation: what it is, how to use it, data models, flows.
+var vertexDocPrompt = `Eres un especialista en documentacion tecnica de APIs. Recibes un DOSSIER con evidencia (modelo, muestras de requests/responses, modelos inferidos) generado por una herramienta automatica de analisis. Tu tarea es producir DOCUMENTACION DE USO de la API: que es, como funciona, sus endpoints, modelos de datos y flujos de negocio.
 
 REGLA PRINCIPAL (ANTI-ALUCINACION)
-- NO INVENTES NADA.
-- Toda afirmacion factual debe estar anclada a evidencia del dossier mediante 'evidence_refs' y/o a hallazgos deterministas mediante 'finding_refs' (si el dossier los provee).
-- Si no hay evidencia suficiente para afirmar algo, debes expresarlo como open_question con 'why_missing'.
-- Si un flujo o modelo de datos no se puede reconstruir con evidencia, NO lo inventes: incluyelo solo si esta soportado por 'analysis_summary.inferred_models' o por evidencia concreta (requests/responses).
+- NO INVENTES NADA. Solo usa datos del dossier.
+- Si un flujo o modelo de datos no se puede reconstruir con evidencia, NO lo inventes.
+- Si falta informacion, agregalo como open_question.
 
 SALIDA
-Devuelve UNICAMENTE un JSON valido (sin markdown, sin texto extra) que cumpla EXACTAMENTE este esquema (no agregues campos nuevos, no cambies nombres de campos):
+Devuelve UNICAMENTE un JSON valido con este esquema exacto:
 
 {
   "schema_version": "v1",
   "run_id": "<copiar de dossier.run_id>",
   "overview": {
     "service_name": "Nombre del servicio",
-    "description": "Resumen de 2-3 oraciones de lo que hace este servicio",
+    "description": "Resumen claro de 3-5 oraciones de lo que hace este servicio, para que sirve, cual es su dominio de negocio",
     "framework": "Framework detectado",
     "total_endpoints": 0,
-    "architecture_notes": "Patrones de arquitectura, estrategia de auth, middleware, madurez REST, flujo de datos"
+    "architecture_notes": "Patrones de arquitectura, estrategia de auth, middleware, madurez REST, estructura de rutas, convenciones"
   },
   "data_models": [
-    {"name": "Nombre del modelo", "description": "Que representa en el dominio de negocio", "fields": ["campo: tipo - proposito"], "used_by": ["METHOD /path"]}
+    {"name": "Nombre", "description": "Que representa en el negocio", "fields": ["campo: tipo - proposito"], "used_by": ["METHOD /path"]}
   ],
   "flows": [
     {
-      "name": "Nombre del flujo de negocio",
-      "description": "Que hace este flujo de principio a fin",
+      "name": "Nombre del flujo",
+      "description": "Que hace este flujo completo",
       "importance": "critical|high|medium|low",
       "endpoints": ["METHOD /path"],
-      "sequence": "Paso a paso detallado...",
+      "sequence": "Paso a paso detallado con endpoints reales...",
       "example_requests": [
-        {"step": "Descripcion del paso", "method": "POST", "path": "/example", "headers": {}, "body": {}, "expected_status": 200, "expected_response_snippet": {}, "notes": "Que observar en esta respuesta"}
+        {"step": "Descripcion", "method": "POST", "path": "/example", "headers": {}, "body": {}, "expected_status": 200, "expected_response_snippet": {}, "notes": "Que observar"}
       ],
-      "evidence_refs": ["<evidence_id del dossier>"]
+      "evidence_refs": ["<evidence_id>"]
     }
   ],
-  "security_assessment": {
-    "overall_risk": "critical|high|medium|low",
-    "summary": "Resumen de 2-3 oraciones sobre la postura de seguridad",
-    "critical_findings": ["Hallazgo 1 explicado claramente"],
-    "positive_findings": ["Lo que la API hace bien en seguridad"],
-    "attack_surface": "Descripcion de la superficie de ataque"
-  },
-  "behavior_assessment": {
-    "input_validation": "Que tan bien valida la API la entrada?",
-    "auth_enforcement": "Como funciona la autenticacion?",
-    "error_handling": "Que tan consistentes e informativos son los errores?",
-    "robustness": "Como maneja la API casos extremos, payloads grandes, content types incorrectos?"
-  },
-  "facts": [
-    {"id": "fact_001", "text": "Observacion factual en espanol", "evidence_refs": ["<evidence_id>"], "confidence": 0.95}
-  ],
-  "inferences": [
-    {"id": "inf_001", "text": "Conclusion logica en espanol", "rule_of_inference": "nombre_regla", "evidence_refs": ["<evidence_id>"], "confidence": 0.8}
-  ],
-  "improvements": [
-    {"title": "Mejora especifica", "severity": "critical|high|medium|low", "category": "security|contract|performance|reliability", "description": "Que esta mal y por que importa", "remediation": "Pasos concretos para arreglarlo", "evidence_refs": ["<evidence_id>"]}
-  ],
-  "tests": [
-    {"name": "Nombre del test", "description": "Que verifica este test y POR QUE importa", "flow": "Que flujo", "importance": "critical|high|medium|low", "request": {"method": "GET", "path": "/x"}, "expected": {"status": 200, "description": "Como deberia verse la respuesta correcta"}, "evidence_refs": ["<evidence_id>"]}
-  ],
+  "facts": [],
+  "inferences": [],
   "open_questions": [
-    {"question": "Lo que no se pudo determinar", "why_missing": "Razon"}
+    {"question": "Pregunta sobre documentacion faltante", "why_missing": "Razon"}
   ],
   "guided_tour": [],
   "scenario_suggestions": []
 }
 
 IDIOMA
-1) TODO EL TEXTO de los valores debe estar en ESPANOL (descriptions, summaries, notes, etc.). Los nombres de campos JSON quedan en ingles.
+1) TODO el texto en ESPANOL. Campos JSON en ingles.
 
-FUENTES PERMITIDAS (SOLO ESTO)
-2) Solo podes usar informacion del DOSSIER provisto:
+FUENTES PERMITIDAS
+2) Solo informacion del DOSSIER:
    - service_overview / endpoints_top
-   - audit_highlights (findings deterministas)
-   - evidence_samples (requests/responses)
-   - analysis_summary (si esta incluido): inferred_models, coverage, performance, contract, behavior, security findings
+   - evidence_samples (requests/responses reales)
+   - analysis_summary: inferred_models, coverage, performance, behavior
    - gaps/confidence
-Si el dossier no contiene analysis_summary, igual producis salida, pero con mas open_questions.
 
-REGLAS DE TRAZABILIDAD
-3) Para TODO lo importante:
-   - Facts e Inferences: SIEMPRE 'evidence_refs' a IDs reales de dossier.evidence_samples.
-   - Improvements: SIEMPRE 'evidence_refs' (o el evidence_id asociado al finding del audit_highlight).
-   - Flows: SIEMPRE 'evidence_refs' con evidencia real; NO inventes payloads.
-4) No repitas el mismo evidence_id en todo. Distribui evidencia: idealmente 5-12 evidence_ids distintos si existen.
+REGLAS DE DOCUMENTACION
+3) 'overview':
+   - service_name: nombre descriptivo basado en la evidencia (framework, rutas, dominio).
+   - description: 3-5 oraciones que expliquen QUE hace el servicio, PARA QUIEN es, y cuales son sus capacidades principales. Debe ser util para un desarrollador nuevo.
+   - architecture_notes: patrones observados (REST, RPC, CRUD), middleware, auth scheme, versionado, estructura de rutas.
+   - total_endpoints: del modelo.
 
-REGLAS DE COBERTURA (EXHAUSTIVO PERO HONESTO)
-5) 'overview.total_endpoints' debe salir del modelo (endpoints_count o longitud de endpoints_top si es lo unico disponible).
-6) 'data_models' debe venir de analysis_summary.inferred_models. Si no hay inferred_models, dejar 'data_models: []' y agregar open_question sobre modelos faltantes.
-7) 'flows':
-   - Incluye de 3 a 8 flows SI hay evidencia suficiente.
-   - Un flow debe estar soportado por evidencia de multiples endpoints (idealmente 2+ steps). Si solo hay un endpoint, declaralo como flujo simple.
-   - 'sequence' debe describir pasos con endpoints reales (METHOD /path) y explicar dependencias.
-   - 'example_requests': usar datos reales de evidence_samples. Si el body real no esta completo, usar el snippet real y aclarar en notes que es truncado.
-8) 'security_assessment':
-   - Prioriza findings del audit (AUTH_MISSING_2XX, ERROR_LEAK_STACKTRACE, etc.) si estan presentes.
-   - Si no hay evidencia de auth, no asumas "tiene auth": pon open_question.
-   - overall_risk se determina por el peor hallazgo observado (si hay leak o auth gap, tender a high/critical segun evidencia).
-9) 'behavior_assessment':
-   - Basate en evidencia: status codes, mensajes de error, content-type, tamanos, latencias (si estan).
-   - Si no hay datos, decirlo y poner open_question.
+4) 'data_models':
+   - Viene de analysis_summary.inferred_models SI existen.
+   - Cada modelo debe explicar su proposito de negocio, no solo listar campos.
+   - fields: formato 'nombre: tipo - para que se usa'.
+   - used_by: endpoints reales que usan este modelo.
+   - Si no hay inferred_models, dejar [] y agregar open_question.
 
-REGLAS DE ESTRUCTURA / CALIDAD
-10) 'facts': 8-20 hechos (si hay evidencia suficiente).
-   - Cada fact debe ser una observacion verificable: "El endpoint X respondio 200 sin Authorization", "Se observo body con panic en /debug/error".
-11) 'inferences': 5-12 inferencias.
-   - Cada inference debe tener una regla explicita en rule_of_inference (ej: "2xx_without_auth_implies_missing_auth_enforcement").
-12) 'improvements': 6-15 mejoras accionables.
-   - Remediations deben ser concretas (ej: "Agregar middleware JWT en router X", "Sanitizar errores 500", "Agregar limites de payload").
-13) 'tests': 6-15 tests sugeridos.
-   - Deben mapear flows y mejoras. Deben explicar por que importan.
-   - Usar endpoints reales del dossier, no inventados.
-14) 'open_questions': 5-20 preguntas honestas si faltan datos (auth scheme, rate limits, roles, idempotencia, etc.)
+5) 'flows':
+   - 5-10 flujos SI hay evidencia suficiente.
+   - Cada flow debe representar un caso de uso real del servicio.
+   - Agrupar endpoints relacionados (ej: CRUD de una entidad = un flow).
+   - 'sequence': paso a paso con METHOD /path reales y que datos van de un paso al siguiente.
+   - 'example_requests': usar datos REALES de evidence_samples (bodies, headers, status codes observados).
+   - 'evidence_refs': al menos un evidence_id real por flow.
+   - NUNCA inventes URLs, bodies o headers que no esten en la evidencia.
 
-REGLAS DE CONSISTENCIA
-15) No contradigas la evidencia. Si un finding dice "auth missing 2xx", tu texto debe reflejarlo.
-16) Si audit marca algo como "anomalia" (contract_anomaly), NO lo presentes como bug confirmado. Presentalo como "anomalia observada" y sugeri experimentos/tests.
-17) No uses lenguaje vago ("podria", "quizas") en facts; reserva eso para inferences u open_questions.
+6) 'facts' e 'inferences': dejar como arrays vacios []. La pestaña de analisis se encarga de eso.
 
-GUIDED_TOUR y SCENARIO_SUGGESTIONS
-18) Deben devolverse como arrays vacios [] (por requerimiento).
+7) 'open_questions': 3-10 preguntas honestas sobre lo que NO se pudo documentar:
+   - Autenticacion no clara, roles, rate limits, webhooks, etc.
 
 FORMATO FINAL
-19) La respuesta debe ser SOLO el JSON, valido y parseable.
-20) No incluyas backticks, no incluyas explicaciones fuera del JSON.
+8) Solo JSON valido y parseable. Sin backticks, sin markdown.
+
+DOSSIER:
+%s`
+
+// vertexAnalysisPrompt interprets the audit: security, behavior, facts, inferences, improvements, tests.
+var vertexAnalysisPrompt = `Eres un auditor senior de seguridad (AppSec) y analista de calidad de APIs. Recibes un DOSSIER con evidencia (auditoria determinista, muestras de requests/responses, metricas) generado por una herramienta automatica. Tu tarea es INTERPRETAR la auditoria: analizar seguridad, comportamiento, extraer hechos, inferencias, mejoras y tests.
+
+REGLA PRINCIPAL (ANTI-ALUCINACION)
+- NO INVENTES NADA.
+- Toda afirmacion debe estar anclada a evidencia del dossier mediante 'evidence_refs'.
+- Si no hay evidencia suficiente, expresarlo como open_question.
+
+SALIDA
+Devuelve UNICAMENTE un JSON valido con este esquema exacto:
+
+{
+  "schema_version": "v1",
+  "run_id": "<copiar de dossier.run_id>",
+  "overview": null,
+  "data_models": [],
+  "flows": [],
+  "security_assessment": {
+    "overall_risk": "critical|high|medium|low",
+    "summary": "Resumen de 2-3 oraciones sobre la postura de seguridad",
+    "critical_findings": ["Hallazgo 1 explicado claramente"],
+    "positive_findings": ["Lo que la API hace bien"],
+    "attack_surface": "Descripcion de la superficie de ataque"
+  },
+  "behavior_assessment": {
+    "input_validation": "Que tan bien valida la entrada?",
+    "auth_enforcement": "Como funciona la autenticacion?",
+    "error_handling": "Que tan consistentes son los errores?",
+    "robustness": "Como maneja casos extremos?"
+  },
+  "facts": [
+    {"id": "fact_001", "text": "Observacion factual", "evidence_refs": ["<evidence_id>"], "confidence": 0.95}
+  ],
+  "inferences": [
+    {"id": "inf_001", "text": "Conclusion logica", "rule_of_inference": "nombre_regla", "evidence_refs": ["<evidence_id>"], "confidence": 0.8}
+  ],
+  "improvements": [
+    {"title": "Mejora", "severity": "critical|high|medium|low", "category": "security|contract|performance|reliability", "description": "Que esta mal", "remediation": "Como arreglarlo", "evidence_refs": ["<evidence_id>"]}
+  ],
+  "tests": [
+    {"name": "Test", "description": "Que verifica", "flow": "Flujo", "importance": "critical|high|medium|low", "request": {"method": "GET", "path": "/x"}, "expected": {"status": 200, "description": "Respuesta esperada"}, "evidence_refs": ["<evidence_id>"]}
+  ],
+  "open_questions": [
+    {"question": "Pregunta", "why_missing": "Razon"}
+  ],
+  "guided_tour": [],
+  "scenario_suggestions": []
+}
+
+IDIOMA
+1) TODO el texto en ESPANOL. Campos JSON en ingles.
+
+FUENTES PERMITIDAS
+2) Solo informacion del DOSSIER:
+   - audit_highlights (findings deterministas)
+   - evidence_samples (requests/responses)
+   - analysis_summary: security, contract, behavior, performance
+   - gaps/confidence
+
+REGLAS DE TRAZABILIDAD
+3) Facts, Inferences, Improvements: SIEMPRE 'evidence_refs' a IDs reales de dossier.evidence_samples.
+4) Distribuir evidencia: usar 5-12 evidence_ids distintos si existen.
+
+REGLAS DE SEGURIDAD
+5) 'security_assessment':
+   - Priorizar findings del audit (AUTH_MISSING_2XX, ERROR_LEAK_STACKTRACE, etc.).
+   - Si no hay evidencia de auth, NO asumir que tiene auth: poner open_question.
+   - overall_risk: determinado por el peor hallazgo observado.
+   - critical_findings: explicar cada hallazgo critico/alto en lenguaje claro.
+   - positive_findings: que hace bien la API (validacion, headers, etc.).
+   - attack_surface: endpoints expuestos, auth gaps, datos sensibles.
+
+6) 'behavior_assessment':
+   - Basarse en evidencia: status codes, mensajes de error, content-type, latencias.
+   - Si no hay datos, decirlo.
+
+REGLAS DE CALIDAD
+7) 'facts': 8-20 hechos verificables.
+   - Ej: "El endpoint POST /users respondio 200 sin header Authorization".
+   - NO usar lenguaje vago en facts.
+
+8) 'inferences': 5-12 inferencias con regla explicita.
+   - rule_of_inference: nombre descriptivo (ej: "2xx_without_auth_implies_missing_enforcement").
+
+9) 'improvements': 6-15 mejoras accionables.
+   - remediation concreta: "Agregar middleware JWT en router X", "Sanitizar errores 500".
+   - Cada improvement con severity y category.
+
+10) 'tests': 6-15 tests sugeridos.
+    - Mapear a mejoras e inferencias. Usar endpoints reales del dossier.
+    - Explicar POR QUE importa cada test.
+
+11) 'open_questions': 5-20 preguntas sobre seguridad/comportamiento desconocido.
+
+REGLAS DE CONSISTENCIA
+12) No contradigas la evidencia.
+13) Anomalias (contract_anomaly): presentar como "anomalia observada", no bug confirmado.
+
+14) 'overview', 'data_models', 'flows': dejar null/vacios. La pestaña de documentacion se encarga.
+
+FORMATO FINAL
+15) Solo JSON valido. Sin backticks, sin markdown.
 
 DOSSIER:
 %s`

@@ -77,5 +77,6 @@ export const api = {
   },
   runs: {
     interpretation: (runId: string) => get<T.LLMInterpretation>(`/api/v1/runs/${runId}/interpretation`),
+    documentation: (runId: string) => get<T.LLMInterpretation>(`/api/v1/runs/${runId}/documentation`),
   },
 }

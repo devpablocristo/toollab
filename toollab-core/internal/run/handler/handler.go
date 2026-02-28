@@ -24,6 +24,7 @@ func (h *Handler) RunRoutes() chi.Router {
 	r := chi.NewRouter()
 	r.Get("/{run_id}", h.get)
 	r.Get("/{run_id}/interpretation", h.getInterpretation)
+	r.Get("/{run_id}/documentation", h.getDocumentation)
 	return r
 }
 
@@ -45,6 +46,28 @@ func (h *Handler) getInterpretation(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Check if the artifact is an error marker
+	var probe struct {
+		Status string `json:"status"`
+		Error  string `json:"error"`
+	}
+	if json.Unmarshal(data, &probe) == nil && probe.Status == "failed" {
+		shared.WriteError(w, http.StatusServiceUnavailable, probe.Error)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	_, _ = w.Write(data)
+}
+
+func (h *Handler) getDocumentation(w http.ResponseWriter, r *http.Request) {
+	runID := chi.URLParam(r, "run_id")
+	data, _, err := h.artifactSvc.GetLatest(runID, shared.ArtifactLLMDocumentation)
+	if err != nil {
+		shared.WriteError(w, shared.ErrorStatus(err), err.Error())
+		return
+	}
+
 	var probe struct {
 		Status string `json:"status"`
 		Error  string `json:"error"`

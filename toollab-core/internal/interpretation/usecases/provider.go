@@ -9,9 +9,16 @@ import (
 	"toollab-core/internal/shared"
 )
 
+type InterpretKind string
+
+const (
+	KindDocumentation InterpretKind = "documentation"
+	KindAnalysis      InterpretKind = "analysis"
+)
+
 type Provider interface {
 	Name() string
-	Interpret(ctx context.Context, dossier domain.Dossier) ([]byte, error)
+	Interpret(ctx context.Context, dossier domain.Dossier, kind InterpretKind) ([]byte, error)
 }
 
 // MockProvider produces a deterministic, well-anchored LLMInterpretation from the dossier.
@@ -21,7 +28,7 @@ func NewMockProvider() *MockProvider { return &MockProvider{} }
 
 func (m *MockProvider) Name() string { return "mock" }
 
-func (m *MockProvider) Interpret(_ context.Context, dossier domain.Dossier) ([]byte, error) {
+func (m *MockProvider) Interpret(_ context.Context, dossier domain.Dossier, _ InterpretKind) ([]byte, error) {
 	var firstEvidenceID, secondEvidenceID string
 	if len(dossier.EvidenceSamples) > 0 {
 		firstEvidenceID = dossier.EvidenceSamples[0].EvidenceID

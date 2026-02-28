@@ -11,6 +11,7 @@ const (
 	ArtifactEvidencePack      ArtifactType = "evidence_pack"
 	ArtifactAuditReport       ArtifactType = "audit_report"
 	ArtifactLLMInterpretation ArtifactType = "llm_interpretation"
+	ArtifactLLMDocumentation ArtifactType = "llm_documentation"
 	ArtifactEvidenceMetrics  ArtifactType = "evidence_metrics"
 	ArtifactAnalysis         ArtifactType = "analysis"
 )
@@ -22,6 +23,7 @@ var validTypes = map[ArtifactType]bool{
 	ArtifactEvidencePack:      true,
 	ArtifactAuditReport:       true,
 	ArtifactLLMInterpretation: true,
+	ArtifactLLMDocumentation:  true,
 	ArtifactEvidenceMetrics:   true,
 	ArtifactAnalysis:          true,
 }
