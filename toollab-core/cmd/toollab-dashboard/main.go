@@ -9,16 +9,17 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 
-	artifactHandler "toollab-core/internal/artifact/handler"
 	artifactRepo "toollab-core/internal/artifact/repository"
 	artifactUC "toollab-core/internal/artifact/usecases"
 	discoveryUC "toollab-core/internal/discovery/usecases"
 	evidenceUC "toollab-core/internal/evidence/usecases"
+	interpretUC "toollab-core/internal/interpretation/usecases"
 	runHandler "toollab-core/internal/run/handler"
 	runRepo "toollab-core/internal/run/repository"
 	runUC "toollab-core/internal/run/usecases"
 	runnerUC "toollab-core/internal/runner/usecases"
 	"toollab-core/internal/shared"
+	analyzeUC "toollab-core/internal/analyze"
 	targetHandler "toollab-core/internal/target/handler"
 	targetRepo "toollab-core/internal/target/repository"
 	targetUC "toollab-core/internal/target/usecases"
@@ -58,14 +59,27 @@ func main() {
 	runner := runnerUC.NewHTTPRunner()
 	artPutter := evidenceUC.NewArtifactPutter(aSvc)
 	ingestor := evidenceUC.NewFSIngestor(aStorage, artPutter)
-	executor := runUC.NewExecutor(rRepo, tRepo, aSvc, runner, ingestor)
 
-	chiAnalyzer := discoveryUC.NewChiAnalyzer()
-	dSvc := discoveryUC.NewService(chiAnalyzer, aSvc, tRepo)
+	analyzer := discoveryUC.NewGoAnalyzer()
+	dSvc := discoveryUC.NewService(analyzer, aSvc, tRepo)
+
+	dossierBuilder := interpretUC.NewDossierBuilder(aSvc)
+	var llmProvider interpretUC.Provider
+	vertexProvider := interpretUC.NewVertexProvider()
+	if vertexProvider.Available() {
+		llmProvider = vertexProvider
+		log.Printf("LLM provider: %s", vertexProvider.Name())
+	} else {
+		llmProvider = interpretUC.NewMockProvider()
+		log.Printf("LLM provider: mock (set GOOGLE_PROJECT_ID + GOOGLE_ACCESS_TOKEN for Vertex)")
+	}
+	interpSvc := interpretUC.NewService(dossierBuilder, llmProvider, aSvc)
+
+	orchestrator := analyzeUC.NewOrchestrator(tRepo, rRepo, aSvc, dSvc, runner, ingestor, interpSvc)
 
 	tH := targetHandler.New(tSvc)
-	rH := runHandler.New(rSvc, executor, aSvc, aStorage, dSvc)
-	aH := artifactHandler.New(aSvc)
+	rH := runHandler.New(rSvc, aSvc)
+	azH := analyzeUC.NewHandler(orchestrator)
 
 	r := chi.NewRouter()
 	r.Use(middleware.Logger)
@@ -79,15 +93,12 @@ func main() {
 	r.Route("/api/v1", func(r chi.Router) {
 		r.Route("/targets", func(r chi.Router) {
 			r.Mount("/", tH.Routes())
-			r.Route("/{target_id}/runs", func(r chi.Router) {
-				r.Mount("/", rH.TargetRoutes())
+			r.Route("/{target_id}/analyze", func(r chi.Router) {
+				r.Mount("/", azH.Routes())
 			})
 		})
 		r.Route("/runs", func(r chi.Router) {
 			r.Mount("/", rH.RunRoutes())
-			r.Route("/{run_id}/artifacts", func(r chi.Router) {
-				r.Mount("/", aH.Routes())
-			})
 		})
 	})
 

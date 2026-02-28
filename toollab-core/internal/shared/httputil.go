@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"errors"
 	"net/http"
+	"os"
+	"strings"
 )
 
 func WriteJSON(w http.ResponseWriter, status int, v any) {
@@ -14,6 +16,20 @@ func WriteJSON(w http.ResponseWriter, status int, v any) {
 
 func WriteError(w http.ResponseWriter, status int, msg string) {
 	WriteJSON(w, status, map[string]string{"error": msg})
+}
+
+func HostRewrite() func(string) string {
+	rw := os.Getenv("TOOLLAB_HOST_REWRITE")
+	if rw == "" {
+		return nil
+	}
+	parts := strings.SplitN(rw, "=", 2)
+	if len(parts) != 2 {
+		return nil
+	}
+	return func(url string) string {
+		return strings.Replace(url, parts[0], parts[1], 1)
+	}
 }
 
 func ErrorStatus(err error) int {

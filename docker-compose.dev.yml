@@ -1,0 +1,41 @@
+services:
+  backend:
+    build:
+      context: ./toollab-core
+      dockerfile: Dockerfile.dev
+    volumes:
+      - ./toollab-core:/src
+      - backend-data:/src/data
+      - /home/pablo/Projects:/home/pablo/Projects:ro
+    environment:
+      - TOOLLAB_ADDR=:8090
+      - TOOLLAB_DB_PATH=/src/data/toollab.db
+      - TOOLLAB_DATA_DIR=/src/data
+      - TOOLLAB_HOST_REWRITE=localhost=host.docker.internal
+      - GOOGLE_PROJECT_ID=${GOOGLE_PROJECT_ID:-}
+      - GOOGLE_REGION=${GOOGLE_REGION:-us-central1}
+      - VERTEX_MODEL=${VERTEX_MODEL:-gemini-2.5-flash}
+      - GOOGLE_ACCESS_TOKEN=${GOOGLE_ACCESS_TOKEN:-}
+    ports:
+      - "8090:8090"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./toollab-ui
+      dockerfile: Dockerfile.dev
+    volumes:
+      - ./toollab-ui:/app
+      - /app/node_modules
+    environment:
+      - PROXY_BACKEND=http://backend:8090
+    ports:
+      - "5173:5173"
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+volumes:
+  backend-data:

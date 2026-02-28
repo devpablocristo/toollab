@@ -11,6 +11,8 @@ const (
 	ArtifactEvidencePack      ArtifactType = "evidence_pack"
 	ArtifactAuditReport       ArtifactType = "audit_report"
 	ArtifactLLMInterpretation ArtifactType = "llm_interpretation"
+	ArtifactEvidenceMetrics  ArtifactType = "evidence_metrics"
+	ArtifactAnalysis         ArtifactType = "analysis"
 )
 
 var validTypes = map[ArtifactType]bool{
@@ -20,6 +22,8 @@ var validTypes = map[ArtifactType]bool{
 	ArtifactEvidencePack:      true,
 	ArtifactAuditReport:       true,
 	ArtifactLLMInterpretation: true,
+	ArtifactEvidenceMetrics:   true,
+	ArtifactAnalysis:          true,
 }
 
 func (t ArtifactType) Valid() bool { return validTypes[t] }

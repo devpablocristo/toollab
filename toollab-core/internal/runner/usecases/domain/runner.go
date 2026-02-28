@@ -6,10 +6,11 @@ import (
 )
 
 type Options struct {
-	TimeoutMs    int      `json:"timeout_ms"`
-	MaxBodyBytes int64    `json:"max_body_bytes"`
-	SubsetIDs    []string `json:"subset_case_ids,omitempty"`
-	Tags         []string `json:"tags,omitempty"`
+	TimeoutMs    int               `json:"timeout_ms"`
+	MaxBodyBytes int64             `json:"max_body_bytes"`
+	SubsetIDs    []string          `json:"subset_case_ids,omitempty"`
+	Tags         []string          `json:"tags,omitempty"`
+	AuthHeaders  map[string]string `json:"auth_headers,omitempty"`
 }
 
 type Runner interface {

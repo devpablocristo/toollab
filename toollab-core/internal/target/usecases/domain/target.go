@@ -16,9 +16,10 @@ type Source struct {
 }
 
 type RuntimeHint struct {
-	BaseURL           string `json:"base_url,omitempty"`
-	DockerComposePath string `json:"docker_compose_path,omitempty"`
-	Cmd               string `json:"cmd,omitempty"`
+	BaseURL           string            `json:"base_url,omitempty"`
+	DockerComposePath string            `json:"docker_compose_path,omitempty"`
+	Cmd               string            `json:"cmd,omitempty"`
+	AuthHeaders       map[string]string `json:"auth_headers,omitempty"`
 }
 
 type Target struct {
@@ -34,4 +35,5 @@ type Repository interface {
 	Insert(t Target) error
 	GetByID(id string) (Target, error)
 	List() ([]Target, error)
+	Delete(id string) error
 }

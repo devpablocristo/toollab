@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"net/http"
+	"os"
 
 	"github.com/go-chi/chi/v5"
 )
@@ -26,9 +27,16 @@ func main() {
 			r.Get("/", listProducts)
 			r.Post("/", createProduct)
 		})
+
+		r.Get("/secret", getSecret)
+		r.Get("/debug/error", debugError)
 	})
 
-	http.ListenAndServe(":3000", r)
+	port := ":3000"
+	if p := os.Getenv("PORT"); p != "" {
+		port = ":" + p
+	}
+	http.ListenAndServe(port, r)
 }
 
 func healthCheck(w http.ResponseWriter, r *http.Request) {
@@ -68,4 +76,13 @@ func listProducts(w http.ResponseWriter, r *http.Request) {
 func createProduct(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusCreated)
 	json.NewEncoder(w).Encode(map[string]any{"id": 2})
+}
+
+func getSecret(w http.ResponseWriter, r *http.Request) {
+	json.NewEncoder(w).Encode(map[string]string{"secret_data": "classified"})
+}
+
+func debugError(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusInternalServerError)
+	w.Write([]byte(`{"error":"panic: runtime error: nil pointer dereference\ngoroutine 1 [running]:\nmain.handler()\n\t/home/user/app/main.go:42\n"}`))
 }

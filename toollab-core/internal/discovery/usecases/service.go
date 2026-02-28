@@ -47,8 +47,11 @@ func (s *Service) Discover(runID, targetID string, opts DiscoverOptions) (Discov
 	}
 
 	hint := domain.HintAuto
-	if opts.FrameworkHint == "chi" {
+	switch opts.FrameworkHint {
+	case "chi":
 		hint = domain.HintChi
+	case "gin":
+		hint = domain.HintGin
 	}
 
 	model, report, err := s.analyzer.Analyze(localPath, hint)

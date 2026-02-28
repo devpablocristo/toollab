@@ -21,6 +21,7 @@ func (h *Handler) Routes() chi.Router {
 	r.Post("/", h.create)
 	r.Get("/", h.list)
 	r.Get("/{target_id}", h.get)
+	r.Delete("/{target_id}", h.delete)
 	return r
 }
 
@@ -57,4 +58,12 @@ func (h *Handler) get(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	shared.WriteJSON(w, http.StatusOK, t)
+}
+
+func (h *Handler) delete(w http.ResponseWriter, r *http.Request) {
+	if err := h.svc.Delete(chi.URLParam(r, "target_id")); err != nil {
+		shared.WriteError(w, shared.ErrorStatus(err), err.Error())
+		return
+	}
+	w.WriteHeader(http.StatusNoContent)
 }

@@ -13,6 +13,7 @@ type EvidenceItem struct {
 	EvidenceID string            `json:"evidence_id"`
 	CaseID     string            `json:"case_id"`
 	Kind       string            `json:"kind"` // http_exchange
+	Tags       []string          `json:"tags,omitempty"`
 	Request    EvidenceRequest   `json:"request"`
 	Response   *EvidenceResponse `json:"response,omitempty"`
 	TimingMs   int64             `json:"timing_ms"`
@@ -54,6 +55,7 @@ type ExecutionResult struct {
 type CaseResult struct {
 	CaseID     string            `json:"case_id"`
 	EvidenceID string            `json:"evidence_id"`
+	Tags       []string          `json:"tags,omitempty"`
 	ReqFinal   CaseResultReq     `json:"request_final"`
 	Response   *CaseResultResp   `json:"response,omitempty"`
 	TimingMs   int64             `json:"timing_ms"`

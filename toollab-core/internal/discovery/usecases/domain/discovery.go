@@ -13,7 +13,8 @@ type Analyzer interface {
 type FrameworkHint string
 
 const (
-	HintChi FrameworkHint = "chi"
+	HintChi  FrameworkHint = "chi"
+	HintGin  FrameworkHint = "gin"
 	HintAuto FrameworkHint = "auto"
 )
 

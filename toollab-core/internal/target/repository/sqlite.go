@@ -46,6 +46,33 @@ func (r *SQLite) List() ([]domain.Target, error) {
 	return out, rows.Err()
 }
 
+func (r *SQLite) Delete(id string) error {
+	tx, err := r.db.Begin()
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+
+	_, err = tx.Exec(`DELETE FROM artifacts WHERE run_id IN (SELECT id FROM runs WHERE target_id=?)`, id)
+	if err != nil {
+		return err
+	}
+	_, err = tx.Exec(`DELETE FROM runs WHERE target_id=?`, id)
+	if err != nil {
+		return err
+	}
+	// the target itself
+	res, err := tx.Exec(`DELETE FROM targets WHERE id=?`, id)
+	if err != nil {
+		return err
+	}
+	n, _ := res.RowsAffected()
+	if n == 0 {
+		return shared.ErrNotFound
+	}
+	return tx.Commit()
+}
+
 func scanTarget(row *sql.Row) (domain.Target, error) {
 	var t domain.Target
 	var hint, ca, ua string

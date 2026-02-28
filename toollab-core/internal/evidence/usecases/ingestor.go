@@ -59,6 +59,7 @@ func (ing *FSIngestor) buildItem(runID string, cr domain.CaseResult) (domain.Evi
 		EvidenceID: cr.EvidenceID,
 		CaseID:     cr.CaseID,
 		Kind:       "http_exchange",
+		Tags:       cr.Tags,
 		TimingMs:   cr.TimingMs,
 		Error:      cr.Error,
 		Request: domain.EvidenceRequest{

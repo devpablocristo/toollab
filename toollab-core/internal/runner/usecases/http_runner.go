@@ -26,7 +26,13 @@ type HTTPRunner struct{}
 
 func NewHTTPRunner() *HTTPRunner { return &HTTPRunner{} }
 
+type CaseProgressFn func(idx int, c scenarioDomain.ScenarioCase, cr evidenceDomain.CaseResult)
+
 func (r *HTTPRunner) Run(baseURL string, plan scenarioDomain.ScenarioPlan, opts domain.Options) evidenceDomain.ExecutionResult {
+	return r.RunWithProgress(baseURL, plan, opts, nil)
+}
+
+func (r *HTTPRunner) RunWithProgress(baseURL string, plan scenarioDomain.ScenarioPlan, opts domain.Options, onCase CaseProgressFn) evidenceDomain.ExecutionResult {
 	if opts.TimeoutMs <= 0 {
 		opts.TimeoutMs = 10000
 	}
@@ -39,6 +45,7 @@ func (r *HTTPRunner) Run(baseURL string, plan scenarioDomain.ScenarioPlan, opts 
 
 	start := shared.Now()
 	var results []evidenceDomain.CaseResult
+	idx := 0
 
 	for _, c := range plan.Cases {
 		if !c.Enabled {
@@ -52,6 +59,10 @@ func (r *HTTPRunner) Run(baseURL string, plan scenarioDomain.ScenarioPlan, opts 
 		}
 		cr := r.executeCase(baseURL, c, opts)
 		results = append(results, cr)
+		if onCase != nil {
+			onCase(idx, c, cr)
+		}
+		idx++
 	}
 
 	return evidenceDomain.ExecutionResult{
@@ -66,6 +77,7 @@ func (r *HTTPRunner) executeCase(baseURL string, c scenarioDomain.ScenarioCase, 
 	cr := evidenceDomain.CaseResult{
 		CaseID:     c.CaseID,
 		EvidenceID: evidenceID,
+		Tags:       c.Tags,
 	}
 
 	fullURL, err := buildURL(baseURL, c.Request)
@@ -92,13 +104,21 @@ func (r *HTTPRunner) executeCase(baseURL string, c scenarioDomain.ScenarioCase, 
 		return cr
 	}
 
+	skipAuth := c.Auth != nil && c.Auth.Mode == "none"
+	if !skipAuth {
+		for k, v := range opts.AuthHeaders {
+			req.Header.Set(k, v)
+		}
+	}
 	for k, v := range c.Request.Headers {
 		req.Header.Set(k, v)
 	}
 	if bodySize > 0 && req.Header.Get("Content-Type") == "" {
 		req.Header.Set("Content-Type", "application/json")
 	}
-	applyAuth(req, c.Auth)
+	if !skipAuth {
+		applyAuth(req, c.Auth)
+	}
 
 	var reqBodyRaw []byte
 	if len(c.Request.BodyJSON) > 0 {

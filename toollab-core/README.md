@@ -90,6 +90,86 @@ curl http://localhost:8090/api/v1/runs/{run_id}/artifacts/service_model
 curl http://localhost:8090/api/v1/runs/{run_id}/artifacts/model_report
 ```
 
+### Audit (Etapa 4)
+
+```bash
+# Ejecutar auditoría determinista sobre los artifacts del run
+curl -X POST http://localhost:8090/api/v1/runs/{run_id}/audit \
+  -H 'Content-Type: application/json' \
+  -d '{}'
+
+# Ejecutar solo reglas específicas
+curl -X POST http://localhost:8090/api/v1/runs/{run_id}/audit \
+  -H 'Content-Type: application/json' \
+  -d '{"rules": ["AUTH_MISSING_2XX", "ERROR_LEAK_STACKTRACE"], "max_findings": 100}'
+```
+
+Respuesta:
+```json
+{
+  "run_id": "...",
+  "audit_report_revision": 1,
+  "findings_total": 11,
+  "by_severity": {"high": 9, "medium": 2},
+  "by_category": {"auth": 10, "error_leak": 1}
+}
+```
+
+```bash
+# Ver audit report completo
+curl http://localhost:8090/api/v1/runs/{run_id}/artifacts/audit_report
+```
+
+Reglas v1:
+| Rule ID | Categoría | Qué detecta |
+|---|---|---|
+| `AUTH_MISSING_2XX` | auth | Endpoint accesible sin autenticación (2xx sin Authorization/Cookie/X-Api-Key) |
+| `ERROR_LEAK_STACKTRACE` | error_leak | Respuesta de error expone detalles internos (panic, goroutine, paths, SQL) |
+| `NON_DETERMINISM_REPLAY` | stability | Mismo endpoint devuelve diferentes status codes |
+| `CONTRACT_ANOMALY_BASIC` | contract_anomaly | Anomalías de contrato HTTP (body vacío en write, Content-Type ausente) |
+
+### Interpretation LLM (Etapa 5)
+
+```bash
+# Ejecutar interpretación LLM bounded (mock provider por default)
+curl -X POST http://localhost:8090/api/v1/runs/{run_id}/interpret \
+  -H 'Content-Type: application/json' \
+  -d '{}'
+
+# Con opciones: modo strict, limitar curación
+curl -X POST http://localhost:8090/api/v1/runs/{run_id}/interpret \
+  -H 'Content-Type: application/json' \
+  -d '{"mode": "lenient", "top_endpoints": 10, "top_findings": 10, "max_snippet_bytes": 2048}'
+```
+
+Respuesta:
+```json
+{
+  "run_id": "...",
+  "llm_interpretation_revision": 1,
+  "facts_count": 2,
+  "inferences_count": 1,
+  "questions_count": 1,
+  "rejected_claims_count": 0,
+  "provider_name": "mock",
+  "validation_mode": "lenient"
+}
+```
+
+```bash
+# Ver interpretación completa (alias al artifact latest)
+curl http://localhost:8090/api/v1/runs/{run_id}/interpretation
+
+# O vía artifacts genérico
+curl http://localhost:8090/api/v1/runs/{run_id}/artifacts/llm_interpretation
+```
+
+Validación:
+- **strict**: si algún fact/inference/guided_step/scenario_suggestion no tiene refs válidas → error 400, no se guarda artifact
+- **lenient** (default): claims sin refs válidas se degradan a `open_questions` con `why_missing=missing_or_invalid_refs`
+
+Output tipado: `facts[]` (observados), `inferences[]` (con rule_of_inference), `open_questions[]` (con suggested_probe), `guided_tour[]`, `scenario_suggestions[]`
+
 ### Scenario Plan (Etapa 2)
 
 ```bash
@@ -160,8 +240,8 @@ curl http://localhost:8090/api/v1/runs/{run_id}/artifacts/{type}/v/{revision}
 - `model_report` — reporte de confianza y gaps del análisis
 - `scenario_plan` — plan de test cases (manual o auto-generado)
 - `evidence_pack` — evidencia capturada (req/resp/timing/masking)
-- `audit_report` — (stub Etapa 4)
-- `llm_interpretation` — (stub Etapa 5)
+- `audit_report` — findings deterministas anclados a evidencia y modelo
+- `llm_interpretation` — interpretación LLM bounded con facts, inferences y open_questions anclados
 
 ## Ciclo completo de laboratorio
 
@@ -172,7 +252,9 @@ curl http://localhost:8090/api/v1/runs/{run_id}/artifacts/{type}/v/{revision}
 4. (Opcional) Editar scenario_plan manualmente
 5. POST execute (runner ejecuta HTTP contra base_url)
 6. GET evidence (EvidencePack con items maskeados)
-7. Repetir: editar scenario → re-ejecutar → nueva revision de evidence
+7. POST audit (auditoría determinista → audit_report con findings anclados)
+8. POST interpret (LLM bounded → facts, inferences, open_questions, guided_tour)
+9. Repetir: editar scenario → re-ejecutar → re-auditar → re-interpretar
 ```
 
 ## Seguridad
@@ -209,10 +291,35 @@ toollab-core/
 │   │   └── usecases/domain/
 │   ├── evidence/                # Dominio: ingestor + masking + EvidencePack
 │   │   └── usecases/domain/
-│   ├── audit/                   # Motor de reglas (stub Etapa 4)
+│   ├── audit/                   # Motor de reglas determinista
 │   │   └── usecases/domain/
-│   └── interpretation/          # LLM bounded (stub Etapa 5)
+│   ├── interpretation/          # LLM bounded interpretation
+│   │   └── usecases/domain/
+│   └── compare/                 # Diff/Trends (Etapa 7)
+│       ├── handler/
 │       └── usecases/domain/
 ├── migrations/
 └── data/                        # SQLite + artifacts (gitignored)
 ```
+
+### Compare & Trends (Etapa 7)
+
+```bash
+# Métricas de un run (derivadas de evidence_pack)
+curl http://localhost:8090/api/v1/runs/{run_id}/metrics
+
+# Comparar dos runs
+curl "http://localhost:8090/api/v1/compare?runa={run_a_id}&runb={run_b_id}"
+
+# Trends de un target (series temporales)
+curl "http://localhost:8090/api/v1/targets/{target_id}/trends?top_endpoints=10"
+```
+
+#### Flujo de comparación
+
+1. Generar dos runs con discover + execute + audit
+2. `GET /compare?runa=...&runb=...` devuelve:
+   - `service_model_diff`: endpoints agregados/removidos/modificados
+   - `audit_diff`: findings nuevos/resueltos/cambiados
+   - `evidence_metrics_diff`: métricas overall + regressions por endpoint
+3. `GET /targets/{id}/trends` devuelve series con p50/p95, error rate y findings por severity

@@ -40,3 +40,10 @@ func (s *Service) Get(id string) (domain.Target, error) {
 func (s *Service) List() ([]domain.Target, error) {
 	return s.repo.List()
 }
+
+func (s *Service) Delete(id string) error {
+	if id == "" {
+		return fmt.Errorf("%w: id is required", shared.ErrInvalidInput)
+	}
+	return s.repo.Delete(id)
+}

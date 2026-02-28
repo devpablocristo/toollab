@@ -1,0 +1,16 @@
+root = "."
+tmp_dir = "tmp"
+
+[build]
+  cmd = "CGO_ENABLED=1 go build -o ./tmp/toollab-dashboard ./cmd/toollab-dashboard"
+  bin = "./tmp/toollab-dashboard"
+  full_bin = "./tmp/toollab-dashboard"
+  include_ext = ["go", "sql"]
+  exclude_dir = ["tmp", "data", "testdata", "vendor"]
+  delay = 1000
+
+[log]
+  time = false
+
+[misc]
+  clean_on_exit = true
