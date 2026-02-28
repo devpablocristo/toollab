@@ -104,43 +104,54 @@ export default function TargetDetail() {
     }
   }, [runId])
 
-  if (tLoading) return <div className="p-6"><Spinner /></div>
+  if (tLoading) return <div className="p-8"><Spinner /></div>
 
   const currentPhase = logs.length > 0 ? logs[logs.length - 1].phase : ''
   const lastExec = [...logs].reverse().find(l => l.phase === 'execute' && l.current)
 
   return (
-    <div className="p-6 max-w-7xl mx-auto">
-      <button onClick={() => navigate('/targets')} className="text-xs text-gray-500 hover:text-gray-300 mb-4 block">&larr; All Targets</button>
-      <div className="mb-2">
-        <h1 className="text-xl font-semibold">{target?.name}</h1>
+    <div className="p-8 max-w-7xl mx-auto animate-fade-in">
+      <button onClick={() => navigate('/targets')}
+        className="text-xs font-mono text-ghost hover:text-accent mb-5 flex items-center gap-1.5 transition-colors group">
+        <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 group-hover:-translate-x-0.5 transition-transform" viewBox="0 0 20 20" fill="currentColor">
+          <path fillRule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clipRule="evenodd" />
+        </svg>
+        All Targets
+      </button>
+
+      <div className="mb-1">
+        <h1 className="text-2xl font-display font-bold tracking-wide">{target?.name}</h1>
       </div>
-      <p className="text-sm text-gray-500 mb-6">{target?.source.type}: {target?.source.value}</p>
+      <p className="text-xs font-mono text-ghost mb-8">{target?.source.type}: {target?.source.value}</p>
 
       {running && (
-        <div className="mb-6 rounded-lg border border-gray-800 bg-gray-950 overflow-hidden">
-          <div className="px-4 py-2 border-b border-gray-800 flex items-center justify-between bg-gray-900/50">
-            <div className="flex items-center gap-2">
+        <div className="mb-8 card overflow-hidden animate-fade-up glow-accent">
+          <div className="px-5 py-3 border-b border-edge flex items-center justify-between bg-surface/80">
+            <div className="flex items-center gap-3">
               <Spinner />
-              <span className="text-sm font-medium text-gray-300">
+              <span className="text-sm font-display font-semibold tracking-wide text-accent">
                 {phaseLabel(currentPhase)}
               </span>
             </div>
             {lastExec && (
-              <span className="text-xs text-gray-500 font-mono">{lastExec.current}/{lastExec.total} requests</span>
+              <span className="text-xs text-ghost font-mono">{lastExec.current}/{lastExec.total} requests</span>
             )}
           </div>
           {lastExec && (
-            <div className="px-4 py-1 border-b border-gray-800/50">
-              <div className="w-full bg-gray-800 rounded-full h-1.5">
+            <div className="px-5 py-1.5 border-b border-edge/50">
+              <div className="w-full bg-surface rounded-sm h-1.5">
                 <div
-                  className="bg-blue-500 h-1.5 rounded-full transition-all duration-150"
-                  style={{ width: `${(lastExec.current! / lastExec.total!) * 100}%` }}
+                  className="h-1.5 rounded-sm transition-all duration-150"
+                  style={{
+                    width: `${(lastExec.current! / lastExec.total!) * 100}%`,
+                    background: 'linear-gradient(90deg, #00cc88, #00ffaa)',
+                    boxShadow: '0 0 8px rgba(0,255,170,0.4)',
+                  }}
                 />
               </div>
             </div>
           )}
-          <div ref={logRef} className="max-h-72 overflow-y-auto p-3 font-mono text-xs leading-relaxed">
+          <div ref={logRef} className="max-h-72 overflow-y-auto p-4 font-mono text-xs leading-relaxed">
             {logs.map((log, i) => (
               <LogLine key={i} event={log} />
             ))}
@@ -149,7 +160,7 @@ export default function TargetDetail() {
       )}
 
       {error && (
-        <div className="p-4 rounded-lg border border-red-800 bg-red-900/20 text-red-400 text-sm mb-4">
+        <div className="p-4 card border-danger/40 bg-danger-muted text-danger text-sm font-mono mb-6 glow-danger">
           {error}
         </div>
       )}
@@ -158,15 +169,15 @@ export default function TargetDetail() {
         <>
           <ScoreHeader analysis={analysis} />
 
-          <div className="flex gap-1 mt-6 mb-4 border-b border-gray-800">
+          <div className="flex gap-1 mt-8 mb-6 border-b border-edge">
             <TabBtn active={tab === 'dashboard'} onClick={() => setTab('dashboard')}>Dashboard</TabBtn>
             <TabBtn active={tab === 'docs'} onClick={() => setTab('docs')}>
               Documentation
-              {!documentation && !!runId && !docFailed && <span className="ml-1.5 inline-block w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse" />}
+              {!documentation && !!runId && !docFailed && <span className="ml-2 inline-block w-1.5 h-1.5 rounded-full bg-accent animate-glow-pulse" />}
             </TabBtn>
             <TabBtn active={tab === 'analysis'} onClick={() => setTab('analysis')}>
               Analysis
-              {!interpretation && !!runId && !analysisFailed && <span className="ml-1.5 inline-block w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse" />}
+              {!interpretation && !!runId && !analysisFailed && <span className="ml-2 inline-block w-1.5 h-1.5 rounded-full bg-accent animate-glow-pulse" />}
             </TabBtn>
           </div>
 
@@ -195,30 +206,30 @@ function phaseLabel(phase: string): string {
 
 function LogLine({ event }: { event: ProgressEvent }) {
   const phaseColors: Record<string, string> = {
-    init: 'text-gray-500',
-    discovery: 'text-cyan-400',
+    init: 'text-ghost',
+    discovery: 'text-info',
     probes: 'text-purple-400',
-    execute: 'text-blue-400',
-    ingest: 'text-gray-400',
-    evaluate: 'text-yellow-400',
-    interpret: 'text-green-400',
-    done: 'text-green-300',
+    execute: 'text-accent-dim',
+    ingest: 'text-ghost',
+    evaluate: 'text-warn',
+    interpret: 'text-ok',
+    done: 'text-accent',
   }
 
   const isExecLine = event.phase === 'execute' && event.current
-  const color = phaseColors[event.phase] ?? 'text-gray-400'
+  const color = phaseColors[event.phase] ?? 'text-ghost'
 
   if (isExecLine) {
     const msg = event.message
-    const arrow = msg.indexOf('→')
+    const arrow = msg.indexOf('\u2192')
     const statusPart = arrow > 0 ? msg.slice(arrow + 1).trim() : ''
     const isError = statusPart.startsWith('5') || statusPart.startsWith('ERR')
     const isClientError = statusPart.startsWith('4')
 
     return (
-      <div className="flex items-center gap-1 py-0.5 opacity-80 hover:opacity-100">
-        <span className="text-gray-600 w-14 text-right shrink-0">{event.current}/{event.total}</span>
-        <span className={`${isError ? 'text-red-400' : isClientError ? 'text-yellow-400' : 'text-green-400/70'}`}>{msg}</span>
+      <div className="flex items-center gap-1 py-0.5 opacity-70 hover:opacity-100 transition-opacity">
+        <span className="text-ghost-faint w-14 text-right shrink-0">{event.current}/{event.total}</span>
+        <span className={`${isError ? 'text-danger' : isClientError ? 'text-warn' : 'text-ok/70'}`}>{msg}</span>
       </div>
     )
   }
@@ -233,7 +244,7 @@ function LogLine({ event }: { event: ProgressEvent }) {
 function TabBtn({ active, onClick, children }: { active: boolean; onClick: () => void; children: React.ReactNode }) {
   return (
     <button onClick={onClick}
-      className={`px-4 py-2 text-sm font-medium border-b-2 transition ${active ? 'border-blue-500 text-white' : 'border-transparent text-gray-500 hover:text-gray-300'}`}>
+      className={`tab-btn ${active ? 'tab-btn-active' : 'tab-btn-inactive'}`}>
       {children}
     </button>
   )
@@ -253,86 +264,86 @@ function ScoreHeader({ analysis }: { analysis: Analysis }) {
       return acc
     },
     [
-      { label: '2xx', value: 0, color: '#4ade80' },
-      { label: '3xx', value: 0, color: '#60a5fa' },
-      { label: '4xx', value: 0, color: '#facc15' },
-      { label: '5xx', value: 0, color: '#ef4444' },
+      { label: '2xx', value: 0, color: '#3dd68c' },
+      { label: '3xx', value: 0, color: '#52a8ff' },
+      { label: '4xx', value: 0, color: '#ffb224' },
+      { label: '5xx', value: 0, color: '#ff4f5e' },
     ]
   )
 
   const probeSegments = [
-    { label: 'Injection', value: ps?.injection_probes ?? 0, color: '#ef4444' },
-    { label: 'Malformed', value: ps?.malformed_probes ?? 0, color: '#facc15' },
-    { label: 'Boundary', value: ps?.boundary_probes ?? 0, color: '#fb923c' },
+    { label: 'Injection', value: ps?.injection_probes ?? 0, color: '#ff4f5e' },
+    { label: 'Malformed', value: ps?.malformed_probes ?? 0, color: '#ffb224' },
+    { label: 'Boundary', value: ps?.boundary_probes ?? 0, color: '#ff8c42' },
     { label: 'Method', value: ps?.method_tamper_probes ?? 0, color: '#a78bfa' },
     { label: 'Hidden EP', value: ps?.hidden_endpoint_probes ?? 0, color: '#f472b6' },
-    { label: 'Large', value: ps?.large_payload_probes ?? 0, color: '#60a5fa' },
+    { label: 'Large', value: ps?.large_payload_probes ?? 0, color: '#52a8ff' },
     { label: 'CT Mismatch', value: ps?.content_type_probes ?? 0, color: '#22d3ee' },
     { label: 'No-Auth', value: ps?.no_auth_probes ?? 0, color: '#f87171' },
   ]
 
   return (
-    <div className="mt-4 space-y-4">
+    <div className="mt-6 space-y-4 animate-fade-up">
       <div className="grid grid-cols-4 gap-4">
-        {/* Overall score ring */}
-        <div className="p-4 rounded-xl border border-gray-800 bg-gray-900/50 flex flex-col items-center justify-center">
+        {/* Overall score */}
+        <div className="p-5 card flex flex-col items-center justify-center stagger-1 animate-fade-up">
           <ScoreRing score={analysis.score} grade={analysis.grade} size={130} stroke={12} />
-          <span className="text-xs text-gray-500 mt-2">Overall Score ({analysis.grade})</span>
+          <span className="text-[10px] font-display font-semibold tracking-wider text-ghost mt-3 uppercase">Overall Score ({analysis.grade})</span>
         </div>
 
-        {/* Response distribution donut */}
-        <div className="p-4 rounded-xl border border-gray-800 bg-gray-900/50 flex flex-col items-center gap-3">
+        {/* Response distribution */}
+        <div className="p-5 card flex flex-col items-center gap-3 stagger-2 animate-fade-up">
           <DonutChart segments={statusSegments} size={100} stroke={14}>
-            <span className="text-lg font-bold text-white">{analysis.performance.total_requests}</span>
-            <span className="text-[10px] text-gray-500">requests</span>
+            <span className="text-lg font-display font-bold text-zinc-100">{analysis.performance.total_requests}</span>
+            <span className="text-[10px] font-mono text-ghost">requests</span>
           </DonutChart>
           <DonutLegend segments={statusSegments} />
         </div>
 
-        {/* Security + Coverage rings side by side */}
-        <div className="p-4 rounded-xl border border-gray-800 bg-gray-900/50 flex flex-col items-center gap-3">
+        {/* Security + Coverage + Contract rings */}
+        <div className="p-5 card flex flex-col items-center gap-3 stagger-3 animate-fade-up">
           <div className="flex gap-4">
             <div className="flex flex-col items-center gap-1">
               <PercentRing value={sec.score} size={60} stroke={6}
-                color={sec.score >= 90 ? '#4ade80' : sec.score >= 70 ? '#facc15' : sec.score >= 50 ? '#fb923c' : '#ef4444'} />
-              <span className="text-[10px] text-gray-500">Security</span>
+                color={sec.score >= 90 ? '#3dd68c' : sec.score >= 70 ? '#ffb224' : sec.score >= 50 ? '#ff8c42' : '#ff4f5e'} />
+              <span className="text-[10px] font-display font-semibold text-ghost tracking-wide">Security</span>
             </div>
             <div className="flex flex-col items-center gap-1">
               <PercentRing value={cov.coverage_rate * 100} size={60} stroke={6}
-                color={cov.coverage_rate >= 0.9 ? '#4ade80' : cov.coverage_rate >= 0.7 ? '#60a5fa' : cov.coverage_rate >= 0.5 ? '#facc15' : '#ef4444'} />
-              <span className="text-[10px] text-gray-500">Coverage</span>
+                color={cov.coverage_rate >= 0.9 ? '#3dd68c' : cov.coverage_rate >= 0.7 ? '#52a8ff' : cov.coverage_rate >= 0.5 ? '#ffb224' : '#ff4f5e'} />
+              <span className="text-[10px] font-display font-semibold text-ghost tracking-wide">Coverage</span>
             </div>
           </div>
           <div className="flex flex-col items-center gap-1">
             <PercentRing value={analysis.contract.compliance_rate * 100} size={60} stroke={6}
-              color={analysis.contract.compliance_rate >= 0.95 ? '#4ade80' : analysis.contract.compliance_rate >= 0.8 ? '#facc15' : '#ef4444'} />
-            <span className="text-[10px] text-gray-500">Contract</span>
+              color={analysis.contract.compliance_rate >= 0.95 ? '#3dd68c' : analysis.contract.compliance_rate >= 0.8 ? '#ffb224' : '#ff4f5e'} />
+            <span className="text-[10px] font-display font-semibold text-ghost tracking-wide">Contract</span>
           </div>
         </div>
 
         {/* Latency bars */}
-        <div className="p-4 rounded-xl border border-gray-800 bg-gray-900/50 flex flex-col justify-center gap-2">
-          <p className="text-xs text-gray-500 font-semibold mb-1">Latency</p>
+        <div className="p-5 card flex flex-col justify-center gap-2 stagger-4 animate-fade-up">
+          <p className="text-[10px] font-display font-semibold tracking-wider text-ghost uppercase mb-1">Latency</p>
           <HBarChart bars={[
-            { label: 'P50', value: analysis.performance.p50_ms, color: '#4ade80', suffix: 'ms' },
-            { label: 'P95', value: analysis.performance.p95_ms, color: '#facc15', suffix: 'ms' },
-            { label: 'P99', value: analysis.performance.p99_ms, color: '#ef4444', suffix: 'ms' },
+            { label: 'P50', value: analysis.performance.p50_ms, color: '#3dd68c', suffix: 'ms' },
+            { label: 'P95', value: analysis.performance.p95_ms, color: '#ffb224', suffix: 'ms' },
+            { label: 'P99', value: analysis.performance.p99_ms, color: '#ff4f5e', suffix: 'ms' },
           ]} height={20} />
-          <p className="text-[10px] text-gray-600 mt-1">
+          <p className="text-[10px] font-mono text-ghost-faint mt-1">
             Success rate: {(analysis.performance.success_rate * 100).toFixed(1)}%
           </p>
         </div>
       </div>
 
-      {/* Probes summary bar */}
+      {/* Probes summary */}
       {ps && ps.total_probes > 0 && (
-        <div className="p-4 rounded-xl border border-gray-800 bg-gray-900/50">
+        <div className="p-5 card animate-fade-up stagger-5">
           <div className="flex items-center justify-between mb-3">
-            <p className="text-xs text-gray-500 font-semibold">{ps.total_probes} Probes Executed</p>
-            <p className="text-xs text-gray-600">{analysis.discovery.endpoints_count} endpoints, {analysis.discovery.framework} framework</p>
+            <p className="text-[10px] font-display font-semibold tracking-wider text-ghost uppercase">{ps.total_probes} Probes Executed</p>
+            <p className="text-xs font-mono text-ghost-faint">{analysis.discovery.endpoints_count} endpoints, {analysis.discovery.framework} framework</p>
           </div>
           <StackedBar segments={probeSegments} height={24} />
-          <div className="mt-2">
+          <div className="mt-3">
             <DonutLegend segments={probeSegments} />
           </div>
         </div>
@@ -349,54 +360,52 @@ function Dashboard({ analysis }: { analysis: Analysis }) {
 
   const severitySegments = [
     { label: 'Critical', value: sec.summary.critical, color: '#dc2626' },
-    { label: 'High', value: sec.summary.high, color: '#ef4444' },
-    { label: 'Medium', value: sec.summary.medium, color: '#facc15' },
-    { label: 'Low', value: sec.summary.low, color: '#6b7280' },
+    { label: 'High', value: sec.summary.high, color: '#ff4f5e' },
+    { label: 'Medium', value: sec.summary.medium, color: '#ffb224' },
+    { label: 'Low', value: sec.summary.low, color: '#53566e' },
   ]
 
   const slowest = (perf.slowest_endpoints ?? []).slice(0, 8)
   const maxLatency = Math.max(...slowest.map(e => e.timing_ms), perf.p99_ms, 1)
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8 animate-fade-in">
       {/* Performance + Security row */}
       <div className="grid grid-cols-2 gap-4">
-        {/* Status code details */}
         <Section title="Status Codes">
           <div className="space-y-1.5">
             {Object.entries(perf.status_histogram ?? {}).sort().map(([code, count]) => {
               const total = perf.total_requests || 1
               const pct = (count / total) * 100
-              const color = code.startsWith('2') ? '#4ade80' : code.startsWith('3') ? '#60a5fa' : code.startsWith('4') ? '#facc15' : '#ef4444'
+              const color = code.startsWith('2') ? '#3dd68c' : code.startsWith('3') ? '#52a8ff' : code.startsWith('4') ? '#ffb224' : '#ff4f5e'
               return (
                 <div key={code} className="flex items-center gap-2">
-                  <span className="text-xs font-mono w-8 text-gray-400">{code}</span>
-                  <div className="flex-1 bg-gray-800/60 rounded-full overflow-hidden h-5">
-                    <div className="h-full rounded-full flex items-center pl-2 transition-all duration-500"
-                      style={{ width: `${Math.max(pct, 3)}%`, background: color }}>
-                      {pct > 12 && <span className="text-[10px] font-bold text-black/70">{count}</span>}
+                  <span className="text-xs font-mono w-8 text-ghost">{code}</span>
+                  <div className="flex-1 bg-surface rounded-sm overflow-hidden h-5">
+                    <div className="h-full rounded-sm flex items-center pl-2 transition-all duration-500"
+                      style={{ width: `${Math.max(pct, 3)}%`, background: `linear-gradient(90deg, ${color}80, ${color})` }}>
+                      {pct > 12 && <span className="text-[10px] font-mono font-bold text-obsidian/80">{count}</span>}
                     </div>
                   </div>
-                  {pct <= 12 && <span className="text-xs text-gray-500">{count}</span>}
-                  <span className="text-[10px] text-gray-600 w-10 text-right">{pct.toFixed(1)}%</span>
+                  {pct <= 12 && <span className="text-xs font-mono text-ghost">{count}</span>}
+                  <span className="text-[10px] font-mono text-ghost-faint w-10 text-right">{pct.toFixed(1)}%</span>
                 </div>
               )
             })}
           </div>
         </Section>
 
-        {/* Security severity breakdown */}
         <Section title={`Security Findings (${sec.summary.total})`}>
           <div className="flex gap-4 items-start">
             <DonutChart segments={severitySegments} size={90} stroke={12}>
-              <span className="text-lg font-bold text-white">{sec.summary.total}</span>
+              <span className="text-lg font-display font-bold text-zinc-100">{sec.summary.total}</span>
             </DonutChart>
             <div className="flex-1 space-y-2">
               {severitySegments.map((s, i) => (
                 <div key={i} className="flex items-center gap-2">
-                  <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ background: s.color }} />
-                  <span className="text-xs text-gray-400 flex-1">{s.label}</span>
-                  <span className="text-sm font-bold" style={{ color: s.value > 0 ? s.color : '#4b5563' }}>{s.value}</span>
+                  <span className="w-2 h-2 rounded-full shrink-0" style={{ background: s.color, boxShadow: s.value > 0 ? `0 0 6px ${s.color}40` : 'none' }} />
+                  <span className="text-xs font-body text-ghost flex-1">{s.label}</span>
+                  <span className="text-sm font-display font-bold" style={{ color: s.value > 0 ? s.color : '#2e3148' }}>{s.value}</span>
                 </div>
               ))}
             </div>
@@ -407,20 +416,20 @@ function Dashboard({ analysis }: { analysis: Analysis }) {
         </Section>
       </div>
 
-      {/* Slowest endpoints chart */}
+      {/* Slowest endpoints */}
       {slowest.length > 0 && (
         <Section title="Slowest Endpoints">
           <HBarChart bars={slowest.map(ep => ({
             label: `${ep.method} ${ep.path.length > 20 ? ep.path.slice(0, 20) + '...' : ep.path}`,
             value: ep.timing_ms,
             max: maxLatency,
-            color: ep.timing_ms > perf.p95_ms ? '#ef4444' : ep.timing_ms > perf.p50_ms ? '#facc15' : '#4ade80',
+            color: ep.timing_ms > perf.p95_ms ? '#ff4f5e' : ep.timing_ms > perf.p50_ms ? '#ffb224' : '#3dd68c',
             suffix: 'ms',
           }))} height={22} />
-          <div className="flex gap-4 mt-2">
-            <span className="text-[10px] text-gray-600 flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-green-400" /> &lt; P50 ({perf.p50_ms}ms)</span>
-            <span className="text-[10px] text-gray-600 flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-yellow-400" /> P50–P95</span>
-            <span className="text-[10px] text-gray-600 flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-red-400" /> &gt; P95 ({perf.p95_ms}ms)</span>
+          <div className="flex gap-4 mt-3">
+            <span className="text-[10px] font-mono text-ghost-faint flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-ok" /> &lt; P50 ({perf.p50_ms}ms)</span>
+            <span className="text-[10px] font-mono text-ghost-faint flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-warn" /> P50–P95</span>
+            <span className="text-[10px] font-mono text-ghost-faint flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-danger" /> &gt; P95 ({perf.p95_ms}ms)</span>
           </div>
         </Section>
       )}
@@ -439,39 +448,39 @@ function Dashboard({ analysis }: { analysis: Analysis }) {
       <Section title={`Coverage — ${cov.tested_endpoints}/${cov.total_endpoints} endpoints`}>
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <p className="text-xs text-gray-500 mb-2">By Method</p>
+            <p className="text-[10px] font-display font-semibold tracking-wider text-ghost uppercase mb-2">By Method</p>
             {(cov.by_method ?? []).map(m => (
               <div key={m.method} className="flex items-center gap-2 mb-1.5">
-                <span className="text-xs font-mono w-14 text-gray-400">{m.method}</span>
-                <div className="flex-1 bg-gray-800/60 rounded-full overflow-hidden h-4">
-                  <div className="bg-blue-500/80 h-full rounded-full transition-all duration-500 flex items-center justify-end pr-1.5"
-                    style={{ width: `${Math.max(m.rate * 100, 2)}%` }}>
-                    {m.rate > 0.2 && <span className="text-[9px] font-bold text-white/90">{(m.rate * 100).toFixed(0)}%</span>}
+                <span className="text-xs font-mono w-14 text-ghost">{m.method}</span>
+                <div className="flex-1 bg-surface rounded-sm overflow-hidden h-4">
+                  <div className="h-full rounded-sm transition-all duration-500 flex items-center justify-end pr-1.5"
+                    style={{ width: `${Math.max(m.rate * 100, 2)}%`, background: 'linear-gradient(90deg, #52a8ff80, #52a8ff)' }}>
+                    {m.rate > 0.2 && <span className="text-[9px] font-mono font-bold text-obsidian/90">{(m.rate * 100).toFixed(0)}%</span>}
                   </div>
                 </div>
-                <span className="text-[10px] text-gray-500 w-12 text-right">{m.tested}/{m.total}</span>
+                <span className="text-[10px] font-mono text-ghost w-12 text-right">{m.tested}/{m.total}</span>
               </div>
             ))}
           </div>
           <div>
-            <p className="text-xs text-gray-500 mb-2">Status Codes Observed</p>
+            <p className="text-[10px] font-display font-semibold tracking-wider text-ghost uppercase mb-2">Status Codes Observed</p>
             <div className="flex flex-wrap gap-1.5">
               {(cov.status_codes_observed ?? []).map(sc => (
-                <span key={sc.code} className={`px-2.5 py-1 rounded text-xs font-mono transition-colors ${sc.observed ? 'bg-green-900/40 text-green-400 border border-green-800/50' : 'bg-gray-800/40 text-gray-600 border border-gray-800/50'}`}>
+                <span key={sc.code} className={`px-2.5 py-1 rounded-sm text-xs font-mono transition-colors ${sc.observed ? 'bg-ok-muted text-ok border border-ok/20' : 'bg-surface text-ghost-faint border border-edge'}`}>
                   {sc.code}
                 </span>
               ))}
             </div>
             {(cov.untested ?? []).length > 0 && (
               <div className="mt-3">
-                <p className="text-xs text-gray-500 mb-1">Untested Endpoints</p>
+                <p className="text-[10px] font-display font-semibold tracking-wider text-ghost uppercase mb-1">Untested Endpoints</p>
                 <div className="flex flex-wrap gap-1">
                   {cov.untested.slice(0, 6).map((u, i) => (
-                    <span key={i} className="px-2 py-0.5 rounded text-[10px] font-mono bg-red-900/20 text-red-400 border border-red-900/30">
+                    <span key={i} className="px-2 py-0.5 rounded-sm text-[10px] font-mono bg-danger-muted text-danger border border-danger/20">
                       {u.method} {u.path}
                     </span>
                   ))}
-                  {cov.untested.length > 6 && <span className="text-[10px] text-gray-600">+{cov.untested.length - 6} more</span>}
+                  {cov.untested.length > 6 && <span className="text-[10px] font-mono text-ghost-faint">+{cov.untested.length - 6} more</span>}
                 </div>
               </div>
             )}
@@ -484,18 +493,18 @@ function Dashboard({ analysis }: { analysis: Analysis }) {
         <Section title={`Inferred Data Models (${beh.inferred_models.length})`}>
           <div className="grid grid-cols-2 gap-3">
             {beh.inferred_models.map((m, i) => (
-              <div key={i} className="p-3 rounded-lg border border-gray-800 bg-gray-900/30">
-                <h4 className="text-sm font-semibold text-blue-400 mb-2">{m.name}</h4>
+              <div key={i} className="p-4 card">
+                <h4 className="text-sm font-display font-semibold text-accent mb-2">{m.name}</h4>
                 <div className="space-y-1">
                   {m.fields.map((f, j) => (
                     <div key={j} className="flex items-center gap-2 text-xs">
-                      <span className="text-gray-300 font-mono">{f.name}</span>
-                      <span className="px-1.5 py-0.5 rounded bg-gray-800 text-gray-500 text-[10px]">{f.json_type}</span>
-                      {f.example && <span className="text-gray-600 truncate max-w-[180px] italic">{f.example}</span>}
+                      <span className="text-zinc-300 font-mono">{f.name}</span>
+                      <span className="px-1.5 py-0.5 rounded-sm bg-surface text-ghost text-[10px] font-mono">{f.json_type}</span>
+                      {f.example && <span className="text-ghost-faint truncate max-w-[180px] italic font-mono">{f.example}</span>}
                     </div>
                   ))}
                 </div>
-                <p className="text-[10px] text-gray-600 mt-2">Seen from: {m.seen_from.join(', ')}</p>
+                <p className="text-[10px] font-mono text-ghost-faint mt-2">Seen from: {m.seen_from.join(', ')}</p>
               </div>
             ))}
           </div>
@@ -507,37 +516,37 @@ function Dashboard({ analysis }: { analysis: Analysis }) {
         <Section title="Findings Detail">
           <div className="space-y-2 max-h-[500px] overflow-y-auto pr-1">
             {(sec.findings ?? []).map((f, i) => (
-              <div key={i} className="p-3 rounded-lg border border-gray-800 bg-gray-900/30 hover:bg-gray-900/50 transition-colors">
-                <div className="flex items-center gap-2 mb-1">
+              <div key={i} className="p-4 card">
+                <div className="flex items-center gap-2 mb-1.5">
                   <SeverityBadge severity={f.severity} />
-                  <span className="text-xs font-mono text-gray-600">{f.id}</span>
-                  <span className="text-sm font-medium">{f.title}</span>
+                  <span className="text-xs font-mono text-ghost-faint">{f.id}</span>
+                  <span className="text-sm font-display font-medium">{f.title}</span>
                 </div>
-                <p className="text-xs text-gray-400">{f.description}</p>
-                {f.endpoint && <p className="text-xs text-gray-600 mt-1 font-mono">{f.endpoint}</p>}
-                <p className="text-xs text-blue-400 mt-1">{f.remediation}</p>
+                <p className="text-xs font-body text-ghost leading-relaxed">{f.description}</p>
+                {f.endpoint && <p className="text-xs text-ghost-faint mt-1 font-mono">{f.endpoint}</p>}
+                <p className="text-xs text-accent-dim mt-1.5 font-body">{f.remediation}</p>
               </div>
             ))}
           </div>
         </Section>
       )}
 
-      {/* Contract violations */}
+      {/* Contract */}
       <Section title={`Contract (${(analysis.contract.compliance_rate * 100).toFixed(0)}% compliant)`}>
         {(analysis.contract.violations ?? []).length === 0 ? (
-          <div className="p-4 rounded-lg border border-green-800/50 bg-green-900/10 text-center">
-            <p className="text-sm text-green-400 font-medium">All contract checks passed</p>
-            <p className="text-xs text-gray-500 mt-1">{analysis.contract.total_checks} checks executed</p>
+          <div className="p-5 card border-ok/20 bg-ok-muted text-center">
+            <p className="text-sm text-ok font-display font-semibold">All contract checks passed</p>
+            <p className="text-xs font-mono text-ghost mt-1">{analysis.contract.total_checks} checks executed</p>
           </div>
         ) : (
           <div className="space-y-2">
             {(analysis.contract.violations ?? []).map((v, i) => (
-              <div key={i} className="p-3 rounded-lg border border-gray-800 bg-gray-900/30">
-                <p className="text-sm font-mono mb-1">{v.endpoint} <span className="text-gray-500">({v.status_code})</span></p>
-                <p className="text-xs text-gray-400">{v.description}</p>
-                <div className="flex gap-3 mt-1.5">
-                  <span className="text-xs px-2 py-0.5 rounded bg-red-900/30 text-red-400">Got: {v.actual}</span>
-                  <span className="text-xs px-2 py-0.5 rounded bg-green-900/30 text-green-400">Expected: {v.expected}</span>
+              <div key={i} className="p-4 card">
+                <p className="text-sm font-mono mb-1 text-zinc-300">{v.endpoint} <span className="text-ghost">({v.status_code})</span></p>
+                <p className="text-xs font-body text-ghost">{v.description}</p>
+                <div className="flex gap-3 mt-2">
+                  <span className="text-xs font-mono px-2.5 py-1 rounded-sm bg-danger-muted text-danger">Got: {v.actual}</span>
+                  <span className="text-xs font-mono px-2.5 py-1 rounded-sm bg-ok-muted text-ok">Expected: {v.expected}</span>
                 </div>
               </div>
             ))}
@@ -548,49 +557,49 @@ function Dashboard({ analysis }: { analysis: Analysis }) {
       {/* Endpoint behavior table */}
       {(beh.endpoint_behavior ?? []).length > 0 && (
         <Section title="Endpoint Behavior">
-          <div className="overflow-x-auto rounded-lg border border-gray-800">
+          <div className="overflow-x-auto card">
             <table className="w-full text-xs">
               <thead>
-                <tr className="text-gray-500 bg-gray-900/70">
-                  <th className="text-left py-2.5 px-3">Endpoint</th>
-                  <th className="text-right py-2.5 px-3">Requests</th>
-                  <th className="text-left py-2.5 px-3 w-36">Latency</th>
-                  <th className="text-right py-2.5 px-3">Errors</th>
-                  <th className="text-center py-2.5 px-3">Auth</th>
-                  <th className="text-left py-2.5 px-3">Responses</th>
+                <tr className="text-ghost bg-surface/80 font-display tracking-wide uppercase text-[10px]">
+                  <th className="text-left py-3 px-4">Endpoint</th>
+                  <th className="text-right py-3 px-4">Requests</th>
+                  <th className="text-left py-3 px-4 w-36">Latency</th>
+                  <th className="text-right py-3 px-4">Errors</th>
+                  <th className="text-center py-3 px-4">Auth</th>
+                  <th className="text-left py-3 px-4">Responses</th>
                 </tr>
               </thead>
               <tbody>
                 {beh.endpoint_behavior.map((ep, i) => {
                   const epMaxLatency = Math.max(...beh.endpoint_behavior.map(e => e.avg_latency_ms), 1)
                   const pct = (ep.avg_latency_ms / epMaxLatency) * 100
-                  const latColor = ep.avg_latency_ms > perf.p95_ms ? '#ef4444' : ep.avg_latency_ms > perf.p50_ms ? '#facc15' : '#4ade80'
+                  const latColor = ep.avg_latency_ms > perf.p95_ms ? '#ff4f5e' : ep.avg_latency_ms > perf.p50_ms ? '#ffb224' : '#3dd68c'
                   return (
-                    <tr key={i} className="border-t border-gray-800/50 hover:bg-gray-900/30 transition-colors">
-                      <td className="py-2 px-3 font-mono text-gray-300">{ep.endpoint}</td>
-                      <td className="py-2 px-3 text-right text-gray-400">{ep.request_count}</td>
-                      <td className="py-2 px-3">
+                    <tr key={i} className="border-t border-edge/50 hover:bg-surface-hover transition-colors">
+                      <td className="py-2.5 px-4 font-mono text-zinc-300">{ep.endpoint}</td>
+                      <td className="py-2.5 px-4 text-right font-mono text-ghost">{ep.request_count}</td>
+                      <td className="py-2.5 px-4">
                         <div className="flex items-center gap-2">
-                          <div className="flex-1 bg-gray-800/60 rounded-full h-2 overflow-hidden">
-                            <div className="h-full rounded-full transition-all" style={{ width: `${pct}%`, background: latColor }} />
+                          <div className="flex-1 bg-surface rounded-sm h-2 overflow-hidden">
+                            <div className="h-full rounded-sm transition-all" style={{ width: `${pct}%`, background: latColor }} />
                           </div>
-                          <span className="text-[10px] text-gray-500 w-12 text-right">{ep.avg_latency_ms}ms</span>
+                          <span className="text-[10px] font-mono text-ghost w-12 text-right">{ep.avg_latency_ms}ms</span>
                         </div>
                       </td>
-                      <td className="py-2 px-3 text-right">
-                        {ep.error_count > 0 ? <span className="text-red-400 font-semibold">{ep.error_count}</span> : <span className="text-gray-600">0</span>}
+                      <td className="py-2.5 px-4 text-right font-mono">
+                        {ep.error_count > 0 ? <span className="text-danger font-semibold">{ep.error_count}</span> : <span className="text-ghost-faint">0</span>}
                       </td>
-                      <td className="py-2 px-3 text-center">
+                      <td className="py-2.5 px-4 text-center">
                         {ep.requires_auth
-                          ? <span className="px-1.5 py-0.5 rounded bg-yellow-900/30 text-yellow-400 text-[10px]">auth</span>
-                          : <span className="text-gray-700">—</span>}
+                          ? <span className="px-2 py-0.5 rounded-sm bg-warn-muted text-warn text-[10px] font-display font-semibold tracking-wide">AUTH</span>
+                          : <span className="text-ghost-faint">—</span>}
                       </td>
-                      <td className="py-2 px-3">
+                      <td className="py-2.5 px-4">
                         <div className="flex gap-1 flex-wrap">
                           {Object.entries(ep.status_codes).sort().map(([code, count]) => {
                             const n = Number(code)
-                            const cls = n < 300 ? 'bg-green-900/30 text-green-400' : n < 400 ? 'bg-blue-900/30 text-blue-400' : n < 500 ? 'bg-yellow-900/30 text-yellow-400' : 'bg-red-900/30 text-red-400'
-                            return <span key={code} className={`px-1.5 py-0.5 rounded text-[10px] font-mono ${cls}`}>{code}:{count}</span>
+                            const cls = n < 300 ? 'bg-ok-muted text-ok' : n < 400 ? 'bg-info-muted text-info' : n < 500 ? 'bg-warn-muted text-warn' : 'bg-danger-muted text-danger'
+                            return <span key={code} className={`px-1.5 py-0.5 rounded-sm text-[10px] font-mono ${cls}`}>{code}:{count}</span>
                           })}
                         </div>
                       </td>
@@ -607,22 +616,22 @@ function Dashboard({ analysis }: { analysis: Analysis }) {
 }
 
 function BehaviorCard({ title, obs }: { title: string; obs: { quality: string; summary: string; tested: number } }) {
-  const config: Record<string, { border: string; bg: string; text: string; dot: string; icon: string }> = {
-    good:    { border: 'border-green-800/60', bg: 'bg-green-900/10', text: 'text-green-400', dot: 'bg-green-400', icon: 'check' },
-    mixed:   { border: 'border-yellow-800/60', bg: 'bg-yellow-900/10', text: 'text-yellow-400', dot: 'bg-yellow-400', icon: 'warn' },
-    poor:    { border: 'border-red-800/60', bg: 'bg-red-900/10', text: 'text-red-400', dot: 'bg-red-400', icon: 'x' },
-    unknown: { border: 'border-gray-700', bg: 'bg-gray-900/30', text: 'text-gray-400', dot: 'bg-gray-500', icon: '?' },
+  const config: Record<string, { border: string; bg: string; text: string; dot: string }> = {
+    good:    { border: 'border-ok/30', bg: 'bg-ok-muted', text: 'text-ok', dot: 'bg-ok' },
+    mixed:   { border: 'border-warn/30', bg: 'bg-warn-muted', text: 'text-warn', dot: 'bg-warn' },
+    poor:    { border: 'border-danger/30', bg: 'bg-danger-muted', text: 'text-danger', dot: 'bg-danger' },
+    unknown: { border: 'border-edge', bg: 'bg-surface', text: 'text-ghost', dot: 'bg-ghost' },
   }
   const c = config[obs.quality] ?? config.unknown
   return (
-    <div className={`p-3 rounded-lg border ${c.border} ${c.bg} transition-colors hover:brightness-110`}>
-      <div className="flex items-center gap-2 mb-1.5">
-        <span className={`w-2 h-2 rounded-full ${c.dot}`} />
-        <span className="text-xs font-semibold text-gray-300 flex-1">{title}</span>
-        <span className={`text-[10px] font-bold uppercase px-1.5 py-0.5 rounded ${c.text} bg-black/20`}>{obs.quality}</span>
+    <div className={`p-4 rounded-sm border ${c.border} ${c.bg} transition-colors hover:brightness-110`}>
+      <div className="flex items-center gap-2 mb-2">
+        <span className={`w-2 h-2 rounded-full ${c.dot}`} style={{ boxShadow: obs.quality !== 'unknown' ? `0 0 6px currentColor` : 'none' }} />
+        <span className="text-xs font-display font-semibold text-zinc-300 flex-1 tracking-wide">{title}</span>
+        <span className={`text-[10px] font-display font-bold uppercase tracking-wider px-2 py-0.5 rounded-sm ${c.text} bg-obsidian/40`}>{obs.quality}</span>
       </div>
-      <p className="text-xs text-gray-400 leading-relaxed">{obs.summary}</p>
-      {obs.tested > 0 && <p className="text-[10px] text-gray-600 mt-1">{obs.tested} probes tested</p>}
+      <p className="text-xs font-body text-ghost leading-relaxed">{obs.summary}</p>
+      {obs.tested > 0 && <p className="text-[10px] font-mono text-ghost-faint mt-1.5">{obs.tested} probes tested</p>}
     </div>
   )
 }
@@ -630,21 +639,24 @@ function BehaviorCard({ title, obs }: { title: string; obs: { quality: string; s
 function LLMLoadingState({ label, loading, failed, retries }: { label: string; loading: boolean; failed: boolean; retries: number }) {
   if (failed) {
     return (
-      <div className="p-8 text-center">
-        <p className="text-sm text-red-400 font-medium mb-1">Could not generate {label}</p>
-        <p className="text-xs text-gray-500">The LLM timed out or failed. Dashboard data is still available above.</p>
+      <div className="p-10 text-center animate-fade-in">
+        <p className="text-sm text-danger font-display font-semibold mb-1">Could not generate {label}</p>
+        <p className="text-xs font-mono text-ghost">The LLM timed out or failed. Dashboard data is still available above.</p>
       </div>
     )
   }
   if (loading) {
     return (
-      <div className="p-8 text-center">
+      <div className="p-10 text-center animate-fade-in">
         <Spinner />
-        <p className="text-sm text-gray-400 mt-3">Generating {label}...</p>
-        <p className="text-xs text-gray-600 mt-1">Running in background, may take 1-3 minutes</p>
-        <div className="mt-3 w-48 mx-auto bg-gray-800 rounded-full h-1.5 overflow-hidden">
-          <div className="bg-blue-500/60 h-full rounded-full transition-all duration-1000"
-            style={{ width: `${Math.min((retries / 24) * 100, 95)}%` }} />
+        <p className="text-sm font-display text-ghost mt-4">Generating {label}...</p>
+        <p className="text-xs font-mono text-ghost-faint mt-1">Running in background, may take 1-3 minutes</p>
+        <div className="mt-4 w-48 mx-auto bg-surface rounded-sm h-1.5 overflow-hidden">
+          <div className="h-full rounded-sm transition-all duration-1000"
+            style={{
+              width: `${Math.min((retries / 24) * 100, 95)}%`,
+              background: 'linear-gradient(90deg, #00cc8860, #00ffaa)',
+            }} />
         </div>
       </div>
     )
@@ -661,18 +673,18 @@ function DocTab({ data, loading, failed, retries }: { data: LLMInterpretation | 
   const questions = data.open_questions ?? []
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8 animate-fade-in">
       {ov && (
         <Section title={ov.service_name}>
-          <p className="text-sm text-gray-300 mb-2">{ov.description}</p>
+          <p className="text-sm font-body text-zinc-300 mb-3">{ov.description}</p>
           <div className="flex gap-4 mt-2">
-            <span className="text-xs px-2.5 py-1 rounded bg-blue-900/30 text-blue-400 border border-blue-800/40">{ov.framework}</span>
-            <span className="text-xs text-gray-500">{ov.total_endpoints} endpoints</span>
+            <span className="text-xs font-mono px-3 py-1.5 rounded-sm bg-info-muted text-info border border-info/20">{ov.framework}</span>
+            <span className="text-xs font-mono text-ghost">{ov.total_endpoints} endpoints</span>
           </div>
           {ov.architecture_notes && (
-            <div className="mt-3 p-3 rounded border border-gray-800 bg-gray-900/30">
-              <p className="text-xs text-gray-500 font-semibold mb-1">Architecture</p>
-              <p className="text-xs text-gray-400 leading-relaxed">{ov.architecture_notes}</p>
+            <div className="mt-4 p-4 card">
+              <p className="text-[10px] font-display font-semibold tracking-wider text-ghost uppercase mb-1.5">Architecture</p>
+              <p className="text-xs font-body text-ghost leading-relaxed">{ov.architecture_notes}</p>
             </div>
           )}
         </Section>
@@ -682,13 +694,13 @@ function DocTab({ data, loading, failed, retries }: { data: LLMInterpretation | 
         <Section title={`Data Models (${models.length})`}>
           <div className="grid grid-cols-2 gap-3">
             {models.map((m, i) => (
-              <div key={i} className="p-3 rounded border border-gray-800 bg-gray-900/30">
-                <h4 className="text-sm font-semibold text-blue-400 mb-1">{m.name}</h4>
-                <p className="text-xs text-gray-400 mb-2">{m.description}</p>
+              <div key={i} className="p-4 card">
+                <h4 className="text-sm font-display font-semibold text-accent mb-1.5">{m.name}</h4>
+                <p className="text-xs font-body text-ghost mb-2">{m.description}</p>
                 <div className="space-y-1 mb-2">
-                  {m.fields.map((f, j) => <p key={j} className="text-xs font-mono text-gray-300">{f}</p>)}
+                  {m.fields.map((f, j) => <p key={j} className="text-xs font-mono text-zinc-300">{f}</p>)}
                 </div>
-                <p className="text-xs text-gray-600">Used by: {m.used_by.join(', ')}</p>
+                <p className="text-[10px] font-mono text-ghost-faint">Used by: {m.used_by.join(', ')}</p>
               </div>
             ))}
           </div>
@@ -699,33 +711,33 @@ function DocTab({ data, loading, failed, retries }: { data: LLMInterpretation | 
         <Section title={`Service Flows (${flows.length})`}>
           <div className="space-y-4">
             {flows.map((f, i) => (
-              <div key={i} className="p-4 rounded border border-gray-800 bg-gray-900/30">
+              <div key={i} className="p-5 card">
                 <div className="flex items-center gap-2 mb-2">
                   <ImportanceBadge importance={f.importance} />
-                  <h4 className="font-medium">{f.name}</h4>
+                  <h4 className="font-display font-semibold tracking-wide">{f.name}</h4>
                 </div>
-                <p className="text-sm text-gray-300 mb-2">{f.description}</p>
-                <p className="text-xs text-gray-400 mb-3 leading-relaxed">{f.sequence}</p>
+                <p className="text-sm font-body text-zinc-300 mb-2">{f.description}</p>
+                <p className="text-xs font-body text-ghost mb-3 leading-relaxed">{f.sequence}</p>
                 <div className="flex flex-wrap gap-1 mb-3">
-                  {f.endpoints.map((ep, j) => <span key={j} className="px-2 py-0.5 bg-gray-800 rounded text-xs font-mono">{ep}</span>)}
+                  {f.endpoints.map((ep, j) => <span key={j} className="px-2.5 py-1 bg-surface rounded-sm text-xs font-mono border border-edge">{ep}</span>)}
                 </div>
                 {(f.example_requests ?? []).length > 0 && (
                   <div className="space-y-2">
-                    <p className="text-xs text-gray-500 font-semibold">Example Requests:</p>
+                    <p className="text-[10px] font-display font-semibold tracking-wider text-ghost uppercase">Example Requests:</p>
                     {(f.example_requests ?? []).map((ex, k) => (
-                      <div key={k} className="bg-gray-950 rounded p-3">
-                        <p className="text-xs text-gray-400 mb-1">{ex.step}</p>
+                      <div key={k} className="bg-obsidian rounded-sm p-4 border border-edge/50">
+                        <p className="text-xs font-body text-ghost mb-1">{ex.step}</p>
                         <div className="font-mono text-xs">
-                          <span className="text-blue-400">{ex.method}</span> <span className="text-gray-300">{ex.path}</span>
+                          <span className="text-info">{ex.method}</span> <span className="text-zinc-300">{ex.path}</span>
                           {ex.headers && Object.keys(ex.headers).length > 0 && (
-                            <div className="text-gray-600 mt-1">{Object.entries(ex.headers).map(([k, v]) => <p key={k}>{k}: {v}</p>)}</div>
+                            <div className="text-ghost-faint mt-1">{Object.entries(ex.headers).map(([k, v]) => <p key={k}>{k}: {v}</p>)}</div>
                           )}
-                          {ex.body != null && <pre className="text-gray-500 mt-1 whitespace-pre-wrap">{typeof ex.body === 'string' ? ex.body : JSON.stringify(ex.body, null, 2)}</pre>}
+                          {ex.body != null && <pre className="text-ghost mt-1 whitespace-pre-wrap">{typeof ex.body === 'string' ? ex.body : JSON.stringify(ex.body, null, 2)}</pre>}
                         </div>
-                        <div className="mt-1 text-xs">
-                          <span className="text-green-400">Expected: {ex.expected_status}</span>
-                          {ex.expected_response_snippet != null && <pre className="text-gray-500 mt-1 whitespace-pre-wrap">{typeof ex.expected_response_snippet === 'string' ? ex.expected_response_snippet : JSON.stringify(ex.expected_response_snippet, null, 2)}</pre>}
-                          {ex.notes && <p className="text-yellow-400/70 mt-1">{ex.notes}</p>}
+                        <div className="mt-1.5 text-xs">
+                          <span className="text-ok font-mono">Expected: {ex.expected_status}</span>
+                          {ex.expected_response_snippet != null && <pre className="text-ghost mt-1 whitespace-pre-wrap font-mono">{typeof ex.expected_response_snippet === 'string' ? ex.expected_response_snippet : JSON.stringify(ex.expected_response_snippet, null, 2)}</pre>}
+                          {ex.notes && <p className="text-warn/70 mt-1 font-body">{ex.notes}</p>}
                         </div>
                       </div>
                     ))}
@@ -740,9 +752,9 @@ function DocTab({ data, loading, failed, retries }: { data: LLMInterpretation | 
       {questions.length > 0 && (
         <Section title="Open Questions">
           {questions.map((q, i) => (
-            <div key={i} className="p-3 rounded border border-gray-800 bg-gray-900/30 mb-2">
-              <p className="text-sm text-gray-300">{q.question}</p>
-              {q.why_missing && <p className="text-xs text-gray-500 mt-1">{q.why_missing}</p>}
+            <div key={i} className="p-4 card mb-2">
+              <p className="text-sm font-body text-zinc-300">{q.question}</p>
+              {q.why_missing && <p className="text-xs font-mono text-ghost mt-1">{q.why_missing}</p>}
             </div>
           ))}
         </Section>
@@ -763,27 +775,27 @@ function AnalysisTab({ data, loading, failed, retries }: { data: LLMInterpretati
   const questions = data.open_questions ?? []
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8 animate-fade-in">
       {secAssess && (
         <Section title="Security Assessment">
-          <div className={`p-4 rounded border ${secAssess.overall_risk === 'critical' ? 'border-red-700 bg-red-900/10' : secAssess.overall_risk === 'high' ? 'border-red-800 bg-red-900/10' : secAssess.overall_risk === 'medium' ? 'border-yellow-800 bg-yellow-900/10' : 'border-green-800 bg-green-900/10'}`}>
-            <div className="flex items-center gap-2 mb-2">
+          <div className={`p-5 rounded-sm border ${secAssess.overall_risk === 'critical' ? 'border-danger/40 bg-danger-muted' : secAssess.overall_risk === 'high' ? 'border-danger/30 bg-danger-muted' : secAssess.overall_risk === 'medium' ? 'border-warn/30 bg-warn-muted' : 'border-ok/30 bg-ok-muted'}`}>
+            <div className="flex items-center gap-2 mb-3">
               <SeverityBadge severity={secAssess.overall_risk} />
-              <span className="text-sm font-semibold">Overall Risk</span>
+              <span className="text-sm font-display font-semibold tracking-wide">Overall Risk</span>
             </div>
-            <p className="text-sm text-gray-300 mb-3">{secAssess.summary}</p>
-            {secAssess.attack_surface && <p className="text-xs text-gray-400 mb-3">{secAssess.attack_surface}</p>}
-            <div className="grid grid-cols-2 gap-3">
+            <p className="text-sm font-body text-zinc-300 mb-3">{secAssess.summary}</p>
+            {secAssess.attack_surface && <p className="text-xs font-body text-ghost mb-3">{secAssess.attack_surface}</p>}
+            <div className="grid grid-cols-2 gap-4">
               {secAssess.critical_findings?.length > 0 && (
                 <div>
-                  <p className="text-xs text-red-400 font-semibold mb-1">Critical Findings</p>
-                  {secAssess.critical_findings.map((f, i) => <p key={i} className="text-xs text-gray-400 mb-1">- {f}</p>)}
+                  <p className="text-xs text-danger font-display font-semibold tracking-wide mb-1.5">Critical Findings</p>
+                  {secAssess.critical_findings.map((f, i) => <p key={i} className="text-xs font-body text-ghost mb-1">- {f}</p>)}
                 </div>
               )}
               {secAssess.positive_findings?.length > 0 && (
                 <div>
-                  <p className="text-xs text-green-400 font-semibold mb-1">Positive Findings</p>
-                  {secAssess.positive_findings.map((f, i) => <p key={i} className="text-xs text-gray-400 mb-1">- {f}</p>)}
+                  <p className="text-xs text-ok font-display font-semibold tracking-wide mb-1.5">Positive Findings</p>
+                  {secAssess.positive_findings.map((f, i) => <p key={i} className="text-xs font-body text-ghost mb-1">- {f}</p>)}
                 </div>
               )}
             </div>
@@ -806,14 +818,14 @@ function AnalysisTab({ data, loading, failed, retries }: { data: LLMInterpretati
         <Section title={`Observed Facts (${facts.length})`}>
           <div className="space-y-2">
             {facts.map((f, i) => (
-              <div key={i} className="p-3 rounded border border-gray-800 bg-gray-900/30 flex items-start gap-3">
+              <div key={i} className="p-4 card flex items-start gap-3">
                 <div className="shrink-0 mt-0.5">
-                  <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold"
-                    style={{ background: `rgba(${Math.round((1 - f.confidence) * 255)}, ${Math.round(f.confidence * 200)}, 80, 0.15)`, color: `rgba(${Math.round((1 - f.confidence) * 255)}, ${Math.round(f.confidence * 200)}, 80, 0.9)` }}>
+                  <div className="w-8 h-8 rounded-sm flex items-center justify-center text-xs font-mono font-bold"
+                    style={{ background: `rgba(${Math.round((1 - f.confidence) * 255)}, ${Math.round(f.confidence * 200)}, 80, 0.12)`, color: `rgba(${Math.round((1 - f.confidence) * 255)}, ${Math.round(f.confidence * 200)}, 80, 0.9)` }}>
                     {Math.round(f.confidence * 100)}
                   </div>
                 </div>
-                <p className="text-xs text-gray-300 leading-relaxed">{f.text}</p>
+                <p className="text-xs font-body text-zinc-300 leading-relaxed">{f.text}</p>
               </div>
             ))}
           </div>
@@ -824,12 +836,12 @@ function AnalysisTab({ data, loading, failed, retries }: { data: LLMInterpretati
         <Section title={`Inferences (${inferences.length})`}>
           <div className="space-y-2">
             {inferences.map((inf, i) => (
-              <div key={i} className="p-3 rounded border border-gray-800 bg-gray-900/30">
-                <div className="flex items-center gap-2 mb-1">
-                  <span className="text-xs px-2 py-0.5 bg-purple-900/30 text-purple-400 rounded font-mono">{inf.rule_of_inference}</span>
-                  <span className="text-[10px] text-gray-600">{Math.round(inf.confidence * 100)}% confidence</span>
+              <div key={i} className="p-4 card">
+                <div className="flex items-center gap-2 mb-1.5">
+                  <span className="text-xs px-2.5 py-1 bg-purple-500/10 text-purple-400 rounded-sm font-mono border border-purple-500/20">{inf.rule_of_inference}</span>
+                  <span className="text-[10px] font-mono text-ghost-faint">{Math.round(inf.confidence * 100)}% confidence</span>
                 </div>
-                <p className="text-xs text-gray-300 leading-relaxed">{inf.text}</p>
+                <p className="text-xs font-body text-zinc-300 leading-relaxed">{inf.text}</p>
               </div>
             ))}
           </div>
@@ -840,14 +852,14 @@ function AnalysisTab({ data, loading, failed, retries }: { data: LLMInterpretati
         <Section title={`Improvements (${improvements.length})`}>
           <div className="space-y-2">
             {improvements.map((imp, i) => (
-              <div key={i} className="p-3 rounded border border-gray-800 bg-gray-900/30">
-                <div className="flex items-center gap-2 mb-1">
+              <div key={i} className="p-4 card">
+                <div className="flex items-center gap-2 mb-1.5">
                   <SeverityBadge severity={imp.severity} />
-                  <span className="text-xs px-2 py-0.5 bg-gray-800 rounded">{imp.category}</span>
-                  <span className="text-sm font-medium">{imp.title}</span>
+                  <span className="text-xs font-mono px-2.5 py-1 bg-surface rounded-sm border border-edge">{imp.category}</span>
+                  <span className="text-sm font-display font-medium">{imp.title}</span>
                 </div>
-                <p className="text-xs text-gray-400">{imp.description}</p>
-                <p className="text-xs text-blue-400 mt-1">{imp.remediation}</p>
+                <p className="text-xs font-body text-ghost">{imp.description}</p>
+                <p className="text-xs font-body text-accent-dim mt-1.5">{imp.remediation}</p>
               </div>
             ))}
           </div>
@@ -858,20 +870,20 @@ function AnalysisTab({ data, loading, failed, retries }: { data: LLMInterpretati
         <Section title={`Suggested Tests (${tests.length})`}>
           <div className="space-y-3">
             {tests.map((t, i) => (
-              <div key={i} className="p-4 rounded border border-gray-800 bg-gray-900/30">
+              <div key={i} className="p-5 card">
                 <div className="flex items-center gap-2 mb-2">
                   <ImportanceBadge importance={t.importance} />
-                  <h4 className="text-sm font-medium">{t.name}</h4>
-                  <span className="text-xs text-gray-600">({t.flow})</span>
+                  <h4 className="text-sm font-display font-medium">{t.name}</h4>
+                  <span className="text-xs font-mono text-ghost-faint">({t.flow})</span>
                 </div>
-                <p className="text-xs text-gray-300 mb-3">{t.description}</p>
-                <div className="bg-gray-950 rounded p-3 font-mono text-xs">
-                  <span className="text-blue-400">{t.request.method}</span> <span className="text-gray-300">{t.request.path}</span>
-                  {t.request.body != null && <pre className="text-gray-500 mt-1 whitespace-pre-wrap">{String(JSON.stringify(t.request.body, null, 2))}</pre>}
+                <p className="text-xs font-body text-zinc-300 mb-3">{t.description}</p>
+                <div className="bg-obsidian rounded-sm p-4 font-mono text-xs border border-edge/50">
+                  <span className="text-info">{t.request.method}</span> <span className="text-zinc-300">{t.request.path}</span>
+                  {t.request.body != null && <pre className="text-ghost mt-1 whitespace-pre-wrap">{String(JSON.stringify(t.request.body, null, 2))}</pre>}
                 </div>
-                <div className="mt-2 text-xs">
-                  <span className="text-green-400">Expected: {t.expected.status}</span>
-                  <span className="text-gray-500 ml-2">{t.expected.description}</span>
+                <div className="mt-2 text-xs font-mono">
+                  <span className="text-ok">Expected: {t.expected.status}</span>
+                  <span className="text-ghost ml-2 font-body">{t.expected.description}</span>
                 </div>
               </div>
             ))}
@@ -882,9 +894,9 @@ function AnalysisTab({ data, loading, failed, retries }: { data: LLMInterpretati
       {questions.length > 0 && (
         <Section title="Open Questions">
           {questions.map((q, i) => (
-            <div key={i} className="p-3 rounded border border-gray-800 bg-gray-900/30 mb-2">
-              <p className="text-sm text-gray-300">{q.question}</p>
-              {q.why_missing && <p className="text-xs text-gray-500 mt-1">{q.why_missing}</p>}
+            <div key={i} className="p-4 card mb-2">
+              <p className="text-sm font-body text-zinc-300">{q.question}</p>
+              {q.why_missing && <p className="text-xs font-mono text-ghost mt-1">{q.why_missing}</p>}
             </div>
           ))}
         </Section>
@@ -895,9 +907,9 @@ function AnalysisTab({ data, loading, failed, retries }: { data: LLMInterpretati
 
 function AssessmentCard({ title, text }: { title: string; text: string }) {
   return (
-    <div className="p-3 rounded border border-gray-800 bg-gray-900/30">
-      <p className="text-xs font-semibold text-gray-400 mb-1">{title}</p>
-      <p className="text-xs text-gray-300">{text}</p>
+    <div className="p-4 card">
+      <p className="text-xs font-display font-semibold tracking-wide text-ghost mb-1.5">{title}</p>
+      <p className="text-xs font-body text-zinc-300 leading-relaxed">{text}</p>
     </div>
   )
 }
@@ -905,10 +917,8 @@ function AssessmentCard({ title, text }: { title: string; text: string }) {
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div>
-      <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3 flex items-center gap-2">
-        <span className="h-px flex-1 bg-gray-800" />
+      <h3 className="section-title">
         <span>{title}</span>
-        <span className="h-px flex-1 bg-gray-800" />
       </h3>
       {children}
     </div>
@@ -917,16 +927,21 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 
 function SeverityBadge({ severity }: { severity: string }) {
   const colors: Record<string, string> = {
-    critical: 'bg-red-600 text-white', high: 'bg-red-900/60 text-red-300',
-    medium: 'bg-yellow-900/60 text-yellow-300', low: 'bg-gray-700 text-gray-300', info: 'bg-gray-800 text-gray-400',
+    critical: 'bg-danger text-obsidian',
+    high: 'bg-danger-muted text-danger border border-danger/30',
+    medium: 'bg-warn-muted text-warn border border-warn/30',
+    low: 'bg-surface text-ghost border border-edge',
+    info: 'bg-surface text-ghost-faint border border-edge',
   }
-  return <span className={`px-2 py-0.5 rounded text-xs font-medium ${colors[severity] ?? colors.info}`}>{severity}</span>
+  return <span className={`badge ${colors[severity] ?? colors.info}`}>{severity}</span>
 }
 
 function ImportanceBadge({ importance }: { importance: string }) {
   const colors: Record<string, string> = {
-    critical: 'bg-red-600 text-white', high: 'bg-orange-900/60 text-orange-300',
-    medium: 'bg-blue-900/60 text-blue-300', low: 'bg-gray-700 text-gray-300',
+    critical: 'bg-danger text-obsidian',
+    high: 'bg-warn-muted text-warn border border-warn/30',
+    medium: 'bg-info-muted text-info border border-info/30',
+    low: 'bg-surface text-ghost border border-edge',
   }
-  return <span className={`px-2 py-0.5 rounded text-xs font-medium ${colors[importance] ?? colors.medium}`}>{importance}</span>
+  return <span className={`badge ${colors[importance] ?? colors.medium}`}>{importance}</span>
 }

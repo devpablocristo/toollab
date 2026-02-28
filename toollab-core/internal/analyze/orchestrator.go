@@ -269,7 +269,7 @@ func (o *Orchestrator) Analyze(ctx context.Context, targetID string, emit Progre
 	// 9. LLM Documentation + Analysis (async, in parallel — doesn't block the response)
 	for _, kind := range []interpretUC.InterpretKind{interpretUC.KindDocumentation, interpretUC.KindAnalysis} {
 		go func(k interpretUC.InterpretKind) {
-			bgCtx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
+			bgCtx, cancel := context.WithTimeout(context.Background(), 10*time.Minute)
 			defer cancel()
 			opts := interpretUC.InterpretOptions{Kind: k}
 			if _, err := o.interpSvc.Interpret(bgCtx, run.ID, opts); err != nil {

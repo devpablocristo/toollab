@@ -4,9 +4,177 @@
 
 @layer base {
   :root {
-    --color-accent: #3b82f6;
+    --color-accent: #00ffaa;
+    --color-accent-dim: #00cc88;
+    --color-danger: #ff4f5e;
+    --color-warn: #ffb224;
+    --color-ok: #3dd68c;
+    --color-info: #52a8ff;
   }
+
   body {
     @apply min-h-screen;
+    background:
+      radial-gradient(ellipse 60% 40% at 50% 0%, rgba(0,255,170,0.03) 0%, transparent 70%),
+      #08090d;
+  }
+
+  /* Subtle grid pattern overlay */
+  #root::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    background-image:
+      linear-gradient(rgba(255,255,255,0.015) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,0.015) 1px, transparent 1px);
+    background-size: 60px 60px;
+    mask-image: radial-gradient(ellipse 80% 60% at 50% 30%, black 20%, transparent 70%);
+  }
+
+  #root {
+    position: relative;
+    z-index: 1;
+  }
+
+  /* Custom scrollbar */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #1e2235;
+    border-radius: 3px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: #2a2f48;
+  }
+
+  ::selection {
+    background: rgba(0,255,170,0.2);
+    color: #e8e8ec;
+  }
+}
+
+@layer components {
+  /* Card surface */
+  .card {
+    @apply bg-surface-raised border border-edge rounded-sm transition-colors;
+  }
+  .card:hover {
+    @apply border-edge-hover bg-surface-hover;
+  }
+
+  /* Glow accent line */
+  .glow-line {
+    height: 1px;
+    background: linear-gradient(90deg, transparent 0%, var(--color-accent) 50%, transparent 100%);
+    opacity: 0.3;
+  }
+
+  /* Input base style */
+  .input {
+    @apply w-full px-3 py-2.5 bg-surface border border-edge rounded-sm text-sm font-body text-zinc-200 placeholder-ghost transition-colors outline-none;
+  }
+  .input:focus {
+    @apply border-accent/40;
+    box-shadow: 0 0 0 1px rgba(0,255,170,0.1);
+  }
+
+  /* Button primary */
+  .btn-primary {
+    @apply px-5 py-2.5 text-sm font-display font-semibold tracking-wide rounded-sm transition-all;
+    background: linear-gradient(135deg, #00cc88 0%, #00ffaa 100%);
+    color: #08090d;
+  }
+  .btn-primary:hover {
+    box-shadow: 0 0 20px rgba(0,255,170,0.3), 0 0 4px rgba(0,255,170,0.5);
+    transform: translateY(-1px);
+  }
+  .btn-primary:disabled {
+    opacity: 0.3;
+    transform: none;
+    box-shadow: none;
+  }
+
+  /* Button ghost */
+  .btn-ghost {
+    @apply px-4 py-2 text-sm font-body text-ghost hover:text-zinc-300 transition-colors;
+  }
+
+  /* Button danger */
+  .btn-danger {
+    @apply px-3 py-2 text-xs font-display font-semibold tracking-wide rounded-sm transition-all;
+    background: linear-gradient(135deg, #cc3040 0%, #ff4f5e 100%);
+    color: white;
+  }
+  .btn-danger:hover {
+    box-shadow: 0 0 16px rgba(255,79,94,0.3);
+  }
+
+  /* Severity/status badges */
+  .badge {
+    @apply px-2.5 py-1 rounded-sm text-xs font-display font-semibold tracking-wide uppercase;
+  }
+
+  /* Tab button */
+  .tab-btn {
+    @apply px-5 py-2.5 text-sm font-display font-medium tracking-wide border-b-2 transition-all;
+  }
+  .tab-btn-active {
+    border-color: var(--color-accent);
+    color: var(--color-accent);
+    text-shadow: 0 0 12px rgba(0,255,170,0.3);
+  }
+  .tab-btn-inactive {
+    @apply border-transparent text-ghost hover:text-zinc-400;
+  }
+
+  /* Section header */
+  .section-title {
+    @apply text-xs font-display font-semibold uppercase tracking-[0.15em] mb-4 flex items-center gap-3;
+    color: var(--color-accent-dim);
+  }
+  .section-title::before,
+  .section-title::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, #1e2235);
+  }
+  .section-title::after {
+    background: linear-gradient(90deg, #1e2235, transparent);
+  }
+
+  /* Stagger animation delays */
+  .stagger-1 { animation-delay: 0.05s; }
+  .stagger-2 { animation-delay: 0.1s; }
+  .stagger-3 { animation-delay: 0.15s; }
+  .stagger-4 { animation-delay: 0.2s; }
+  .stagger-5 { animation-delay: 0.25s; }
+  .stagger-6 { animation-delay: 0.3s; }
+  .stagger-7 { animation-delay: 0.35s; }
+  .stagger-8 { animation-delay: 0.4s; }
+}
+
+@layer utilities {
+  .text-glow-accent {
+    text-shadow: 0 0 12px rgba(0,255,170,0.4), 0 0 4px rgba(0,255,170,0.2);
+  }
+  .text-glow-danger {
+    text-shadow: 0 0 12px rgba(255,79,94,0.4);
+  }
+  .text-glow-warn {
+    text-shadow: 0 0 12px rgba(255,178,36,0.4);
+  }
+  .glow-accent {
+    box-shadow: 0 0 20px rgba(0,255,170,0.15), inset 0 0 20px rgba(0,255,170,0.03);
+  }
+  .glow-danger {
+    box-shadow: 0 0 16px rgba(255,79,94,0.15);
   }
 }
