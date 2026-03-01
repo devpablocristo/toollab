@@ -28,6 +28,7 @@ export const api = {
     create: (data: { name: string; source: { type: string; value: string }; runtime_hint?: Record<string, unknown> }) =>
       post<T.Target>('/api/v1/targets', data),
     delete: (id: string) => del<void>(`/api/v1/targets/${id}`),
+    latestRun: (id: string) => get<{ run: T.Run; run_summary: T.RunSummary | null }>(`/api/v1/targets/${id}/latest-run`),
     analyzeSSE: (targetId: string, onProgress: (event: T.ProgressEvent) => void): Promise<T.AnalyzeResult> => {
       return new Promise((resolve, reject) => {
         const url = `${BASE}/api/v1/targets/${targetId}/analyze`
@@ -76,7 +77,23 @@ export const api = {
     },
   },
   runs: {
-    interpretation: (runId: string) => get<T.LLMInterpretation>(`/api/v1/runs/${runId}/interpretation`),
-    documentation: (runId: string) => get<T.LLMInterpretation>(`/api/v1/runs/${runId}/documentation`),
+    audit: (runId: string) => get<T.LLMReport>(`/api/v1/runs/${runId}/audit`),
+    docs: (runId: string) => get<T.LLMReport>(`/api/v1/runs/${runId}/docs`),
+    artifact: (runId: string, type: string) => get<unknown>(`/api/v1/runs/${runId}/artifact/${type}`),
+    endpointIndex: (runId: string) => get<T.IntelIndex>(`/api/v1/runs/${runId}/endpoints`),
+    endpointDetail: (runId: string, endpointId: string) => get<T.IntelEndpointDetail>(`/api/v1/runs/${runId}/endpoints/${endpointId}`),
+    endpointScripts: (runId: string, endpointId: string) => get<T.EndpointScriptSet>(`/api/v1/runs/${runId}/endpoints/${endpointId}/scripts`),
+  },
+  playground: {
+    send: (runId: string, req: T.PlaygroundRequest) =>
+      post<T.PlaygroundResponse>(`/api/v1/runs/${runId}/playground/send`, req),
+    replay: (runId: string, evidenceId: string) =>
+      post<T.PlaygroundResponse>(`/api/v1/runs/${runId}/playground/replay`, { evidence_id: evidenceId }),
+    authProfiles: (runId: string) =>
+      get<{ profiles: T.AuthProfile[] }>(`/api/v1/runs/${runId}/playground/auth-profiles`).then(r => r.profiles ?? []),
+    createAuthProfile: (runId: string, data: { name: string; mechanism: string; header_key?: string; value: string; env?: string }) =>
+      post<T.AuthProfile>(`/api/v1/runs/${runId}/playground/auth-profiles`, data),
+    deleteAuthProfile: (runId: string, profileId: string) =>
+      del<void>(`/api/v1/runs/${runId}/playground/auth-profiles/${profileId}`),
   },
 }

@@ -1,5 +1,0 @@
-DROP TABLE IF EXISTS assertion_results;
-DROP TABLE IF EXISTS interpretations;
-DROP TABLE IF EXISTS runs;
-DROP TABLE IF EXISTS scenarios;
-DROP TABLE IF EXISTS targets;

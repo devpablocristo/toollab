@@ -18,29 +18,27 @@ func WriteError(w http.ResponseWriter, status int, msg string) {
 	WriteJSON(w, status, map[string]string{"error": msg})
 }
 
-func HostRewrite() func(string) string {
-	rw := os.Getenv("TOOLLAB_HOST_REWRITE")
-	if rw == "" {
-		return nil
-	}
-	parts := strings.SplitN(rw, "=", 2)
-	if len(parts) != 2 {
-		return nil
-	}
-	return func(url string) string {
-		return strings.Replace(url, parts[0], parts[1], 1)
-	}
-}
-
 func ErrorStatus(err error) int {
 	switch {
 	case errors.Is(err, ErrNotFound):
 		return http.StatusNotFound
-	case errors.Is(err, ErrConflict):
-		return http.StatusConflict
 	case errors.Is(err, ErrInvalidInput):
 		return http.StatusBadRequest
 	default:
 		return http.StatusInternalServerError
 	}
+}
+
+// RewriteHost applies TOOLLAB_HOST_REWRITE env var to URLs.
+// Format: "from=to" e.g. "localhost=host.docker.internal"
+func RewriteHost(u string) string {
+	rewrite := os.Getenv("TOOLLAB_HOST_REWRITE")
+	if rewrite == "" {
+		return u
+	}
+	parts := strings.SplitN(rewrite, "=", 2)
+	if len(parts) != 2 {
+		return u
+	}
+	return strings.Replace(u, parts[0], parts[1], 1)
 }

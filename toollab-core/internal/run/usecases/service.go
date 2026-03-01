@@ -40,3 +40,16 @@ func (s *Service) Get(id string) (domain.Run, error) {
 func (s *Service) ListByTarget(targetID string) ([]domain.Run, error) {
 	return s.repo.ListByTarget(targetID)
 }
+
+func (s *Service) LatestCompleted(targetID string) (domain.Run, error) {
+	runs, err := s.repo.ListByTarget(targetID)
+	if err != nil {
+		return domain.Run{}, err
+	}
+	for _, r := range runs {
+		if r.Status == domain.StatusCompleted {
+			return r, nil
+		}
+	}
+	return domain.Run{}, shared.ErrNotFound
+}

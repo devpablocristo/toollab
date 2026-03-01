@@ -11,18 +11,27 @@ import (
 
 	artifactRepo "toollab-core/internal/artifact/repository"
 	artifactUC "toollab-core/internal/artifact/usecases"
-	discoveryUC "toollab-core/internal/discovery/usecases"
-	evidenceUC "toollab-core/internal/evidence/usecases"
-	interpretUC "toollab-core/internal/interpretation/usecases"
 	runHandler "toollab-core/internal/run/handler"
 	runRepo "toollab-core/internal/run/repository"
 	runUC "toollab-core/internal/run/usecases"
-	runnerUC "toollab-core/internal/runner/usecases"
 	"toollab-core/internal/shared"
-	analyzeUC "toollab-core/internal/analyze"
 	targetHandler "toollab-core/internal/target/handler"
 	targetRepo "toollab-core/internal/target/repository"
 	targetUC "toollab-core/internal/target/usecases"
+
+	"toollab-core/internal/abuse"
+	astdiscovery "toollab-core/internal/astdiscovery"
+	"toollab-core/internal/authmatrix"
+	"toollab-core/internal/confirm"
+	"toollab-core/internal/fuzz"
+	"toollab-core/internal/llm"
+	"toollab-core/internal/logic"
+	"toollab-core/internal/pipeline"
+	"toollab-core/internal/playground"
+	"toollab-core/internal/preflight"
+	"toollab-core/internal/report"
+	"toollab-core/internal/schema"
+	"toollab-core/internal/smoke"
 )
 
 //go:embed migrations/*.sql
@@ -56,30 +65,34 @@ func main() {
 	rSvc := runUC.NewService(rRepo, tRepo)
 	aSvc := artifactUC.NewService(aIdxRepo, aStorage, rRepo)
 
-	runner := runnerUC.NewHTTPRunner()
-	artPutter := evidenceUC.NewArtifactPutter(aSvc)
-	ingestor := evidenceUC.NewFSIngestor(aStorage, artPutter)
-
-	analyzer := discoveryUC.NewGoAnalyzer()
-	dSvc := discoveryUC.NewService(analyzer, aSvc, tRepo)
-
-	dossierBuilder := interpretUC.NewDossierBuilder(aSvc)
-	var llmProvider interpretUC.Provider
-	vertexProvider := interpretUC.NewVertexProvider()
-	if vertexProvider.Available() {
-		llmProvider = vertexProvider
-		log.Printf("LLM provider: %s", vertexProvider.Name())
-	} else {
-		llmProvider = interpretUC.NewMockProvider()
-		log.Printf("LLM provider: mock (set GOOGLE_PROJECT_ID + GOOGLE_ACCESS_TOKEN for Vertex)")
+	steps := []pipeline.StepRunner{
+		preflight.New(),
+		astdiscovery.New(),
+		schema.New(),
+		smoke.New(),
+		authmatrix.New(),
+		fuzz.New(),
+		logic.New(),
+		abuse.New(),
+		confirm.New(),
+		report.New(aSvc),
 	}
-	interpSvc := interpretUC.NewService(dossierBuilder, llmProvider, aSvc)
 
-	orchestrator := analyzeUC.NewOrchestrator(tRepo, rRepo, aSvc, dSvc, runner, ingestor, interpSvc)
+	var llmRunner pipeline.LLMRunner
+	vertex := llm.NewVertexProvider()
+	if vertex.Available() {
+		llmRunner = llm.NewRunner(vertex, aSvc)
+		log.Printf("LLM provider: %s", vertex.Name())
+	} else {
+		log.Printf("LLM provider: disabled (set GOOGLE_PROJECT_ID + GOOGLE_ACCESS_TOKEN for Vertex)")
+	}
+
+	orch := pipeline.NewOrchestrator(tRepo, rRepo, aSvc, steps, llmRunner)
+	azH := pipeline.NewHandler(orch)
 
 	tH := targetHandler.New(tSvc)
 	rH := runHandler.New(rSvc, aSvc)
-	azH := analyzeUC.NewHandler(orchestrator)
+	pgH := playground.NewHandler(aSvc)
 
 	r := chi.NewRouter()
 	r.Use(middleware.Logger)
@@ -96,9 +109,13 @@ func main() {
 			r.Route("/{target_id}/analyze", func(r chi.Router) {
 				r.Mount("/", azH.Routes())
 			})
+			r.Get("/{target_id}/latest-run", rH.LatestRunForTarget)
 		})
 		r.Route("/runs", func(r chi.Router) {
 			r.Mount("/", rH.RunRoutes())
+			r.Route("/{run_id}/playground", func(r chi.Router) {
+				r.Mount("/", pgH.Routes())
+			})
 		})
 	})
 

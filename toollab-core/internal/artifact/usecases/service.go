@@ -32,16 +32,25 @@ type PutResult struct {
 }
 
 func (s *Service) Put(runID string, artType shared.ArtifactType, rawJSON []byte) (PutResult, error) {
+	if !json.Valid(rawJSON) {
+		return PutResult{}, fmt.Errorf("%w: body is not valid JSON", shared.ErrInvalidInput)
+	}
+	return s.putBytes(runID, artType, rawJSON)
+}
+
+// PutRaw stores any byte payload (CSV, YAML, plain text, etc.) without JSON validation.
+func (s *Service) PutRaw(runID string, artType shared.ArtifactType, data []byte) (PutResult, error) {
+	return s.putBytes(runID, artType, data)
+}
+
+func (s *Service) putBytes(runID string, artType shared.ArtifactType, data []byte) (PutResult, error) {
 	if _, err := s.runRepo.GetByID(runID); err != nil {
 		return PutResult{}, err
 	}
 	if !artType.Valid() {
 		return PutResult{}, fmt.Errorf("%w: invalid artifact type %q", shared.ErrInvalidInput, artType)
 	}
-	if !json.Valid(rawJSON) {
-		return PutResult{}, fmt.Errorf("%w: body is not valid JSON", shared.ErrInvalidInput)
-	}
-	if int64(len(rawJSON)) > maxArtifactSize {
+	if int64(len(data)) > maxArtifactSize {
 		return PutResult{}, fmt.Errorf("%w: artifact exceeds max size (%d bytes)", shared.ErrInvalidInput, maxArtifactSize)
 	}
 
@@ -51,7 +60,7 @@ func (s *Service) Put(runID string, artType shared.ArtifactType, rawJSON []byte)
 	}
 
 	storagePath := StoragePath(runID, string(artType), rev)
-	contentHash := shared.SHA256Bytes(rawJSON)
+	contentHash := shared.SHA256Bytes(data)
 	now := shared.Now()
 
 	idx := domain.Index{
@@ -61,12 +70,12 @@ func (s *Service) Put(runID string, artType shared.ArtifactType, rawJSON []byte)
 		SchemaVersion: "v1",
 		Revision:      rev,
 		ContentHash:   contentHash,
-		SizeBytes:     int64(len(rawJSON)),
+		SizeBytes:     int64(len(data)),
 		StoragePath:   storagePath,
 		CreatedAt:     now,
 	}
 
-	if err := s.storage.Write(storagePath, rawJSON); err != nil {
+	if err := s.storage.Write(storagePath, data); err != nil {
 		return PutResult{}, fmt.Errorf("writing artifact: %w", err)
 	}
 	if err := s.indexRepo.Insert(idx); err != nil {
