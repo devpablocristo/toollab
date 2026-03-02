@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"strings"
 
-	d "toollab-core/internal/domain"
+	d "toollab-core/internal/pipeline/usecases/domain"
 )
 
 // GeneratePostmanCollection creates an enriched Postman collection from endpoint intelligence.

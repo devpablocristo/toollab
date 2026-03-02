@@ -60,77 +60,80 @@ RULES for partial evidence:
 
 `
 
-const docsPrompt = `You are a senior technical writer producing an API integration guide. Your reader is a developer with ZERO prior context who needs to integrate with this service. Write as if onboarding a new team member — practical, direct, actionable.
+const docsPrompt = `You are a senior technical writer. Write an API integration guide for a developer who has never seen this service.
 
-WHAT YOU RECEIVE:
-- service: project identity (name, description, framework, base_url). The DESCRIPTION is the owner's own words about what the service does — treat it as ground truth for understanding purpose and core flows.
-- domains[]: code packages with handler names — reveals architecture
-- route_summary[]: every METHOD /path grouped by domain — the full API surface
-- response_shapes[]: top-level JSON keys from real 2xx responses — reveals resource structure
-- auth_summary + auth_observed: authentication evidence
-- common_errors[]: deduplicated error patterns
-- findings: security findings with highlights
-- metrics + stats: coverage data
+DATA YOU HAVE:
+- service: identity + optional description
+- endpoints: method/path/handler/domain + observed response_keys from real 2xx
+- dtos: DTO names and fields grouped by domain (AST-grounded contracts)
+- auth: observed headers, auth error fingerprints, proven_required/proven_not_required/unknown
+- common_errors: repeated error patterns
+- findings: security findings summary
+- stats: endpoints_total, endpoints_confirmed, dtos_total, domains_count
 
-CRITICAL RULES:
-- If service.description exists, use it as the PRIMARY LENS to interpret ALL data. The description tells you what the service IS and what matters most. Align your Overview, Key Concepts, and Main Flows to the description.
-- NEVER list package paths. Translate them into human-friendly domain names (e.g. "nexus-core/internal/identity" → "Identity & Access").
-- NEVER enumerate all endpoints. Use representative examples to illustrate patterns.
-- INTERPRET evidence. Don't parrot raw data — synthesize it into actionable knowledge.
-- Use response_shapes to understand what each resource looks like (its fields). Infer entity relationships from shared field names.
-- Mark anything without runtime evidence as "INFERRED" or "NOT VERIFIED".
-- Keep ALL tables compact — max 60 characters per column.
-- DO NOT INVENT. If you don't have evidence, say "No evidence available".
+ONE RULE: never state something the data doesn't show.
+Allowed deductions:
+- route patterns can imply CRUD/lifecycle/state transitions
+- DTO field names define request/response contracts
+- nested paths imply parent-child resource relationships
+Forbidden:
+- inventing product purpose, internal architecture, or hidden entities
+- claiming request fields that do not appear in DTOs/errors
+- claiming response fields that do not appear in response_keys
 
-STRUCTURE (these exact H2 headings, in this order):
+If service.description exists, use it as framing context. Otherwise describe only what endpoints + dtos reveal.
+
+STRUCTURE:
 
 # {service.name} — API Guide
 
 ## 1. Overview
-Start from service.description if available — expand it with what the dossier confirms. Architecture described as functional domains with purpose and key routes as examples. Coverage stats (N confirmed of M total).
+2-4 sentences with framework, endpoint count, domain count, and evidence coverage.
+Include: "Documentation is inferred from AST + runtime evidence."
 
-## 2. Key Concepts
-For each main resource/entity visible in the API (inferred from route paths, handler names, and response_shapes):
-- **Entity name**: 1-2 sentence description of what it is and what it's used for.
-- Key fields observed in response_shapes (if available).
-- Relationships to other entities (inferred from shared fields or route nesting).
-Group related entities. Order by importance to the service's core purpose (from description). Typically 5-10 entities. Mark all as "INFERRED from API surface" since you don't have specs.
+## 2. Domain Map
+Table: | Domain | Endpoints | Main DTOs | Example Routes |
+Use endpoints + dtos only. Keep names as in data.
 
-## 3. Main Flows
-3-5 common workflows a developer would need to perform.
-THE MOST IMPORTANT FLOW COMES FIRST. Use service.description to identify it — it is almost always the service's primary operation (e.g. if the service "executes runs", the first flow must be about creating and managing runs).
-For each flow:
-- **Flow name** (e.g. "Execute a Run")
-- Prerequisites (auth, prior resources needed)
-- Steps: numbered list with METHOD /path and what it does
-- Expected outcome
-Mark all flows as "INFERRED from route patterns — verify with runtime testing".
+## 3. Contracts (DTO-first)
+For each major domain:
+- DTOs with purpose inferred from route usage
+- Field list for key request DTOs
+- Field list for key response DTOs
+- Mention missing contracts explicitly if DTO evidence is weak
+This section is mandatory and concrete.
 
-## 4. Authentication
-Evidence-based auth guide:
-- **Observed mechanisms**: only what appears in auth_observed.headers_seen. State header name and how many times observed.
-- **Auth rejection pattern**: show the error fingerprint (status + body) from auth_observed.error_fingerprints.
-- **Coverage**: compact table with PROVEN_REQUIRED / PROVEN_NOT_REQUIRED / UNKNOWN counts.
-- **How to get credentials**: if unknown, list where to look (env vars, admin endpoints, config files, bootstrap flow).
-- **Discrepancies**: AST vs runtime mismatches if >5. One sentence each, max 5 examples.
-DO NOT say "probably Bearer JWT" or similar — only state what was OBSERVED.
+## 4. Main Flows
+3-5 flows. Each flow:
+- Name
+- Ordered steps: METHOD PATH
+- Input contract references (DTO fields and/or common_errors)
+- Observed output shape (response_keys) or "no runtime shape"
+State once: "Flows are deduced from endpoint patterns and DTO contracts."
 
-## 5. Common Errors
-Compact table: | Status | Code | Message | Frequency | Likely Cause & Fix |
-Max 60 chars per column. One row per pattern from common_errors[]. Max 10 rows.
+## 5. Authentication
+Only auth data:
+- headers_seen with counts
+- error_fingerprints (401/403 patterns)
+- coverage counts: proven_required/proven_not_required/unknown
+- top discrepancies if present
 
-## 6. Security Findings
-From findings.highlights[]: severity, category, and 2-3 sentence description per finding.
-If no findings: "No security findings reported."
+## 6. Error Patterns
+Table: | Status | Code | Message | Count | Likely Fix |
+Use only common_errors. If empty, say so.
 
-## 7. Open Questions & Next Steps
-Actionable bullet list:
-- What credentials are needed and how to obtain them
-- Which endpoints lack runtime evidence (count + examples)
-- Which flows couldn't be verified and what to test next
-- Specific gaps that block full integration
+## 7. Security Findings and Gaps
+- findings highlights (or "None reported")
+- coverage gaps: unconfirmed endpoints, domains without response_keys, missing DTO-link evidence
+- next tests to improve certainty
 
-OUTPUT: Pure Markdown. No JSON wrapping. No code fences around the document. Start directly with the H1 heading.`
+FORMATTING:
+- Keep output concise and practical.
+- No line > 200 chars.
+- Prefer bullets over wide tables.
+- Do not output JSON.
+
+OUTPUT: Markdown. Start with H1.`
 
 const langSuffixES = `
 

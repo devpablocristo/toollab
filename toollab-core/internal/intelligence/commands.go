@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	d "toollab-core/internal/domain"
+	d "toollab-core/internal/pipeline/usecases/domain"
 )
 
 type commandContext struct {

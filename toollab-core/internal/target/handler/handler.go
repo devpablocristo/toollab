@@ -8,13 +8,13 @@ import (
 
 	"toollab-core/internal/shared"
 	"toollab-core/internal/target/handler/dto"
-	"toollab-core/internal/target/usecases"
+	target "toollab-core/internal/target"
 	"toollab-core/internal/target/usecases/domain"
 )
 
-type Handler struct{ svc *usecases.Service }
+type Handler struct{ svc *target.Service }
 
-func New(svc *usecases.Service) *Handler { return &Handler{svc: svc} }
+func New(svc *target.Service) *Handler { return &Handler{svc: svc} }
 
 func (h *Handler) Routes() chi.Router {
 	r := chi.NewRouter()

@@ -43,13 +43,31 @@ func (p *VertexProvider) RawPrompt(ctx context.Context, prompt string) ([]byte, 
 }
 
 // TextPrompt sends a prompt expecting free-form text back (no JSON constraint).
-// Uses a lower token limit since narrative docs are concise (5 sections).
 func (p *VertexProvider) TextPrompt(ctx context.Context, prompt string) (string, error) {
 	data, err := p.promptWithRetries(ctx, prompt, false, 8192)
 	if err != nil {
 		return "", err
 	}
-	return string(data), nil
+	return sanitizeMarkdown(string(data)), nil
+}
+
+// sanitizeMarkdown removes repetitive content that LLMs sometimes generate
+// (e.g. table cells filled with thousands of repeated characters).
+func sanitizeMarkdown(s string) string {
+	lines := strings.Split(s, "\n")
+	var out []string
+	for _, line := range lines {
+		if len(line) > 1000 {
+			line = line[:1000] + " ..."
+		}
+		out = append(out, line)
+	}
+	result := strings.Join(out, "\n")
+	const maxSize = 25000
+	if len(result) > maxSize {
+		result = result[:maxSize] + "\n\n*(truncated — output exceeded size limit)*"
+	}
+	return result
 }
 
 const cloudPlatformScope = "https://www.googleapis.com/auth/cloud-platform"
@@ -84,6 +102,7 @@ func (p *VertexProvider) doRequest(ctx context.Context, prompt string, jsonMode 
 	genConfig := vertexGenConfig{
 		Temperature:     0.2,
 		MaxOutputTokens: maxTokens,
+		FrequencyPenalty: 0.5,
 	}
 	if jsonMode {
 		genConfig.ResponseMimeType = "application/json"
@@ -193,6 +212,7 @@ type vertexPart struct {
 type vertexGenConfig struct {
 	Temperature      float64 `json:"temperature"`
 	MaxOutputTokens  int     `json:"maxOutputTokens"`
+	FrequencyPenalty float64 `json:"frequencyPenalty,omitempty"`
 	ResponseMimeType string  `json:"responseMimeType,omitempty"`
 }
 

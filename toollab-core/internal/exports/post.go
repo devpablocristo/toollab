@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"log"
 
-	artifactUC "toollab-core/internal/artifact/usecases"
-	d "toollab-core/internal/domain"
+	artifactUC "toollab-core/internal/artifact"
+	d "toollab-core/internal/pipeline/usecases/domain"
 	"toollab-core/internal/intelligence"
 	"toollab-core/internal/shared"
 )

@@ -13,9 +13,9 @@ import (
 
 	"github.com/go-chi/chi/v5"
 
-	artifactUC "toollab-core/internal/artifact/usecases"
-	d "toollab-core/internal/domain"
+	artifactUC "toollab-core/internal/artifact"
 	"toollab-core/internal/shared"
+	d "toollab-core/internal/pipeline/usecases/domain"
 )
 
 type Handler struct {

@@ -6,17 +6,17 @@ import (
 
 	"github.com/go-chi/chi/v5"
 
-	artifactUC "toollab-core/internal/artifact/usecases"
-	"toollab-core/internal/run/usecases"
+	artifactUC "toollab-core/internal/artifact"
+	run "toollab-core/internal/run"
 	"toollab-core/internal/shared"
 )
 
 type Handler struct {
-	svc         *usecases.Service
+	svc         *run.Service
 	artifactSvc *artifactUC.Service
 }
 
-func New(svc *usecases.Service, artifactSvc *artifactUC.Service) *Handler {
+func New(svc *run.Service, artifactSvc *artifactUC.Service) *Handler {
 	return &Handler{svc: svc, artifactSvc: artifactSvc}
 }
 

@@ -10,14 +10,14 @@ import (
 	"github.com/go-chi/chi/v5/middleware"
 
 	artifactRepo "toollab-core/internal/artifact/repository"
-	artifactUC "toollab-core/internal/artifact/usecases"
+	artifactUC "toollab-core/internal/artifact"
 	runHandler "toollab-core/internal/run/handler"
 	runRepo "toollab-core/internal/run/repository"
-	runUC "toollab-core/internal/run/usecases"
+	runUC "toollab-core/internal/run"
 	"toollab-core/internal/shared"
 	targetHandler "toollab-core/internal/target/handler"
 	targetRepo "toollab-core/internal/target/repository"
-	targetUC "toollab-core/internal/target/usecases"
+	targetUC "toollab-core/internal/target"
 
 	"toollab-core/internal/abuse"
 	astdiscovery "toollab-core/internal/astdiscovery"
@@ -28,7 +28,7 @@ import (
 	"toollab-core/internal/logic"
 	"toollab-core/internal/pipeline"
 	"toollab-core/internal/playground"
-	"toollab-core/internal/preflight"
+	preflightUC "toollab-core/internal/preflight"
 	"toollab-core/internal/report"
 	"toollab-core/internal/schema"
 	"toollab-core/internal/smoke"
@@ -66,7 +66,7 @@ func main() {
 	aSvc := artifactUC.NewService(aIdxRepo, aStorage, rRepo)
 
 	steps := []pipeline.StepRunner{
-		preflight.New(),
+		preflightUC.New(),
 		astdiscovery.New(),
 		schema.New(),
 		smoke.New(),

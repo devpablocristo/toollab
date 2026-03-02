@@ -10,8 +10,8 @@ import (
 	"sync"
 	"time"
 
-	artifactUC "toollab-core/internal/artifact/usecases"
-	d "toollab-core/internal/domain"
+	artifactUC "toollab-core/internal/artifact"
+	d "toollab-core/internal/pipeline/usecases/domain"
 	"toollab-core/internal/exports"
 	runDomain "toollab-core/internal/run/usecases/domain"
 	"toollab-core/internal/shared"

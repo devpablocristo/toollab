@@ -3,7 +3,7 @@ package intelligence
 import (
 	"strings"
 
-	d "toollab-core/internal/domain"
+	d "toollab-core/internal/pipeline/usecases/domain"
 )
 
 // classifyDomain assigns each endpoint to a domain using deterministic rules.

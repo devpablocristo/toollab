@@ -3,7 +3,7 @@ package playground
 import (
 	"sync"
 
-	d "toollab-core/internal/domain"
+	d "toollab-core/internal/pipeline/usecases/domain"
 )
 
 // AuthStore is a simple in-memory store for auth profiles.

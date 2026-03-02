@@ -5,7 +5,7 @@ import (
 	"strings"
 	"time"
 
-	d "toollab-core/internal/domain"
+	d "toollab-core/internal/pipeline/usecases/domain"
 )
 
 // Generate builds the full EndpointIntelligence artifact from a dossier.
