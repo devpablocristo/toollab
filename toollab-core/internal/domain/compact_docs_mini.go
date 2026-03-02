@@ -2,100 +2,52 @@ package domain
 
 import (
 	"crypto/sha256"
+	"encoding/json"
 	"fmt"
 	"sort"
 	"strings"
 )
 
 const (
-	docsSnippetMaxHappy = 1500
-	docsSnippetMaxError = 500
-	docsSnippetMaxReq   = 500
-	maxHighlights       = 3
+	docsMiniSchemaVersion = "docs-mini-v3"
+	maxHighlights         = 3
 )
 
 // TargetMeta holds minimal target info to enrich the dossier.
 type TargetMeta struct {
-	Name       string
-	SourcePath string
+	Name        string
+	Description string
+	SourcePath  string
 }
 
-// CompactForDocsMini builds a curated, minimal dossier for documentation generation.
-// Deterministic: same input → same output (sorted, stable tie-breaking).
+// CompactForDocsMini builds a curated, minimal dossier for narrative-only documentation.
+// This dossier does NOT include per-endpoint details or DTOs — those are served by
+// EndpointIntelligence in the Endpoints tab.
 func CompactForDocsMini(full *DossierV2Full, meta TargetMeta) DocsMiniDossier {
 	d := DocsMiniDossier{
-		SchemaVersion: "docs-mini-v1",
+		SchemaVersion: docsMiniSchemaVersion,
 		RunID:         full.RunID,
 		RunMode:       full.RunMode,
 	}
 
 	d.Service = buildService(full, meta)
-	d.Middlewares = buildMiddlewareIndex(&full.AST.RouterGraph)
-	mwByEndpoint := mapMiddlewaresToEndpoints(&full.AST.RouterGraph)
-	groupLabels := buildGroupLabels(&full.AST.RouterGraph)
+	d.Domains = buildDomainsFromCatalog(full)
 
 	authClass := classifyAuth(full)
 	d.AuthSummary = buildAuthSummary(authClass, full)
+	d.AuthObserved = buildAuthObserved(full.Runtime.EvidenceSamples)
 
-	samplesByEP := indexSamplesByEndpoint(full.Runtime.EvidenceSamples)
-	statusesByEP := indexStatusesByEndpoint(full.Runtime.EvidenceSamples)
-
-	domainMap := map[string]*DocsMiniDomain{}
-	samplesCount := 0
-	for _, ep := range full.AST.EndpointCatalog.Endpoints {
-		mep := DocsMiniEndpoint{
-			EndpointID:      ep.EndpointID,
-			Method:          ep.Method,
-			Path:            ep.Path,
-			MiddlewareChain: mwByEndpoint[ep.EndpointID],
-			Auth:            authClass[ep.EndpointID],
-			StatusesSeen:    statusesByEP[ep.EndpointID],
-		}
-		if ep.HandlerRef != nil {
-			mep.HandlerSymbol = ep.HandlerRef.Label
-			mep.HandlerFile = ep.HandlerRef.Location.File
-			mep.HandlerLine = ep.HandlerRef.Location.Line
-			mep.HandlerPackage = ep.HandlerRef.Location.Package
-
-			pkg := ep.HandlerRef.Location.Package
-			if pkg != "" {
-				if _, ok := domainMap[pkg]; !ok {
-					domainMap[pkg] = &DocsMiniDomain{Package: pkg}
-				}
-				domainMap[pkg].EndpointCount++
-				domainMap[pkg].Handlers = appendUnique(domainMap[pkg].Handlers, ep.HandlerRef.Label)
-			}
-		}
-		if ep.GroupRef != nil {
-			mep.GroupPrefix = ep.GroupRef.Extra.GroupPrefix
-			mep.GroupLabel = groupLabels[ep.EndpointID]
-		}
-
-		samples := samplesByEP[ep.EndpointID]
-		happy := selectHappySample(samples)
-		errSample := selectErrorSample(samples)
-		if happy != nil {
-			s := toMiniSample(*happy, true)
-			mep.HappySample = &s
-			samplesCount++
-		}
-		if errSample != nil {
-			s := toMiniSample(*errSample, false)
-			mep.ErrorSample = &s
-			samplesCount++
-		}
-
-		d.Endpoints = append(d.Endpoints, mep)
-	}
-
-	d.Domains = buildDomains(domainMap)
-	d.DTOs = buildDTOs(full.AST.ASTEntities)
+	d.RouteSummary = buildRouteSummary(full)
+	d.ResponseShapes = buildResponseShapes(full)
+	d.CommonErrors = buildCommonErrors(full.Runtime.EvidenceSamples)
 	d.Findings = buildFindingsSummary(full.FindingsRaw)
 	d.Metrics = buildMetricsSummary(full)
+
+	confirmed, catalog := countEndpointsByEvidence(full)
 	d.Stats = DocsMiniStats{
-		EndpointsCount:  len(d.Endpoints),
-		SamplesCount:    samplesCount,
-		MiddlewareCount: len(d.Middlewares),
+		EndpointsConfirmed: confirmed,
+		EndpointsCatalog:   catalog,
+		DomainsCount:       len(d.Domains),
 	}
 
 	return d
@@ -112,7 +64,9 @@ func buildService(full *DossierV2Full, meta TargetMeta) DocsMiniService {
 	}
 	if meta.Name != "" {
 		svc.Name = meta.Name
-	} else if full.TargetProfile.BaseURL != "" {
+	}
+	svc.Description = meta.Description
+	if svc.Name == "" && full.TargetProfile.BaseURL != "" {
 		parts := strings.Split(full.TargetProfile.BaseURL, "/")
 		if len(parts) >= 3 {
 			svc.Name = parts[2]
@@ -122,72 +76,48 @@ func buildService(full *DossierV2Full, meta TargetMeta) DocsMiniService {
 	return svc
 }
 
-func buildMiddlewareIndex(rg *RouterGraph) []DocsMiniMiddleware {
-	seen := map[string]DocsMiniMiddleware{}
-	var walkGroup func(g RouteGroup)
-	walkGroup = func(g RouteGroup) {
-		for _, mw := range g.Middlewares {
-			if _, ok := seen[mw.ID]; ok {
-				continue
-			}
-			kind := "unknown"
-			name := mw.Label
-			lbl := strings.ToLower(mw.Label)
-			switch {
-			case strings.Contains(lbl, "auth") || strings.Contains(lbl, "jwt") || strings.Contains(lbl, "apikey"):
-				kind = "auth"
-			case strings.Contains(lbl, "log"):
-				kind = "logging"
-			case strings.Contains(lbl, "rate") || strings.Contains(lbl, "limit") || strings.Contains(lbl, "throttle"):
-				kind = "ratelimit"
-			case strings.Contains(lbl, "cors"):
-				kind = "cors"
-			case strings.Contains(lbl, "recover") || strings.Contains(lbl, "panic"):
-				kind = "recovery"
-			}
-			seen[mw.ID] = DocsMiniMiddleware{
-				ID:         mw.ID,
-				Name:       name,
-				Kind:       kind,
-				SourceFile: mw.Location.File,
-				SourceLine: mw.Location.Line,
-			}
+// buildDomainsFromCatalog extracts domain/package groupings from the endpoint catalog.
+func buildDomainsFromCatalog(full *DossierV2Full) []DocsMiniDomain {
+	domainMap := map[string]*DocsMiniDomain{}
+	for _, ep := range full.AST.EndpointCatalog.Endpoints {
+		if ep.HandlerRef == nil {
+			continue
 		}
-		for _, child := range g.Children {
-			walkGroup(child)
+		pkg := ep.HandlerRef.Location.Package
+		if pkg == "" {
+			continue
 		}
-	}
-	for _, g := range rg.Groups {
-		walkGroup(g)
+		if _, ok := domainMap[pkg]; !ok {
+			domainMap[pkg] = &DocsMiniDomain{Package: pkg}
+		}
+		domainMap[pkg].EndpointCount++
+		domainMap[pkg].Handlers = appendUnique(domainMap[pkg].Handlers, ep.HandlerRef.Label)
 	}
 
-	out := make([]DocsMiniMiddleware, 0, len(seen))
-	for _, mw := range seen {
-		out = append(out, mw)
+	domains := make([]DocsMiniDomain, 0, len(domainMap))
+	for _, d := range domainMap {
+		domains = append(domains, *d)
 	}
-	sort.Slice(out, func(i, j int) bool { return out[i].ID < out[j].ID })
-	return out
+	sort.Slice(domains, func(i, j int) bool { return domains[i].Package < domains[j].Package })
+	return domains
 }
 
-func mapMiddlewaresToEndpoints(rg *RouterGraph) map[string][]string {
-	result := map[string][]string{}
-	var walk func(g RouteGroup, chain []string)
-	walk = func(g RouteGroup, chain []string) {
-		localChain := append([]string{}, chain...)
-		for _, mw := range g.Middlewares {
-			localChain = append(localChain, mw.ID)
-		}
-		for _, epID := range g.Endpoints {
-			result[epID] = append([]string{}, localChain...)
-		}
-		for _, child := range g.Children {
-			walk(child, localChain)
+// countEndpointsByEvidence counts how many endpoints have runtime evidence vs AST-only.
+func countEndpointsByEvidence(full *DossierV2Full) (confirmed, catalog int) {
+	samplesByEP := map[string]bool{}
+	for _, s := range full.Runtime.EvidenceSamples {
+		if s.EndpointID != "" {
+			samplesByEP[s.EndpointID] = true
 		}
 	}
-	for _, g := range rg.Groups {
-		walk(g, nil)
+	for _, ep := range full.AST.EndpointCatalog.Endpoints {
+		if samplesByEP[ep.EndpointID] {
+			confirmed++
+		} else {
+			catalog++
+		}
 	}
-	return result
+	return
 }
 
 // classifyAuth determines PROVEN_REQUIRED / PROVEN_NOT_REQUIRED / UNKNOWN per endpoint.
@@ -232,15 +162,30 @@ func classifyAuth(full *DossierV2Full) map[string]AuthClassification {
 	return result
 }
 
+var authHeaderNames = map[string]bool{
+	"authorization":    true,
+	"x-api-key":        true,
+	"x-nexus-core-key": true,
+	"cookie":           true,
+}
+
+var authHeaderCanonical = map[string]string{
+	"authorization":    "Authorization",
+	"x-api-key":        "X-API-Key",
+	"x-nexus-core-key": "X-Nexus-Core-Key",
+	"cookie":           "Cookie",
+}
+
 func hasAuthHeader(headers map[string]string) bool {
 	for k := range headers {
-		kl := strings.ToLower(k)
-		if kl == "authorization" || kl == "x-api-key" || kl == "x-nexus-core-key" || kl == "cookie" {
+		if authHeaderNames[strings.ToLower(k)] {
 			return true
 		}
 	}
 	return false
 }
+
+const maxDiscrepancyExamples = 5
 
 func buildAuthSummary(authClass map[string]AuthClassification, full *DossierV2Full) DocsMiniAuth {
 	summary := DocsMiniAuth{
@@ -256,8 +201,14 @@ func buildAuthSummary(authClass map[string]AuthClassification, full *DossierV2Fu
 			summary.Unknown++
 		}
 	}
-	for _, disc := range full.Runtime.Discrepancies.ASTvsRuntime {
-		summary.Discrepancies = append(summary.Discrepancies, DocsMiniDiscrepancy{
+	allDisc := full.Runtime.Discrepancies.ASTvsRuntime
+	summary.DiscrepancyCount = len(allDisc)
+	limit := maxDiscrepancyExamples
+	if len(allDisc) < limit {
+		limit = len(allDisc)
+	}
+	for _, disc := range allDisc[:limit] {
+		summary.DiscrepancyExamples = append(summary.DiscrepancyExamples, DocsMiniDiscrepancy{
 			EndpointID:  disc.EndpointID,
 			Description: disc.Description,
 			ASTSays:     disc.ASTSays,
@@ -267,150 +218,215 @@ func buildAuthSummary(authClass map[string]AuthClassification, full *DossierV2Fu
 	return summary
 }
 
-func indexSamplesByEndpoint(samples []EvidenceSample) map[string][]EvidenceSample {
-	m := map[string][]EvidenceSample{}
+// buildAuthObserved extracts concrete auth evidence from runtime samples.
+func buildAuthObserved(samples []EvidenceSample) DocsMiniAuthObserved {
+	headerCounts := map[string]int{}
 	for _, s := range samples {
-		if s.EndpointID != "" {
-			m[s.EndpointID] = append(m[s.EndpointID], s)
+		if s.Response == nil || s.Response.Status < 200 || s.Response.Status >= 300 {
+			continue
+		}
+		for k := range s.Request.Headers {
+			kl := strings.ToLower(k)
+			if authHeaderNames[kl] {
+				headerCounts[authHeaderCanonical[kl]]++
+			}
 		}
 	}
-	return m
+
+	type fpKey struct {
+		status int
+		norm   string
+	}
+	type fpEntry struct {
+		body       string
+		count      int
+		evidenceID string
+	}
+	fpCounts := map[fpKey]*fpEntry{}
+	for _, s := range samples {
+		if s.Response == nil {
+			continue
+		}
+		st := s.Response.Status
+		if st != 401 && st != 403 {
+			continue
+		}
+		body := snippetOf(s.Response.BodySnippet, 200)
+		if body == "" {
+			body = fmt.Sprintf("HTTP %d", st)
+		}
+		code, msg := extractErrorPattern(s.Response.BodySnippet)
+		norm := ""
+		if code != "" || msg != "" {
+			norm = strings.ToLower(fmt.Sprintf("%d|%s|%s", st, code, msg))
+		} else {
+			norm = fmt.Sprintf("%d|%s", st, NormalizeErrorPattern(s.Response.BodySnippet))
+		}
+		key := fpKey{status: st, norm: norm}
+		entry, ok := fpCounts[key]
+		if !ok {
+			entry = &fpEntry{
+				body:       body,
+				evidenceID: s.EvidenceID,
+			}
+			fpCounts[key] = entry
+		}
+		entry.count++
+	}
+
+	obs := DocsMiniAuthObserved{}
+	for name, count := range headerCounts {
+		obs.HeadersSeen = append(obs.HeadersSeen, DocsMiniAuthHeader{Name: name, Count: count})
+	}
+	sort.Slice(obs.HeadersSeen, func(i, j int) bool {
+		if obs.HeadersSeen[i].Count != obs.HeadersSeen[j].Count {
+			return obs.HeadersSeen[i].Count > obs.HeadersSeen[j].Count
+		}
+		return obs.HeadersSeen[i].Name < obs.HeadersSeen[j].Name
+	})
+
+	for fp, entry := range fpCounts {
+		obs.ErrorFingerprints = append(obs.ErrorFingerprints, DocsMiniAuthErrorFingerprint{
+			Status:            fp.status,
+			Body:              entry.body,
+			Count:             entry.count,
+			ExampleEvidenceID: entry.evidenceID,
+		})
+	}
+	sort.Slice(obs.ErrorFingerprints, func(i, j int) bool {
+		if obs.ErrorFingerprints[i].Count != obs.ErrorFingerprints[j].Count {
+			return obs.ErrorFingerprints[i].Count > obs.ErrorFingerprints[j].Count
+		}
+		if obs.ErrorFingerprints[i].Status != obs.ErrorFingerprints[j].Status {
+			return obs.ErrorFingerprints[i].Status < obs.ErrorFingerprints[j].Status
+		}
+		return obs.ErrorFingerprints[i].Body < obs.ErrorFingerprints[j].Body
+	})
+
+	return obs
 }
 
-func indexStatusesByEndpoint(samples []EvidenceSample) map[string][]int {
-	m := map[string]map[int]bool{}
-	for _, s := range samples {
+// buildRouteSummary creates a lightweight route listing grouped by handler package.
+// Format per route: "METHOD /path" — no samples, no headers, just the API surface.
+func buildRouteSummary(full *DossierV2Full) []DocsMiniRouteGroup {
+	groups := map[string][]string{}
+	var order []string
+	for _, ep := range full.AST.EndpointCatalog.Endpoints {
+		pkg := "other"
+		if ep.HandlerRef != nil && ep.HandlerRef.Location.Package != "" {
+			pkg = ep.HandlerRef.Location.Package
+		}
+		route := ep.Method + " " + ep.Path
+		if _, ok := groups[pkg]; !ok {
+			order = append(order, pkg)
+		}
+		groups[pkg] = append(groups[pkg], route)
+	}
+	sort.Strings(order)
+	out := make([]DocsMiniRouteGroup, 0, len(order))
+	for _, pkg := range order {
+		routes := groups[pkg]
+		sort.Strings(routes)
+		out = append(out, DocsMiniRouteGroup{Domain: pkg, Routes: routes})
+	}
+	return out
+}
+
+// buildResponseShapes extracts top-level JSON keys from the best 2xx response per endpoint.
+// Picks one representative response per endpoint (largest body), extracts keys, deduplicates.
+// Limited to ~20 shapes to keep the dossier small.
+func buildResponseShapes(full *DossierV2Full) []DocsMiniResponseShape {
+	bestByEP := map[string]EvidenceSample{}
+	for _, s := range full.Runtime.EvidenceSamples {
 		if s.EndpointID == "" || s.Response == nil {
 			continue
 		}
-		if m[s.EndpointID] == nil {
-			m[s.EndpointID] = map[int]bool{}
+		if s.Response.Status < 200 || s.Response.Status >= 300 {
+			continue
 		}
-		m[s.EndpointID][s.Response.Status] = true
-	}
-	result := map[string][]int{}
-	for ep, statuses := range m {
-		codes := make([]int, 0, len(statuses))
-		for code := range statuses {
-			codes = append(codes, code)
+		existing, ok := bestByEP[s.EndpointID]
+		if !ok || s.Response.Size > existing.Response.Size {
+			bestByEP[s.EndpointID] = s
 		}
-		sort.Ints(codes)
-		result[ep] = codes
 	}
-	return result
+
+	epByID := map[string]EndpointEntry{}
+	for _, ep := range full.AST.EndpointCatalog.Endpoints {
+		epByID[ep.EndpointID] = ep
+	}
+
+	type shapeKey struct {
+		route  string
+		status int
+		keys   string
+	}
+	seen := map[shapeKey]bool{}
+	var shapes []DocsMiniResponseShape
+
+	for epID, sample := range bestByEP {
+		ep, ok := epByID[epID]
+		if !ok {
+			continue
+		}
+		keys := extractTopLevelKeys(sample.Response.BodySnippet)
+		if len(keys) == 0 {
+			continue
+		}
+		sort.Strings(keys)
+		sk := shapeKey{
+			route:  ep.Method + " " + ep.Path,
+			status: sample.Response.Status,
+			keys:   strings.Join(keys, ","),
+		}
+		if seen[sk] {
+			continue
+		}
+		seen[sk] = true
+		shapes = append(shapes, DocsMiniResponseShape{
+			Route:  sk.route,
+			Status: sample.Response.Status,
+			Keys:   keys,
+		})
+	}
+
+	sort.Slice(shapes, func(i, j int) bool { return shapes[i].Route < shapes[j].Route })
+	if len(shapes) > 20 {
+		shapes = shapes[:20]
+	}
+	return shapes
 }
 
-// selectHappySample picks the best 2xx sample: lowest latency, then smallest body.
-// Tie-break: lexicographic evidence_id for determinism.
-func selectHappySample(samples []EvidenceSample) *EvidenceSample {
-	var candidates []EvidenceSample
-	for _, s := range samples {
-		if s.Response != nil && s.Response.Status >= 200 && s.Response.Status < 300 {
-			candidates = append(candidates, s)
-		}
-	}
-	if len(candidates) == 0 {
+func extractTopLevelKeys(body string) []string {
+	body = strings.TrimSpace(body)
+	if body == "" {
 		return nil
 	}
-	sort.Slice(candidates, func(i, j int) bool {
-		a, b := candidates[i], candidates[j]
-		if a.Timing.LatencyMs != b.Timing.LatencyMs {
-			return a.Timing.LatencyMs < b.Timing.LatencyMs
-		}
-		if a.Response.Size != b.Response.Size {
-			return a.Response.Size < b.Response.Size
-		}
-		return a.EvidenceID < b.EvidenceID
-	})
-	return &candidates[0]
-}
 
-// selectErrorSample picks the best error sample.
-// Priority: 401/403 → 400/422 → 404 → 5xx → other >=300.
-// Within same priority: lowest latency, then smallest body.
-func selectErrorSample(samples []EvidenceSample) *EvidenceSample {
-	var candidates []EvidenceSample
-	for _, s := range samples {
-		if s.Response != nil && s.Response.Status >= 300 {
-			candidates = append(candidates, s)
+	if strings.HasPrefix(body, "[") {
+		var arr []json.RawMessage
+		if json.Unmarshal([]byte(body), &arr) != nil || len(arr) == 0 {
+			return []string{"[]"}
 		}
+		var firstObj map[string]json.RawMessage
+		if json.Unmarshal(arr[0], &firstObj) != nil {
+			return []string{"[]"}
+		}
+		keys := make([]string, 0, len(firstObj))
+		for k := range firstObj {
+			keys = append(keys, k)
+		}
+		return append([]string{fmt.Sprintf("[](len=%d)", len(arr))}, keys...)
 	}
-	if len(candidates) == 0 {
+
+	var obj map[string]json.RawMessage
+	if json.Unmarshal([]byte(body), &obj) != nil {
 		return nil
 	}
-	sort.Slice(candidates, func(i, j int) bool {
-		a, b := candidates[i], candidates[j]
-		pa, pb := errorPriority(a.Response.Status), errorPriority(b.Response.Status)
-		if pa != pb {
-			return pa < pb
-		}
-		if a.Timing.LatencyMs != b.Timing.LatencyMs {
-			return a.Timing.LatencyMs < b.Timing.LatencyMs
-		}
-		if a.Response.Size != b.Response.Size {
-			return a.Response.Size < b.Response.Size
-		}
-		return a.EvidenceID < b.EvidenceID
-	})
-	return &candidates[0]
-}
-
-func errorPriority(status int) int {
-	switch {
-	case status == 401 || status == 403:
-		return 0
-	case status == 400 || status == 422:
-		return 1
-	case status == 404:
-		return 2
-	case status >= 500:
-		return 3
-	default:
-		return 4
+	keys := make([]string, 0, len(obj))
+	for k := range obj {
+		keys = append(keys, k)
 	}
-}
-
-func toMiniSample(s EvidenceSample, isHappy bool) DocsMiniSample {
-	respMax := docsSnippetMaxError
-	if isHappy {
-		respMax = docsSnippetMaxHappy
-	}
-	ms := DocsMiniSample{
-		EvidenceID: s.EvidenceID,
-		Method:     s.Request.Method,
-		Path:       s.Request.Path,
-		ReqHeaders: redactHeaders(s.Request.Headers),
-		LatencyMs:  s.Timing.LatencyMs,
-	}
-	if s.Request.Body != "" {
-		ms.ReqBody = snippetOf(s.Request.Body, docsSnippetMaxReq)
-	}
-	if s.Response != nil {
-		ms.Status = s.Response.Status
-		ms.RespSnippet = snippetOf(s.Response.BodySnippet, respMax)
-	}
-	return ms
-}
-
-func redactHeaders(headers map[string]string) map[string]string {
-	if len(headers) == 0 {
-		return nil
-	}
-	out := map[string]string{}
-	for k, v := range headers {
-		kl := strings.ToLower(k)
-		switch {
-		case kl == "authorization" || kl == "x-api-key" || kl == "x-nexus-core-key" || kl == "cookie":
-			if len(v) > 12 {
-				out[k] = v[:8] + "****"
-			} else {
-				out[k] = "****"
-			}
-		case kl == "content-type" || kl == "accept" || kl == "user-agent":
-			out[k] = v
-		}
-	}
-	return out
+	return keys
 }
 
 func snippetOf(s string, max int) string {
@@ -418,56 +434,6 @@ func snippetOf(s string, max int) string {
 		return s
 	}
 	return s[:max]
-}
-
-func buildGroupLabels(rg *RouterGraph) map[string]string {
-	labels := map[string]string{}
-	var walk func(g RouteGroup)
-	walk = func(g RouteGroup) {
-		label := ""
-		if g.ASTRef != nil {
-			label = g.ASTRef.Label
-		}
-		for _, epID := range g.Endpoints {
-			if label != "" {
-				labels[epID] = label
-			}
-		}
-		for _, child := range g.Children {
-			walk(child)
-		}
-	}
-	for _, g := range rg.Groups {
-		walk(g)
-	}
-	return labels
-}
-
-func buildDomains(domainMap map[string]*DocsMiniDomain) []DocsMiniDomain {
-	domains := make([]DocsMiniDomain, 0, len(domainMap))
-	for _, d := range domainMap {
-		domains = append(domains, *d)
-	}
-	sort.Slice(domains, func(i, j int) bool { return domains[i].Package < domains[j].Package })
-	return domains
-}
-
-func buildDTOs(entities []ASTEntity) []DocsMiniDTO {
-	var dtos []DocsMiniDTO
-	for _, e := range entities {
-		if e.ASTRef.Type != "dto" && e.Kind != "dto" {
-			continue
-		}
-		dto := DocsMiniDTO{
-			Name:    e.Name,
-			Fields:  e.Fields,
-			Package: e.ASTRef.Location.Package,
-			File:    e.ASTRef.Location.File,
-		}
-		dtos = append(dtos, dto)
-	}
-	sort.Slice(dtos, func(i, j int) bool { return dtos[i].Name < dtos[j].Name })
-	return dtos
 }
 
 func appendUnique(slice []string, s string) []string {
@@ -516,6 +482,97 @@ func buildFindingsSummary(findings []FindingRaw) DocsMiniFindings {
 	return fs
 }
 
+// buildCommonErrors groups error responses by (status, error_code, message) pattern
+// and returns deduplicated, sorted results. Only patterns seen >=2 times are included.
+func buildCommonErrors(samples []EvidenceSample) []DocsMiniCommonError {
+	type errKey struct {
+		status int
+		code   string
+		msg    string
+	}
+	type errEntry struct {
+		count      int
+		evidenceID string
+	}
+
+	counts := map[errKey]*errEntry{}
+	for _, s := range samples {
+		if s.Response == nil || s.Response.Status < 300 {
+			continue
+		}
+		code, msg := extractErrorPattern(s.Response.BodySnippet)
+		if msg == "" {
+			msg = snippetOf(s.Response.BodySnippet, 100)
+		}
+		if msg == "" {
+			msg = fmt.Sprintf("HTTP %d", s.Response.Status)
+		}
+
+		key := errKey{s.Response.Status, code, msg}
+		entry, ok := counts[key]
+		if !ok {
+			entry = &errEntry{evidenceID: s.EvidenceID}
+			counts[key] = entry
+		}
+		entry.count++
+	}
+
+	var errors []DocsMiniCommonError
+	for key, entry := range counts {
+		if entry.count < 2 {
+			continue
+		}
+		errors = append(errors, DocsMiniCommonError{
+			Status:            key.status,
+			ErrorCode:         key.code,
+			Message:           key.msg,
+			Count:             entry.count,
+			ExampleEvidenceID: entry.evidenceID,
+		})
+	}
+
+	sort.Slice(errors, func(i, j int) bool {
+		if errors[i].Count != errors[j].Count {
+			return errors[i].Count > errors[j].Count
+		}
+		if errors[i].Status != errors[j].Status {
+			return errors[i].Status < errors[j].Status
+		}
+		if errors[i].ErrorCode != errors[j].ErrorCode {
+			return errors[i].ErrorCode < errors[j].ErrorCode
+		}
+		return errors[i].Message < errors[j].Message
+	})
+
+	if len(errors) > 10 {
+		errors = errors[:10]
+	}
+	return errors
+}
+
+// extractErrorPattern attempts to extract a structured error code+message from a JSON response body.
+func extractErrorPattern(body string) (code, msg string) {
+	var parsed map[string]interface{}
+	if json.Unmarshal([]byte(body), &parsed) != nil {
+		return "", ""
+	}
+
+	if errObj, ok := parsed["error"]; ok {
+		switch v := errObj.(type) {
+		case map[string]interface{}:
+			code, _ = v["code"].(string)
+			msg, _ = v["message"].(string)
+			return code, msg
+		case string:
+			return "", v
+		}
+	}
+
+	code, _ = parsed["code"].(string)
+	msg, _ = parsed["message"].(string)
+	return code, msg
+}
+
 func severityPriority(s FindingSeverity) int {
 	switch s {
 	case SeverityCritical:
@@ -533,6 +590,10 @@ func severityPriority(s FindingSeverity) int {
 
 func buildMetricsSummary(full *DossierV2Full) DocsMiniMetrics {
 	dm := full.Runtime.DerivedMetrics
+	coveragePct := dm.CoveragePct
+	if coveragePct > 100.0 {
+		coveragePct = 100.0
+	}
 	return DocsMiniMetrics{
 		TotalRequests:   dm.TotalRequests,
 		SuccessRate:     dm.SuccessRate,
@@ -540,11 +601,11 @@ func buildMetricsSummary(full *DossierV2Full) DocsMiniMetrics {
 		P95Ms:           dm.P95Ms,
 		EndpointsTested: dm.EndpointsTested,
 		EndpointsTotal:  dm.EndpointsTotal,
-		CoveragePct:     dm.CoveragePct,
+		CoveragePct:     coveragePct,
 	}
 }
 
-// bodyHash returns a short SHA256 prefix for linkability (unused for now but available).
+// bodyHash returns a short SHA256 prefix for linkability.
 func bodyHash(body string) string {
 	if body == "" {
 		return ""

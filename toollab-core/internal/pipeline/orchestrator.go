@@ -90,7 +90,7 @@ type activeRun struct {
 
 // LLMRunner generates LLM reports asynchronously.
 type LLMRunner interface {
-	RunAsync(ctx context.Context, runID string, docsMiniJSON, auditLLMJSON []byte)
+	RunAsync(ctx context.Context, runID string, docsMiniJSON, auditLLMJSON []byte, lang string)
 }
 
 func NewOrchestrator(
@@ -117,8 +117,8 @@ type AnalyzeResult struct {
 	RunSummary  d.RunSummary   `json:"run_summary"`
 }
 
-// Analyze runs the full analysis pipeline.
-func (o *Orchestrator) Analyze(ctx context.Context, targetID string, emit ProgressEmitter) (AnalyzeResult, error) {
+// Analyze runs the full analysis pipeline. lang is "en" or "es" for LLM output language.
+func (o *Orchestrator) Analyze(ctx context.Context, targetID string, lang string, emit ProgressEmitter) (AnalyzeResult, error) {
 	if emit == nil {
 		emit = noopEmitter
 	}
@@ -238,8 +238,9 @@ func (o *Orchestrator) Analyze(ctx context.Context, targetID string, emit Progre
 
 	if o.llmRunner != nil && finalStatus != d.RunFailed {
 		docsMini := d.CompactForDocsMini(&dossierFull, d.TargetMeta{
-			Name:       target.Name,
-			SourcePath: target.Source.Value,
+			Name:        target.Name,
+			Description: target.Description,
+			SourcePath:  target.Source.Value,
 		})
 		docsMiniJSON, _ := json.Marshal(docsMini)
 		o.artifactSvc.Put(run.ID, shared.ArtifactDossierDocsMini, docsMiniJSON)
@@ -248,7 +249,7 @@ func (o *Orchestrator) Analyze(ctx context.Context, targetID string, emit Progre
 		auditLLMJSON, _ := json.Marshal(auditLLM)
 		o.artifactSvc.Put(run.ID, shared.ArtifactDossierLLM, auditLLMJSON)
 
-		go o.llmRunner.RunAsync(context.Background(), run.ID, docsMiniJSON, auditLLMJSON)
+		go o.llmRunner.RunAsync(context.Background(), run.ID, docsMiniJSON, auditLLMJSON, lang)
 	}
 
 	return AnalyzeResult{

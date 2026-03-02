@@ -48,7 +48,12 @@ func (h *Handler) analyzeSSE(w http.ResponseWriter, r *http.Request) {
 		flusher.Flush()
 	}
 
-	result, err := h.orchestrator.Analyze(r.Context(), targetID, emit)
+	lang := r.URL.Query().Get("lang")
+	if lang != "es" {
+		lang = "en"
+	}
+
+	result, err := h.orchestrator.Analyze(r.Context(), targetID, lang, emit)
 	if err != nil {
 		errData, _ := json.Marshal(map[string]string{"error": err.Error()})
 		fmt.Fprintf(w, "event: error\ndata: %s\n\n", errData)

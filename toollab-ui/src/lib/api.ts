@@ -25,13 +25,14 @@ export const api = {
   targets: {
     list: () => get<{ items: T.Target[] }>('/api/v1/targets').then(r => r.items ?? []),
     get: (id: string) => get<T.Target>(`/api/v1/targets/${id}`),
-    create: (data: { name: string; source: { type: string; value: string }; runtime_hint?: Record<string, unknown> }) =>
+    create: (data: { name: string; description?: string; source: { type: string; value: string }; runtime_hint?: Record<string, unknown> }) =>
       post<T.Target>('/api/v1/targets', data),
     delete: (id: string) => del<void>(`/api/v1/targets/${id}`),
     latestRun: (id: string) => get<{ run: T.Run; run_summary: T.RunSummary | null }>(`/api/v1/targets/${id}/latest-run`),
-    analyzeSSE: (targetId: string, onProgress: (event: T.ProgressEvent) => void): Promise<T.AnalyzeResult> => {
+    analyzeSSE: (targetId: string, onProgress: (event: T.ProgressEvent) => void, lang?: string): Promise<T.AnalyzeResult> => {
       return new Promise((resolve, reject) => {
-        const url = `${BASE}/api/v1/targets/${targetId}/analyze`
+        const langParam = lang ? `?lang=${lang}` : ''
+        const url = `${BASE}/api/v1/targets/${targetId}/analyze${langParam}`
         fetch(url, { method: 'POST', headers: { 'Accept': 'text/event-stream' } }).then(response => {
           if (!response.ok) {
             response.text().then(t => reject(new Error(`${response.status}: ${t}`))).catch(() => reject(new Error(`${response.status}`)))

@@ -10,6 +10,8 @@ import (
 	"os"
 	"strings"
 	"time"
+
+	"golang.org/x/oauth2/google"
 )
 
 // VertexProvider calls Vertex AI for LLM report generation.
@@ -37,26 +39,29 @@ func (p *VertexProvider) Name() string { return "vertex-" + p.model }
 
 // RawPrompt sends a prompt expecting JSON back (constrained decoding).
 func (p *VertexProvider) RawPrompt(ctx context.Context, prompt string) ([]byte, error) {
-	return p.promptWithRetries(ctx, prompt, true)
+	return p.promptWithRetries(ctx, prompt, true, 65536)
 }
 
 // TextPrompt sends a prompt expecting free-form text back (no JSON constraint).
+// Uses a lower token limit since narrative docs are concise (5 sections).
 func (p *VertexProvider) TextPrompt(ctx context.Context, prompt string) (string, error) {
-	data, err := p.promptWithRetries(ctx, prompt, false)
+	data, err := p.promptWithRetries(ctx, prompt, false, 8192)
 	if err != nil {
 		return "", err
 	}
 	return string(data), nil
 }
 
-func (p *VertexProvider) promptWithRetries(ctx context.Context, prompt string, jsonMode bool) ([]byte, error) {
+const cloudPlatformScope = "https://www.googleapis.com/auth/cloud-platform"
+
+func (p *VertexProvider) promptWithRetries(ctx context.Context, prompt string, jsonMode bool, maxTokens int) ([]byte, error) {
 	var lastErr error
 	for attempt := 0; attempt < 3; attempt++ {
 		if attempt > 0 {
 			time.Sleep(time.Duration(attempt*5) * time.Second)
 		}
 
-		data, err := p.doRequest(ctx, prompt, jsonMode)
+		data, err := p.doRequest(ctx, prompt, jsonMode, maxTokens)
 		if err == nil {
 			return data, nil
 		}
@@ -65,10 +70,10 @@ func (p *VertexProvider) promptWithRetries(ctx context.Context, prompt string, j
 	return nil, fmt.Errorf("after 3 attempts: %w", lastErr)
 }
 
-func (p *VertexProvider) doRequest(ctx context.Context, prompt string, jsonMode bool) ([]byte, error) {
-	token := os.Getenv("GOOGLE_ACCESS_TOKEN")
-	if token == "" {
-		return nil, fmt.Errorf("GOOGLE_ACCESS_TOKEN not set")
+func (p *VertexProvider) doRequest(ctx context.Context, prompt string, jsonMode bool, maxTokens int) ([]byte, error) {
+	token, err := p.accessToken(ctx)
+	if err != nil {
+		return nil, err
 	}
 
 	url := fmt.Sprintf(
@@ -78,7 +83,7 @@ func (p *VertexProvider) doRequest(ctx context.Context, prompt string, jsonMode 
 
 	genConfig := vertexGenConfig{
 		Temperature:     0.2,
-		MaxOutputTokens: 65536,
+		MaxOutputTokens: maxTokens,
 	}
 	if jsonMode {
 		genConfig.ResponseMimeType = "application/json"
@@ -146,6 +151,29 @@ func (p *VertexProvider) doRequest(ctx context.Context, prompt string, jsonMode 
 	}
 
 	return []byte(text), nil
+}
+
+func (p *VertexProvider) accessToken(ctx context.Context) (string, error) {
+	if token := strings.TrimSpace(os.Getenv("GOOGLE_ACCESS_TOKEN")); token != "" {
+		return token, nil
+	}
+
+	if os.Getenv("GOOGLE_APPLICATION_CREDENTIALS") == "" {
+		return "", fmt.Errorf("no Google auth configured: set GOOGLE_ACCESS_TOKEN or GOOGLE_APPLICATION_CREDENTIALS")
+	}
+
+	ts, err := google.DefaultTokenSource(ctx, cloudPlatformScope)
+	if err != nil {
+		return "", fmt.Errorf("loading Google default credentials: %w", err)
+	}
+	tok, err := ts.Token()
+	if err != nil {
+		return "", fmt.Errorf("fetching Google access token from ADC: %w", err)
+	}
+	if tok == nil || strings.TrimSpace(tok.AccessToken) == "" {
+		return "", fmt.Errorf("Google ADC returned an empty access token")
+	}
+	return tok.AccessToken, nil
 }
 
 type vertexReq struct {

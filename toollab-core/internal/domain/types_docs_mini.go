@@ -1,32 +1,48 @@
 package domain
 
-// DocsMiniDossier is the curated, minimal dossier sent to the LLM for documentation.
-// Design principle: the LLM explains facts, it does not discover them.
+// DocsMiniDossier is the curated, minimal dossier sent to the LLM for narrative documentation.
+// The LLM generates ONLY the overview/narrative sections. Endpoint catalog and DTOs
+// are already covered by the Endpoints tab (EndpointIntelligence) and don't need LLM generation.
 type DocsMiniDossier struct {
-	SchemaVersion string              `json:"schema_version"`
-	RunID         string              `json:"run_id"`
-	RunMode       RunMode             `json:"run_mode"`
-	Service       DocsMiniService     `json:"service"`
-	Domains       []DocsMiniDomain    `json:"domains"`
-	Endpoints     []DocsMiniEndpoint  `json:"endpoints"`
-	DTOs          []DocsMiniDTO       `json:"dtos,omitempty"`
-	AuthSummary   DocsMiniAuth        `json:"auth_summary"`
-	Middlewares   []DocsMiniMiddleware `json:"middlewares"`
-	Findings      DocsMiniFindings    `json:"findings"`
-	Metrics       DocsMiniMetrics     `json:"metrics"`
-	Stats         DocsMiniStats       `json:"stats"`
+	SchemaVersion  string                  `json:"schema_version"`
+	RunID          string                  `json:"run_id"`
+	RunMode        RunMode                 `json:"run_mode"`
+	Service        DocsMiniService         `json:"service"`
+	Domains        []DocsMiniDomain        `json:"domains"`
+	RouteSummary   []DocsMiniRouteGroup    `json:"route_summary"`
+	ResponseShapes []DocsMiniResponseShape `json:"response_shapes,omitempty"`
+	AuthSummary    DocsMiniAuth            `json:"auth_summary"`
+	AuthObserved   DocsMiniAuthObserved    `json:"auth_observed"`
+	CommonErrors   []DocsMiniCommonError   `json:"common_errors,omitempty"`
+	Findings       DocsMiniFindings        `json:"findings"`
+	Metrics        DocsMiniMetrics         `json:"metrics"`
+	Stats          DocsMiniStats           `json:"stats"`
+}
+
+// DocsMiniRouteGroup is a lightweight summary of routes per domain.
+type DocsMiniRouteGroup struct {
+	Domain string   `json:"domain"`
+	Routes []string `json:"routes"`
+}
+
+// DocsMiniResponseShape shows top-level JSON keys from a representative response for a route.
+type DocsMiniResponseShape struct {
+	Route  string   `json:"route"`
+	Status int      `json:"status"`
+	Keys   []string `json:"keys"`
 }
 
 // DocsMiniService is the service identity block.
 type DocsMiniService struct {
-	Name             string   `json:"name"`
-	SourcePath       string   `json:"source_path,omitempty"`
-	Framework        string   `json:"framework"`
-	BaseURL          string   `json:"base_url"`
-	BasePaths        []string `json:"base_paths,omitempty"`
-	VersioningHint   string   `json:"versioning_hint,omitempty"`
-	HealthEndpoints  []string `json:"health_endpoints,omitempty"`
-	ContentTypes     ContentTypes `json:"content_types"`
+	Name            string       `json:"name"`
+	Description     string       `json:"description,omitempty"`
+	SourcePath      string       `json:"source_path,omitempty"`
+	Framework       string       `json:"framework"`
+	BaseURL         string       `json:"base_url"`
+	BasePaths       []string     `json:"base_paths,omitempty"`
+	VersioningHint  string       `json:"versioning_hint,omitempty"`
+	HealthEndpoints []string     `json:"health_endpoints,omitempty"`
+	ContentTypes    ContentTypes `json:"content_types"`
 }
 
 // DocsMiniDomain represents a code package/domain grouping.
@@ -34,32 +50,6 @@ type DocsMiniDomain struct {
 	Package       string   `json:"package"`
 	EndpointCount int      `json:"endpoint_count"`
 	Handlers      []string `json:"handlers,omitempty"`
-}
-
-// DocsMiniDTO is a data transfer object discovered from AST.
-type DocsMiniDTO struct {
-	Name    string   `json:"name"`
-	Package string   `json:"package,omitempty"`
-	File    string   `json:"file,omitempty"`
-	Fields  []string `json:"fields"`
-}
-
-// DocsMiniEndpoint is a single endpoint with curated evidence.
-type DocsMiniEndpoint struct {
-	EndpointID      string           `json:"endpoint_id"`
-	Method          string           `json:"method"`
-	Path            string           `json:"path"`
-	HandlerSymbol   string           `json:"handler_symbol,omitempty"`
-	HandlerFile     string           `json:"handler_file,omitempty"`
-	HandlerLine     int              `json:"handler_line,omitempty"`
-	HandlerPackage  string           `json:"handler_package,omitempty"`
-	MiddlewareChain []string         `json:"middleware_chain,omitempty"`
-	GroupPrefix     string           `json:"group_prefix,omitempty"`
-	GroupLabel      string           `json:"group_label,omitempty"`
-	Auth            AuthClassification `json:"auth"`
-	HappySample     *DocsMiniSample  `json:"happy_sample,omitempty"`
-	ErrorSample     *DocsMiniSample  `json:"error_sample,omitempty"`
-	StatusesSeen    []int            `json:"statuses_seen,omitempty"`
 }
 
 // AuthClassification is the proven auth status for an endpoint.
@@ -71,25 +61,14 @@ const (
 	AuthClassUnknown      AuthClassification = "UNKNOWN"
 )
 
-// DocsMiniSample is a compact request/response pair.
-type DocsMiniSample struct {
-	EvidenceID  string            `json:"evidence_id"`
-	Method      string            `json:"method"`
-	Path        string            `json:"path"`
-	ReqHeaders  map[string]string `json:"req_headers,omitempty"`
-	ReqBody     string            `json:"req_body,omitempty"`
-	Status      int               `json:"status"`
-	RespSnippet string            `json:"resp_snippet,omitempty"`
-	LatencyMs   int64             `json:"latency_ms"`
-}
-
 // DocsMiniAuth is the aggregate auth summary.
 type DocsMiniAuth struct {
-	Mechanisms       []string `json:"mechanisms"`
-	ProvenRequired   int      `json:"proven_required"`
-	ProvenNotRequired int     `json:"proven_not_required"`
-	Unknown          int      `json:"unknown"`
-	Discrepancies    []DocsMiniDiscrepancy `json:"discrepancies,omitempty"`
+	Mechanisms          []string              `json:"mechanisms"`
+	ProvenRequired      int                   `json:"proven_required"`
+	ProvenNotRequired   int                   `json:"proven_not_required"`
+	Unknown             int                   `json:"unknown"`
+	DiscrepancyCount    int                   `json:"discrepancy_count"`
+	DiscrepancyExamples []DocsMiniDiscrepancy `json:"discrepancy_examples,omitempty"`
 }
 
 // DocsMiniDiscrepancy is a simplified AST-vs-runtime mismatch.
@@ -100,13 +79,24 @@ type DocsMiniDiscrepancy struct {
 	RuntimeSays string `json:"runtime_says"`
 }
 
-// DocsMiniMiddleware is a flat middleware entry.
-type DocsMiniMiddleware struct {
-	ID         string `json:"id"`
-	Name       string `json:"name"`
-	Kind       string `json:"kind"`
-	SourceFile string `json:"source_file,omitempty"`
-	SourceLine int    `json:"source_line,omitempty"`
+// DocsMiniAuthObserved holds auth evidence extracted from runtime samples.
+type DocsMiniAuthObserved struct {
+	HeadersSeen       []DocsMiniAuthHeader           `json:"headers_seen,omitempty"`
+	ErrorFingerprints []DocsMiniAuthErrorFingerprint `json:"error_fingerprints,omitempty"`
+}
+
+// DocsMiniAuthHeader is an auth-relevant header observed in successful requests.
+type DocsMiniAuthHeader struct {
+	Name  string `json:"name"`
+	Count int    `json:"count"`
+}
+
+// DocsMiniAuthErrorFingerprint is a deduplicated auth error pattern.
+type DocsMiniAuthErrorFingerprint struct {
+	Status            int    `json:"status"`
+	Body              string `json:"body"`
+	Count             int    `json:"count"`
+	ExampleEvidenceID string `json:"example_evidence_id,omitempty"`
 }
 
 // DocsMiniFindings is a compact findings summary for docs.
@@ -126,12 +116,21 @@ type DocsMiniHighlight struct {
 	EvidenceRefs []string        `json:"evidence_refs"`
 }
 
+// DocsMiniCommonError is a deduplicated error pattern observed across endpoints.
+type DocsMiniCommonError struct {
+	Status            int    `json:"status"`
+	ErrorCode         string `json:"error_code,omitempty"`
+	Message           string `json:"message"`
+	Count             int    `json:"count"`
+	ExampleEvidenceID string `json:"example_evidence_id,omitempty"`
+}
+
 // DocsMiniMetrics is a compact metrics summary.
 type DocsMiniMetrics struct {
 	TotalRequests   int     `json:"total_requests"`
 	SuccessRate     float64 `json:"success_rate"`
-	P50Ms           int64   `json:"p50_ms"`
-	P95Ms           int64   `json:"p95_ms"`
+	P50Ms           int64   `json:"p50_ms,omitempty"`
+	P95Ms           int64   `json:"p95_ms,omitempty"`
 	EndpointsTested int     `json:"endpoints_tested"`
 	EndpointsTotal  int     `json:"endpoints_total"`
 	CoveragePct     float64 `json:"coverage_pct"`
@@ -139,7 +138,7 @@ type DocsMiniMetrics struct {
 
 // DocsMiniStats tracks the dossier payload metadata.
 type DocsMiniStats struct {
-	EndpointsCount int `json:"endpoints_count"`
-	SamplesCount   int `json:"samples_count"`
-	MiddlewareCount int `json:"middleware_count"`
+	EndpointsConfirmed int `json:"endpoints_confirmed"`
+	EndpointsCatalog   int `json:"endpoints_catalog"`
+	DomainsCount       int `json:"domains_count"`
 }

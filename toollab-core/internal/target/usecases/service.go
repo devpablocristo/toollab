@@ -11,7 +11,7 @@ type Service struct{ repo domain.Repository }
 
 func NewService(repo domain.Repository) *Service { return &Service{repo: repo} }
 
-func (s *Service) Create(name string, source domain.Source, hint domain.RuntimeHint) (domain.Target, error) {
+func (s *Service) Create(name, description string, source domain.Source, hint domain.RuntimeHint) (domain.Target, error) {
 	if name == "" {
 		return domain.Target{}, fmt.Errorf("%w: name is required", shared.ErrInvalidInput)
 	}
@@ -22,6 +22,7 @@ func (s *Service) Create(name string, source domain.Source, hint domain.RuntimeH
 	t := domain.Target{
 		ID:          shared.NewID(),
 		Name:        name,
+		Description: description,
 		Source:      source,
 		RuntimeHint: hint,
 		CreatedAt:   now,

@@ -25,6 +25,7 @@ type RuntimeHint struct {
 type Target struct {
 	ID          string      `json:"id"`
 	Name        string      `json:"name"`
+	Description string      `json:"description,omitempty"`
 	Source      Source      `json:"source"`
 	RuntimeHint RuntimeHint `json:"runtime_hint"`
 	CreatedAt   time.Time   `json:"created_at"`

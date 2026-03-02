@@ -10,6 +10,7 @@ export default function Targets() {
   const { data: targets, isLoading } = useQuery({ queryKey: ['targets'], queryFn: api.targets.list })
   const [open, setOpen] = useState(false)
   const [name, setName] = useState('nexus-core')
+  const [description, setDescription] = useState('')
   const [sourceType, setSourceType] = useState('path')
   const [sourceValue, setSourceValue] = useState('/home/pablo/Projects/Pablo/nexus/nexus-core')
   const [baseUrl, setBaseUrl] = useState('http://localhost:8080')
@@ -25,6 +26,7 @@ export default function Targets() {
       }
       return api.targets.create({
         name,
+        description: description || undefined,
         source: { type: sourceType, value: sourceValue },
         runtime_hint: Object.keys(hint).length ? hint : undefined,
       })
@@ -32,7 +34,7 @@ export default function Targets() {
     onSuccess: (t) => {
       qc.invalidateQueries({ queryKey: ['targets'] })
       setOpen(false)
-      setName(''); setSourceValue(''); setBaseUrl('')
+      setName(''); setDescription(''); setSourceValue(''); setBaseUrl('')
       setAuthHeaderName(''); setAuthHeaderValue('')
       navigate(`/targets/${t.id}`)
     },
@@ -67,6 +69,7 @@ export default function Targets() {
             <span className="text-xs font-display font-semibold tracking-wider text-accent uppercase">New Target</span>
           </div>
           <input placeholder="Target name" value={name} onChange={e => setName(e.target.value)} className="input" />
+          <input placeholder="Description — what does this service do? (helps AI generate better docs)" value={description} onChange={e => setDescription(e.target.value)} className="input" />
           <div className="flex gap-2">
             <select value={sourceType} onChange={e => setSourceType(e.target.value)}
               className="input w-auto">

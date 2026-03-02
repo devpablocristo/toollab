@@ -20,18 +20,13 @@ func NewRunner(vertex *VertexProvider, artifactSvc *artifactUC.Service) *Runner 
 	return &Runner{vertex: vertex, artifactSvc: artifactSvc}
 }
 
-// RunAsync generates both documentation and audit reports in parallel.
-// docsMiniJSON is the curated minimal dossier for docs.
-// auditLLMJSON is the full compacted dossier for audit.
-func (r *Runner) RunAsync(ctx context.Context, runID string, docsMiniJSON, auditLLMJSON []byte) {
+// RunAsync generates LLM reports. Currently only docs is active; audit is skipped to save tokens.
+// Set auditEnabled = true below to re-enable audit generation.
+func (r *Runner) RunAsync(ctx context.Context, runID string, docsMiniJSON, auditLLMJSON []byte, lang string) {
+	const auditEnabled = false
+
 	ctx, cancel := context.WithTimeout(ctx, 10*time.Minute)
 	defer cancel()
-
-	var auditMeta struct {
-		RunMode string `json:"run_mode"`
-	}
-	_ = json.Unmarshal(auditLLMJSON, &auditMeta)
-	runMode := auditMeta.RunMode
 
 	var docsMeta struct {
 		RunMode string `json:"run_mode"`
@@ -39,19 +34,24 @@ func (r *Runner) RunAsync(ctx context.Context, runID string, docsMiniJSON, audit
 	_ = json.Unmarshal(docsMiniJSON, &docsMeta)
 	docsRunMode := docsMeta.RunMode
 
+	expected := 1
+	if auditEnabled {
+		expected = 2
+	}
+
 	type result struct {
 		kind string
 		data []byte
 		err  error
 	}
+	ch := make(chan result, expected)
 
-	ch := make(chan result, 2)
-
-	log.Printf("LLM starting (run %s): docs_mini=%dKB audit=%dKB", runID, len(docsMiniJSON)/1024, len(auditLLMJSON)/1024)
+	log.Printf("LLM starting (run %s): docs_mini=%dKB audit=%dKB audit_enabled=%v lang=%s",
+		runID, len(docsMiniJSON)/1024, len(auditLLMJSON)/1024, auditEnabled, lang)
 
 	go func() {
 		t0 := time.Now()
-		prompt := buildDocsPrompt(string(docsMiniJSON), docsRunMode)
+		prompt := buildDocsPrompt(string(docsMiniJSON), docsRunMode, lang)
 		md, err := r.vertex.TextPrompt(ctx, prompt)
 		if err == nil {
 			var runID2 string
@@ -62,28 +62,35 @@ func (r *Runner) RunAsync(ctx context.Context, runID string, docsMiniJSON, audit
 				runID2 = meta.RunID
 			}
 			wrapped, _ := json.Marshal(map[string]string{
-				"schema_version": "docs-mini-v1",
+				"schema_version": "docs-mini-v3",
 				"run_id":         runID2,
 				"format":         "markdown",
 				"content":        md,
 			})
-			log.Printf("LLM docs finished (run %s): %v, md=%dKB, err=%v", runID, time.Since(t0).Round(time.Second), len(md)/1024, err)
+			log.Printf("LLM docs finished (run %s): %v, md=%dKB", runID, time.Since(t0).Round(time.Second), len(md)/1024)
 			ch <- result{kind: "documentation", data: wrapped, err: nil}
 		} else {
-			log.Printf("LLM docs finished (run %s): %v, err=%v", runID, time.Since(t0).Round(time.Second), err)
+			log.Printf("LLM docs failed (run %s): %v, err=%v", runID, time.Since(t0).Round(time.Second), err)
 			ch <- result{kind: "documentation", data: nil, err: err}
 		}
 	}()
 
-	go func() {
-		t0 := time.Now()
-		prompt := buildAuditPrompt(string(auditLLMJSON), runMode)
-		data, err := r.vertex.RawPrompt(ctx, prompt)
-		log.Printf("LLM audit finished (run %s): %v, output=%dKB, err=%v", runID, time.Since(t0).Round(time.Second), len(data)/1024, err)
-		ch <- result{kind: "audit", data: data, err: err}
-	}()
+	if auditEnabled {
+		go func() {
+			var auditMeta struct {
+				RunMode string `json:"run_mode"`
+			}
+			_ = json.Unmarshal(auditLLMJSON, &auditMeta)
 
-	for i := 0; i < 2; i++ {
+			t0 := time.Now()
+			prompt := buildAuditPrompt(string(auditLLMJSON), auditMeta.RunMode, lang)
+			data, err := r.vertex.RawPrompt(ctx, prompt)
+			log.Printf("LLM audit finished (run %s): %v, output=%dKB, err=%v", runID, time.Since(t0).Round(time.Second), len(data)/1024, err)
+			ch <- result{kind: "audit", data: data, err: err}
+		}()
+	}
+
+	for i := 0; i < expected; i++ {
 		res := <-ch
 		artType := shared.ArtifactLLMDocs
 		if res.kind == "audit" {
@@ -110,7 +117,7 @@ func (r *Runner) saveFailure(runID string, artType shared.ArtifactType, msg stri
 	}
 }
 
-func buildDocsPrompt(docsMiniJSON, runMode string) string {
+func buildDocsPrompt(docsMiniJSON, runMode, lang string) string {
 	prefix := ""
 	switch runMode {
 	case "offline":
@@ -118,10 +125,14 @@ func buildDocsPrompt(docsMiniJSON, runMode string) string {
 	case "online_partial":
 		prefix = partialDocsPrefix
 	}
-	return prefix + docsPrompt + "\n\nDOSSIER:\n" + docsMiniJSON
+	suffix := ""
+	if lang == "es" {
+		suffix = langSuffixES
+	}
+	return prefix + docsPrompt + suffix + "\n\nDOSSIER:\n" + docsMiniJSON
 }
 
-func buildAuditPrompt(auditJSON, runMode string) string {
+func buildAuditPrompt(auditJSON, runMode, lang string) string {
 	prefix := ""
 	switch runMode {
 	case "offline":
@@ -129,5 +140,9 @@ func buildAuditPrompt(auditJSON, runMode string) string {
 	case "online_partial":
 		prefix = partialAuditPrefix
 	}
-	return prefix + auditPrompt + "\n\nDOSSIER:\n" + auditJSON
+	suffix := ""
+	if lang == "es" {
+		suffix = auditLangSuffixES
+	}
+	return prefix + auditPrompt + suffix + "\n\nDOSSIER:\n" + auditJSON
 }

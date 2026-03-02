@@ -31,7 +31,7 @@ func (h *Handler) create(w http.ResponseWriter, r *http.Request) {
 		shared.WriteError(w, http.StatusBadRequest, "invalid JSON body")
 		return
 	}
-	t, err := h.svc.Create(req.Name, req.Source, req.RuntimeHint)
+	t, err := h.svc.Create(req.Name, req.Description, req.Source, req.RuntimeHint)
 	if err != nil {
 		shared.WriteError(w, shared.ErrorStatus(err), err.Error())
 		return

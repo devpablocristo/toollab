@@ -6,6 +6,7 @@ import remarkGfm from 'remark-gfm'
 import { api } from '../lib/api'
 import type { RunSummary, RunMode, LLMReport, ProgressEvent, IntelIndex, IntelEndpointIndex, IntelEndpointDetail, EndpointScriptSet, PlaygroundResponse, AuthProfile } from '../lib/types'
 import Spinner from '../components/Spinner'
+import { useLang } from '../App'
 import { ScoreRing, DonutChart, DonutLegend, HBarChart, StackedBar, SparkBars } from '../components/Charts'
 
 const SCORE_COLORS: Record<string, string> = {
@@ -37,6 +38,7 @@ function scoreToGrade(avg: number): string {
 export default function TargetDetail() {
   const { targetId } = useParams<{ targetId: string }>()
   const navigate = useNavigate()
+  const { lang } = useLang()
   const { data: target, isLoading: tLoading } = useQuery({ queryKey: ['target', targetId], queryFn: () => api.targets.get(targetId!) })
 
   const [summary, setSummary] = useState<RunSummary | null>(null)
@@ -75,7 +77,7 @@ export default function TargetDetail() {
 
     api.targets.analyzeSSE(targetId, (event) => {
       setLogs(prev => [...prev, event])
-    }).then((result) => {
+    }, lang).then((result) => {
       setSummary(result.run_summary)
       setRunId(result.run_id)
       setRunning(false)
@@ -83,7 +85,7 @@ export default function TargetDetail() {
       setError(err.message)
       setRunning(false)
     })
-  }, [targetId, running])
+  }, [targetId, running, lang])
 
   const maxRetries = 200
   const [docRetries, setDocRetries] = useState(0)
