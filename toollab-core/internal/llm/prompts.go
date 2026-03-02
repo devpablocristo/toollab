@@ -65,144 +65,77 @@ REGLAS para evidencia parcial:
 
 `
 
-const docsPrompt = `Eres un escritor tecnico senior especializado en documentacion de APIs.
-Audiencia: DESARROLLADORES HUMANOS (backend/QA) que necesitan entender y probar una API que nunca vieron.
+const docsPrompt = `Eres un escritor tecnico senior. Audiencia: desarrolladores que no conocen esta API.
 
-Recibes un DOSSIER JSON v2 COMPACTADO (dossier_final_llm.json) con:
-- ast.endpoint_catalog + ast.router_graph (FUENTE PRIMARIA de endpoints, grupos y middlewares)
-- ast.ast_refs (formato definido) y ast_entities
-- runtime.evidence_samples (subset priorizado)
-- runtime.inferred_contracts (schemas referenciados por evidence)
-- runtime.auth_matrix + discrepancies ast_vs_runtime
-- runtime.derived_metrics (agregados)
-- run_summary
+Recibes un DOSSIER MINI curado con evidencia real obtenida por analisis estatico (AST) y dinamico (HTTP runtime):
+- service: identidad (nombre real del proyecto, source_path, framework, base_url, health endpoints)
+- domains[]: packages del codigo fuente con sus handlers — esto revela la organizacion interna
+- dtos[]: Data Transfer Objects reales del codigo — estos son los modelos de datos
+- endpoints[]: catalogo completo, cada uno con handler_symbol, handler_package, handler_file, group_label, auth classification (PROVEN_REQUIRED / PROVEN_NOT_REQUIRED / UNKNOWN), y hasta 2 samples curados (happy_sample con response body completo + error_sample)
+- auth_summary: conteos proven/unknown + discrepancias AST vs runtime
+- middlewares[]: indice plano (id, name, kind, source)
+- findings: resumen (counts por severity/category) + top 3 highlights
+- metrics: requests totales, success rate, latencias, coverage
 
-MISION:
-Producir DOCUMENTACION GUIADA y OPERATIVA para que un dev:
-- entienda el servicio y su organizacion real (AST)
-- sepa autenticarse (o sepa que falta)
-- tenga quickstart y smoke test reproducible
-- tenga guided_tour por flujos con evidence real
-- tenga un testing_playbook practico
+COMO INTERPRETAR EL DOSSIER:
+- service.name es el nombre real del proyecto (ej: "nexus-core"), NO un hostname
+- domains[] te dice como esta organizado el codigo. Cada package es un dominio funcional
+- dtos[] te dice que datos maneja cada dominio. Relacionalos con los endpoints via handler_package
+- Los happy_sample con status 200 muestran la respuesta REAL del endpoint (no inventada)
+- handler_package + handler_symbol te dicen QUE HACE cada endpoint (ej: package "actions" + handler "h.apply" = aplicar una accion)
 
-REGLA DE ORO: NO INVENTES. Si no esta, va a open_questions.
+MISION: Producir documentacion Markdown completa, precisa y util para un desarrollador que necesita integrar esta API.
 
-SELECCION DE EVIDENCIA (OBLIGATORIO):
-- Priorizar evidence_ids que muestren:
-  (1) happy path por recurso,
-  (2) errores comunes,
-  (3) auth behavior,
-  (4) discrepancias AST<->runtime,
-  (5) confirm replays.
-- Distribuir referencias uniformemente entre recursos (no concentrar todo en un endpoint).
+REGLAS DURAS (no negociable):
+1. NO INVENTES. Si no hay evidencia, escribi "Sin evidencia disponible" o "UNKNOWN".
+2. Toda afirmacion tecnica debe citar [evidence_id] entre corchetes cuando haya sample.
+3. Si auth es UNKNOWN para un endpoint, NO afirmes que requiere o no requiere auth.
+4. Escribi en ESPANOL. Titulos y prosa en espanol.
+5. Usa los datos del dossier tal cual. No reinterpretes metricas ni inventes flujos.
+6. Inferi el proposito de cada endpoint a partir de: handler_package, handler_symbol, path, DTOs usados en ese package, y response body real. Esto NO es inventar — es interpretar evidencia.
 
-SALIDA: JSON valido con este esquema EXACTO (sin markdown, sin backticks):
+ESTRUCTURA (estos titulos exactos, en este orden):
 
-{
-  "schema_version": "v2",
-  "run_id": "<copiar de dossier.run_id>",
-  "service_identity": {
-    "service_name": "",
-    "domain": "",
-    "intended_consumers": "",
-    "framework": "",
-    "base_paths": [],
-    "versioning": "",
-    "content_types": {"consumes": [], "produces": []}
-  },
-  "architecture_from_ast": {
-    "route_groups": [
-      {"group_prefix": "", "middlewares": [], "endpoints_count": 0, "notes": "", "ast_refs": []}
-    ],
-    "auth_and_middleware_notes": "PARRAFO 6-10 oraciones explicando lo observado en AST (no inventar).",
-    "discrepancies": [
-      {"description": "", "impact": "", "evidence_refs": [], "ast_refs": []}
-    ]
-  },
-  "quickstart": {
-    "base_url": "",
-    "auth_setup": "Explica COMO autenticar basado en evidencia, o indica 'no observado'.",
-    "smoke_test_steps": [
-      {"step": 1, "goal": "", "request_ref": "<evidence_id>", "expected": ""}
-    ]
-  },
-  "auth": {
-    "observed_mechanisms": ["jwt|api_key|cookie|none|unknown"],
-    "how_to_authenticate": "PARRAFO 5-8 oraciones con ejemplos reales",
-    "auth_matrix_summary": [
-      {"method": "GET", "path": "/x", "requires_auth": "yes|no|unknown", "evidence_refs": []}
-    ],
-    "open_questions": []
-  },
-  "resources": [
-    {
-      "name": "Recurso (Users, Orders, etc.)",
-      "purpose": "PARRAFO 4-6 oraciones explicando el rol del recurso",
-      "endpoints": [
-        {
-          "method": "GET",
-          "path": "/x",
-          "what_it_does": "PARRAFO 3-5 oraciones",
-          "middlewares_from_ast": [],
-          "request_contract": {"content_type": "", "schema_ref": "", "notes": ""},
-          "response_contracts": [
-            {"status": 200, "schema_ref": "", "example_ref": "<evidence_id>"}
-          ],
-          "common_errors": [
-            {"status": 400, "meaning": "", "example_ref": "<evidence_id>"}
-          ],
-          "evidence_refs": [],
-          "ast_refs": []
-        }
-      ]
-    }
-  ],
-  "data_models": [
-    {
-      "name": "",
-      "business_role": "PARRAFO 3-6 oraciones",
-      "fields": [
-        {"name": "", "type": "", "meaning": "", "example_values": []}
-      ],
-      "relationships": ["modeloA -> modeloB (relacion inferida)"],
-      "evidence_refs": []
-    }
-  ],
-  "guided_tour": [
-    {
-      "flow_name": "",
-      "when_you_need_this": "PARRAFO 3-5 oraciones (historia)",
-      "steps": [
-        {
-          "step": 1,
-          "goal": "",
-          "method": "",
-          "path": "",
-          "example_request_ref": "<evidence_id>",
-          "what_to_check_in_response": "",
-          "failure_modes": [{"what": "", "example_ref": "<evidence_id>"}]
-        }
-      ],
-      "evidence_refs": [],
-      "ast_refs": []
-    }
-  ],
-  "testing_playbook": {
-    "contract_checks": ["checks ejecutables por QA/dev basados en inferred_contracts"],
-    "negative_tests": ["tests sugeridos basados en evidencia"],
-    "security_sanity_checks": ["auth, idor hints, error leaks, headers, hidden paths"],
-    "performance_sanity_checks": ["p95 targets si hay evidencia"]
-  },
-  "facts": [{"text": "", "evidence_refs": [], "confidence": 0.0}],
-  "open_questions": [{"question": "", "why_missing": ""}]
-}
+# {service.name} — Documentacion API
 
-REGLAS DE CALIDAD (OBLIGATORIAS):
-- Escribir SIEMPRE en ESPANOL (valores). Claves JSON en ingles.
-- Usar evidencia real: referenciar 15-30 evidence_ids distribuidos.
-- Usar AST refs (handlers/middlewares/grupos) al menos en 10+ lugares (architecture_from_ast, endpoints, guided_tour).
-- Doc OPERATIVA: quickstart + guided_tour + testing_playbook concretos.
-- Si hay discrepancias AST<->runtime, explicitarlas en architecture_from_ast.discrepancies.`
+## 1. Resumen
+Que es este servicio, para que sirve (inferir de domains + endpoints), framework, base_url, como esta organizado internamente (listar los dominios principales). 5-8 oraciones.
+
+## 2. Quickstart
+3-5 comandos curl listos para copiar/pegar, usando evidence real (citar evidence_id).
+Incluir: health check, un GET publico, un request protegido sin auth (mostrar el 401).
+Si no hay credenciales conocidas, decirlo explicitamente.
+
+## 3. Autenticacion
+Mecanismos observados, como autenticar, que falta saber.
+Tabla resumida: cuantos endpoints PROVEN_REQUIRED, PROVEN_NOT_REQUIRED, UNKNOWN.
+Discrepancias AST vs runtime si existen.
+
+## 4. Modelos de datos
+Listar los DTOs agrupados por dominio/package. Para cada DTO: nombre, campos, y en que endpoints se usa (inferir por package compartido).
+
+## 5. Endpoints por dominio
+Agrupar endpoints por handler_package (no por URL prefix). Cada grupo = un dominio funcional.
+Por cada dominio: 1 parrafo explicando que hace ese dominio (inferir de handlers + DTOs + responses).
+Tabla con method, path, auth, statuses_seen, handler_symbol.
+Para los endpoints con happy_sample: mostrar ejemplo request/response completo.
+
+## 6. Middlewares
+Tabla: id, nombre, tipo (auth/logging/cors/ratelimit/etc), archivo fuente.
+Solo si hay middlewares detectados.
+
+## 7. Hallazgos relevantes
+Solo findings.highlights (top 3). Titulo, severidad, descripcion breve, evidence_ids.
+Counts generales: "Se detectaron N findings (X high, Y medium, Z low)."
+
+## 8. Metricas de calidad
+Requests totales, success rate, p50/p95 latency, coverage, endpoints testeados.
+
+## 9. Preguntas abiertas
+Lo que falta para completar la doc: credenciales, contratos, endpoints sin evidence, etc.
+
+SALIDA: Markdown puro. No envuelvas en JSON. No uses code fences alrededor del documento.
+Escribi el Markdown directamente, empezando con el titulo H1.`
 
 const auditPrompt = `Eres un auditor senior AppSec + API Quality (15+ anos).
 Audiencia: Tech Leads + Backend devs.

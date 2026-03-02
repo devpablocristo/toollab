@@ -1,10 +1,12 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
+import ReactMarkdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
 import { api } from '../lib/api'
 import type { RunSummary, RunMode, LLMReport, ProgressEvent, IntelIndex, IntelEndpointIndex, IntelEndpointDetail, EndpointScriptSet, PlaygroundResponse, AuthProfile } from '../lib/types'
 import Spinner from '../components/Spinner'
-import { ScoreRing } from '../components/Charts'
+import { ScoreRing, DonutChart, DonutLegend, HBarChart, StackedBar, SparkBars } from '../components/Charts'
 
 const SCORE_COLORS: Record<string, string> = {
   security: '#ff4f5e',
@@ -600,6 +602,40 @@ function RawDataTab({ runId }: { runId: string | null }) {
     evidence_refs: (f.evidence_refs ?? []).join(', '),
   })), search)
 
+  const statusHistEntries = Object.entries(metrics.status_histogram ?? {})
+    .map(([k, v]) => ({ status: Number(k), count: Number(v) }))
+    .sort((a, b) => a.status - b.status)
+  const statusBars = statusHistEntries.map((x) => ({
+    label: String(x.status),
+    value: x.count,
+    color: x.status >= 500 ? '#ff4f5e' : x.status >= 400 ? '#ffb224' : '#3dd68c',
+  }))
+  const statusSparkValues = statusHistEntries.map((x) => x.count)
+  const statusSparkColors = statusHistEntries.map((x) => x.status >= 500 ? '#ff4f5e' : x.status >= 400 ? '#ffb224' : '#3dd68c')
+
+  const severityCount = findings.reduce((acc: Record<string, number>, f: any) => {
+    const sev = (f.severity ?? 'info').toLowerCase()
+    acc[sev] = (acc[sev] ?? 0) + 1
+    return acc
+  }, {})
+  const severityBars = ['critical', 'high', 'medium', 'low', 'info'].map((sev) => ({
+    label: sev,
+    value: severityCount[sev] ?? 0,
+    color: sev === 'critical' ? '#ff2d55' : sev === 'high' ? '#ff4f5e' : sev === 'medium' ? '#ffb224' : sev === 'low' ? '#52a8ff' : '#8892b0',
+  }))
+
+  const validationDonut = [
+    { label: 'Smoke OK', value: smokePassed, color: '#3dd68c' },
+    { label: 'Smoke Fail', value: Math.max(smoke.length - smokePassed, 0), color: '#ffb224' },
+    { label: 'Fuzz Crash', value: fuzzCrashes, color: '#ff4f5e' },
+    { label: 'Logic Anomaly', value: logicAnomalies, color: '#a78bfa' },
+  ]
+  const authStack = [
+    { label: 'Denied', value: authDenied, color: '#3dd68c' },
+    { label: 'Allowed', value: authAllowed, color: '#ff4f5e' },
+    { label: 'Unknown', value: Math.max((auth.entries ?? []).length - authDenied - authAllowed, 0), color: '#8892b0' },
+  ]
+
   return (
     <div className="space-y-6 animate-fade-in">
       <Section title="Raw QA Overview">
@@ -621,6 +657,61 @@ function RawDataTab({ runId }: { runId: string | null }) {
             <ValidationBar label="Logic Stability (no anomaly)" ok={logic.length - logicAnomalies} total={logic.length} goodWhenHigh />
             <ValidationBar label="Rate Limit Detection (429 seen)" ok={abuseRateLimit} total={rateLimitTests} goodWhenHigh />
             <ValidationBar label="Finding Confirmation Rate" ok={confirmed} total={confirmations.length} goodWhenHigh />
+          </div>
+        </div>
+      </Section>
+
+      <Section title="Graphs">
+        <div className="grid grid-cols-3 gap-3">
+          <div className="card p-4">
+            <p className="text-[10px] font-display font-semibold tracking-wider text-ghost uppercase mb-2">Validation Mix</p>
+            <div className="flex items-center gap-4">
+              <DonutChart segments={validationDonut} size={120} stroke={14}>
+                <span className="text-xs font-mono text-zinc-200">{summary.evidence_count_full ?? 0}</span>
+                <span className="text-[10px] font-mono text-ghost">evidence</span>
+              </DonutChart>
+              <div className="flex-1">
+                <DonutLegend segments={validationDonut} />
+              </div>
+            </div>
+          </div>
+          <div className="card p-4">
+            <p className="text-[10px] font-display font-semibold tracking-wider text-ghost uppercase mb-2">Auth Matrix Distribution</p>
+            <StackedBar segments={authStack} />
+            <div className="mt-2">
+              <DonutLegend segments={authStack.map(s => ({ ...s }))} />
+            </div>
+          </div>
+          <div className="card p-4">
+            <p className="text-[10px] font-display font-semibold tracking-wider text-ghost uppercase mb-2">Latency (ms)</p>
+            <HBarChart
+              bars={[
+                { label: 'P50', value: Number(metrics.p50_ms ?? 0), color: '#52a8ff' },
+                { label: 'P95', value: Number(metrics.p95_ms ?? 0), color: '#ffb224' },
+                { label: 'P99', value: Number(metrics.p99_ms ?? 0), color: '#ff4f5e' },
+              ]}
+              height={18}
+            />
+          </div>
+        </div>
+        <div className="grid grid-cols-2 gap-3 mt-3">
+          <div className="card p-4">
+            <p className="text-[10px] font-display font-semibold tracking-wider text-ghost uppercase mb-2">Status Histogram</p>
+            {statusBars.length > 0 ? (
+              <>
+                <HBarChart bars={statusBars} height={16} />
+                <div className="mt-2 flex items-center gap-2">
+                  <span className="text-[10px] font-mono text-ghost">spark:</span>
+                  <SparkBars values={statusSparkValues} colors={statusSparkColors} />
+                </div>
+              </>
+            ) : (
+              <p className="text-xs font-mono text-ghost">No status histogram data.</p>
+            )}
+          </div>
+          <div className="card p-4">
+            <p className="text-[10px] font-display font-semibold tracking-wider text-ghost uppercase mb-2">Findings by Severity</p>
+            <HBarChart bars={severityBars} height={16} />
           </div>
         </div>
       </Section>
@@ -839,6 +930,33 @@ function pct(v?: number): string {
   return `${(v * 100).toFixed(2)}%`
 }
 
+/* ─── Markdown Renderer ─── */
+
+function MarkdownDoc({ content }: { content: string }) {
+  return (
+    <div className="animate-fade-in">
+      <article className="prose prose-invert prose-sm max-w-none
+        prose-headings:font-display prose-headings:tracking-tight
+        prose-h1:text-2xl prose-h1:text-accent prose-h1:border-b prose-h1:border-edge prose-h1:pb-3 prose-h1:mb-6
+        prose-h2:text-lg prose-h2:text-zinc-200 prose-h2:mt-8 prose-h2:mb-3
+        prose-h3:text-sm prose-h3:text-zinc-300 prose-h3:mt-5 prose-h3:mb-2
+        prose-p:text-sm prose-p:text-zinc-400 prose-p:leading-relaxed
+        prose-a:text-accent prose-a:no-underline hover:prose-a:underline
+        prose-code:text-xs prose-code:text-accent prose-code:bg-surface prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded-sm prose-code:border prose-code:border-edge
+        prose-pre:bg-obsidian prose-pre:border prose-pre:border-edge prose-pre:rounded-md
+        prose-table:text-xs
+        prose-th:text-ghost prose-th:bg-surface/80 prose-th:font-display prose-th:tracking-wide prose-th:uppercase prose-th:text-[10px] prose-th:py-2 prose-th:px-3
+        prose-td:py-1.5 prose-td:px-3 prose-td:text-zinc-300 prose-td:border-edge
+        prose-strong:text-zinc-200
+        prose-li:text-sm prose-li:text-zinc-400
+        prose-blockquote:border-accent/40 prose-blockquote:text-zinc-400
+      ">
+        <ReactMarkdown remarkPlugins={[remarkGfm]}>{content}</ReactMarkdown>
+      </article>
+    </div>
+  )
+}
+
 /* ─── Documentation Tab ─── */
 
 function DocsTab({ data, loading, failed, retries }: { data: LLMReport | null; loading: boolean; failed: boolean; retries: number }) {
@@ -846,6 +964,11 @@ function DocsTab({ data, loading, failed, retries }: { data: LLMReport | null; l
   if (loading || !data) return <LoadingState label="documentation" retries={retries} />
 
   const d = data as any
+
+  if (d.format === 'markdown' && d.content) {
+    return <MarkdownDoc content={d.content} />
+  }
+
   const svc = d.service_identity
   const arch = d.architecture_from_ast
   const qs = d.quickstart

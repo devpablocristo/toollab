@@ -37,6 +37,7 @@ const (
 	ArtifactEndpointQueries      ArtifactType = "endpoint_queries"
 	ArtifactEnvExample           ArtifactType = "env_example"
 	ArtifactRunSummaryExport     ArtifactType = "run_summary_export"
+	ArtifactDossierDocsMini      ArtifactType = "dossier_docs_mini"
 )
 
 var validTypes = map[ArtifactType]bool{
@@ -72,6 +73,7 @@ var validTypes = map[ArtifactType]bool{
 	ArtifactEndpointQueries:      true,
 	ArtifactEnvExample:           true,
 	ArtifactRunSummaryExport:     true,
+	ArtifactDossierDocsMini:      true,
 }
 
 func (t ArtifactType) Valid() bool { return validTypes[t] }

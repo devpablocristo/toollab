@@ -7,6 +7,7 @@ import (
 	"log"
 	"regexp"
 	"strings"
+	"sync"
 	"time"
 
 	artifactUC "toollab-core/internal/artifact/usecases"
@@ -78,11 +79,18 @@ type Orchestrator struct {
 	artifactSvc *artifactUC.Service
 	steps       []StepRunner
 	llmRunner   LLMRunner
+	activeMu    sync.Mutex
+	activeRuns  map[string]activeRun // key: targetID
+}
+
+type activeRun struct {
+	runID  string
+	cancel context.CancelFunc
 }
 
 // LLMRunner generates LLM reports asynchronously.
 type LLMRunner interface {
-	RunAsync(ctx context.Context, runID string, dossierLLM []byte)
+	RunAsync(ctx context.Context, runID string, docsMiniJSON, auditLLMJSON []byte)
 }
 
 func NewOrchestrator(
@@ -98,6 +106,7 @@ func NewOrchestrator(
 		artifactSvc: artifactSvc,
 		steps:       steps,
 		llmRunner:   llmRunner,
+		activeRuns:  map[string]activeRun{},
 	}
 }
 
@@ -134,6 +143,19 @@ func (o *Orchestrator) Analyze(ctx context.Context, targetID string, emit Progre
 		return AnalyzeResult{}, fmt.Errorf("creating run: %w", err)
 	}
 
+	runCtx, runCancel := context.WithCancel(ctx)
+	defer runCancel()
+	prevRunID := o.registerActiveRun(targetID, run.ID, runCancel)
+	if prevRunID != "" {
+		emit(ProgressEvent{
+			Step:    d.StepPreflight,
+			Phase:   "init",
+			Message: fmt.Sprintf("Previous run %s cancelled by re-analyze request", shortRunID(prevRunID)),
+		})
+		o.markRunKilled(prevRunID)
+	}
+	defer o.unregisterActiveRun(targetID, run.ID)
+
 	emit(ProgressEvent{Step: d.StepPreflight, Phase: "init", Message: fmt.Sprintf("Run %s created", run.ID[:8])})
 
 	state := &PipelineState{
@@ -150,8 +172,8 @@ func (o *Orchestrator) Analyze(ctx context.Context, targetID string, emit Progre
 	finalStatus := d.RunCompleted
 
 	for _, step := range o.steps {
-		if ctx.Err() != nil {
-			finalStatus = d.RunPartial
+		if runCtx.Err() != nil {
+			finalStatus = d.RunFailed
 			break
 		}
 		if state.Budget.Exhausted() {
@@ -165,7 +187,7 @@ func (o *Orchestrator) Analyze(ctx context.Context, targetID string, emit Progre
 		}
 
 		emit(ProgressEvent{Step: step.Name(), Phase: "start", Message: fmt.Sprintf("Starting %s...", step.Name())})
-		result := step.Run(ctx, state)
+		result := step.Run(runCtx, state)
 		state.StepResults = append(state.StepResults, result)
 
 		if result.Status == "failed" {
@@ -215,10 +237,18 @@ func (o *Orchestrator) Analyze(ctx context.Context, targetID string, emit Progre
 	emit(ProgressEvent{Step: d.StepReport, Phase: "done", Message: "Pipeline complete. LLM reports generating in background..."})
 
 	if o.llmRunner != nil && finalStatus != d.RunFailed {
-		dossierLLM := d.CompactForLLM(&dossierFull, d.DefaultCompactConfig())
-		dossierLLMJSON, _ := json.Marshal(dossierLLM)
-		o.artifactSvc.Put(run.ID, shared.ArtifactDossierLLM, dossierLLMJSON)
-		go o.llmRunner.RunAsync(context.Background(), run.ID, dossierLLMJSON)
+		docsMini := d.CompactForDocsMini(&dossierFull, d.TargetMeta{
+			Name:       target.Name,
+			SourcePath: target.Source.Value,
+		})
+		docsMiniJSON, _ := json.Marshal(docsMini)
+		o.artifactSvc.Put(run.ID, shared.ArtifactDossierDocsMini, docsMiniJSON)
+
+		auditLLM := d.CompactForLLM(&dossierFull, d.DefaultCompactConfig())
+		auditLLMJSON, _ := json.Marshal(auditLLM)
+		o.artifactSvc.Put(run.ID, shared.ArtifactDossierLLM, auditLLMJSON)
+
+		go o.llmRunner.RunAsync(context.Background(), run.ID, docsMiniJSON, auditLLMJSON)
 	}
 
 	return AnalyzeResult{
@@ -226,6 +256,46 @@ func (o *Orchestrator) Analyze(ctx context.Context, targetID string, emit Progre
 		RunID:      run.ID,
 		RunSummary: summary,
 	}, nil
+}
+
+func (o *Orchestrator) registerActiveRun(targetID, runID string, cancel context.CancelFunc) string {
+	o.activeMu.Lock()
+	defer o.activeMu.Unlock()
+	prev, ok := o.activeRuns[targetID]
+	if ok && prev.cancel != nil {
+		prev.cancel()
+	}
+	o.activeRuns[targetID] = activeRun{runID: runID, cancel: cancel}
+	if ok {
+		return prev.runID
+	}
+	return ""
+}
+
+func (o *Orchestrator) unregisterActiveRun(targetID, runID string) {
+	o.activeMu.Lock()
+	defer o.activeMu.Unlock()
+	current, ok := o.activeRuns[targetID]
+	if !ok || current.runID != runID {
+		return
+	}
+	delete(o.activeRuns, targetID)
+}
+
+func (o *Orchestrator) markRunKilled(runID string) {
+	if runID == "" {
+		return
+	}
+	if err := o.runRepo.UpdateStatusCompleted(runID, runDomain.StatusFailed, shared.Now()); err != nil {
+		log.Printf("mark previous run failed (%s): %v", runID, err)
+	}
+}
+
+func shortRunID(runID string) string {
+	if len(runID) >= 8 {
+		return runID[:8]
+	}
+	return runID
 }
 
 func (o *Orchestrator) buildRunSummary(state *PipelineState, status d.RunStatus, durationSec int, rmc d.RunModeClassification) d.RunSummary {

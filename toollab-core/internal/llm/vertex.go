@@ -35,15 +35,28 @@ func (p *VertexProvider) Available() bool {
 
 func (p *VertexProvider) Name() string { return "vertex-" + p.model }
 
-// RawPrompt sends a raw prompt to the LLM and returns the response.
+// RawPrompt sends a prompt expecting JSON back (constrained decoding).
 func (p *VertexProvider) RawPrompt(ctx context.Context, prompt string) ([]byte, error) {
+	return p.promptWithRetries(ctx, prompt, true)
+}
+
+// TextPrompt sends a prompt expecting free-form text back (no JSON constraint).
+func (p *VertexProvider) TextPrompt(ctx context.Context, prompt string) (string, error) {
+	data, err := p.promptWithRetries(ctx, prompt, false)
+	if err != nil {
+		return "", err
+	}
+	return string(data), nil
+}
+
+func (p *VertexProvider) promptWithRetries(ctx context.Context, prompt string, jsonMode bool) ([]byte, error) {
 	var lastErr error
 	for attempt := 0; attempt < 3; attempt++ {
 		if attempt > 0 {
 			time.Sleep(time.Duration(attempt*5) * time.Second)
 		}
 
-		data, err := p.doRequest(ctx, prompt)
+		data, err := p.doRequest(ctx, prompt, jsonMode)
 		if err == nil {
 			return data, nil
 		}
@@ -52,7 +65,7 @@ func (p *VertexProvider) RawPrompt(ctx context.Context, prompt string) ([]byte, 
 	return nil, fmt.Errorf("after 3 attempts: %w", lastErr)
 }
 
-func (p *VertexProvider) doRequest(ctx context.Context, prompt string) ([]byte, error) {
+func (p *VertexProvider) doRequest(ctx context.Context, prompt string, jsonMode bool) ([]byte, error) {
 	token := os.Getenv("GOOGLE_ACCESS_TOKEN")
 	if token == "" {
 		return nil, fmt.Errorf("GOOGLE_ACCESS_TOKEN not set")
@@ -63,16 +76,20 @@ func (p *VertexProvider) doRequest(ctx context.Context, prompt string) ([]byte, 
 		p.region, p.projectID, p.region, p.model,
 	)
 
+	genConfig := vertexGenConfig{
+		Temperature:     0.2,
+		MaxOutputTokens: 65536,
+	}
+	if jsonMode {
+		genConfig.ResponseMimeType = "application/json"
+	}
+
 	reqBody := vertexReq{
 		Contents: []vertexContent{{
 			Role:  "user",
 			Parts: []vertexPart{{Text: prompt}},
 		}},
-		GenerationConfig: vertexGenConfig{
-			Temperature:      0.2,
-			MaxOutputTokens:  65536,
-			ResponseMimeType: "application/json",
-		},
+		GenerationConfig: genConfig,
 	}
 
 	bodyJSON, _ := json.Marshal(reqBody)
@@ -106,25 +123,26 @@ func (p *VertexProvider) doRequest(ctx context.Context, prompt string) ([]byte, 
 	text := vresp.Candidates[0].Content.Parts[0].Text
 	text = strings.TrimSpace(text)
 
-	// Strip markdown code fences if present
-	if strings.HasPrefix(text, "```json") {
-		text = strings.TrimPrefix(text, "```json")
-		if idx := strings.LastIndex(text, "```"); idx >= 0 {
-			text = text[:idx]
+	if jsonMode {
+		// Strip markdown code fences if present
+		if strings.HasPrefix(text, "```json") {
+			text = strings.TrimPrefix(text, "```json")
+			if idx := strings.LastIndex(text, "```"); idx >= 0 {
+				text = text[:idx]
+			}
+			text = strings.TrimSpace(text)
 		}
-		text = strings.TrimSpace(text)
-	}
-	if strings.HasPrefix(text, "```") {
-		text = strings.TrimPrefix(text, "```")
-		if idx := strings.LastIndex(text, "```"); idx >= 0 {
-			text = text[:idx]
+		if strings.HasPrefix(text, "```") {
+			text = strings.TrimPrefix(text, "```")
+			if idx := strings.LastIndex(text, "```"); idx >= 0 {
+				text = text[:idx]
+			}
+			text = strings.TrimSpace(text)
 		}
-		text = strings.TrimSpace(text)
-	}
 
-	// Validate JSON
-	if !json.Valid([]byte(text)) {
-		return nil, fmt.Errorf("LLM returned invalid JSON (len=%d)", len(text))
+		if !json.Valid([]byte(text)) {
+			return nil, fmt.Errorf("LLM returned invalid JSON (len=%d)", len(text))
+		}
 	}
 
 	return []byte(text), nil
