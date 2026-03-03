@@ -8,6 +8,7 @@ services:
     volumes:
       - backend-data:/app/data
       - /home/pablo/Projects:/home/pablo/Projects:ro
+      - /home/pablo/.config/gcloud:/root/.config/gcloud:ro
     extra_hosts:
       - "host.docker.internal:host-gateway"
     environment:
@@ -15,10 +16,11 @@ services:
       - TOOLLAB_DB_PATH=/app/data/toollab.db
       - TOOLLAB_DATA_DIR=/app/data
       - TOOLLAB_HOST_REWRITE=localhost=host.docker.internal
-      - GOOGLE_PROJECT_ID=${GOOGLE_PROJECT_ID:-}
+      - GOOGLE_PROJECT_ID=${GOOGLE_PROJECT_ID:-toollab}
       - GOOGLE_REGION=${GOOGLE_REGION:-us-central1}
       - VERTEX_MODEL=${VERTEX_MODEL:-gemini-2.5-flash}
       - GOOGLE_ACCESS_TOKEN=${GOOGLE_ACCESS_TOKEN:-}
+      - GOOGLE_APPLICATION_CREDENTIALS=/root/.config/gcloud/application_default_credentials.json
     restart: unless-stopped
 
   frontend:

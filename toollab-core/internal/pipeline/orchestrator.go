@@ -11,8 +11,8 @@ import (
 	"time"
 
 	artifactUC "toollab-core/internal/artifact"
-	d "toollab-core/internal/pipeline/usecases/domain"
 	"toollab-core/internal/exports"
+	d "toollab-core/internal/pipeline/usecases/domain"
 	runDomain "toollab-core/internal/run/usecases/domain"
 	"toollab-core/internal/shared"
 	targetDomain "toollab-core/internal/target/usecases/domain"
@@ -112,9 +112,9 @@ func NewOrchestrator(
 
 // AnalyzeResult is the output of an analysis run.
 type AnalyzeResult struct {
-	TargetID    string         `json:"target_id"`
-	RunID       string         `json:"run_id"`
-	RunSummary  d.RunSummary   `json:"run_summary"`
+	TargetID   string       `json:"target_id"`
+	RunID      string       `json:"run_id"`
+	RunSummary d.RunSummary `json:"run_summary"`
 }
 
 // Analyze runs the full analysis pipeline. lang is "en" or "es" for LLM output language.
@@ -236,11 +236,10 @@ func (o *Orchestrator) Analyze(ctx context.Context, targetID string, lang string
 
 	emit(ProgressEvent{Step: d.StepReport, Phase: "done", Message: "Pipeline complete. LLM reports generating in background..."})
 
-	if o.llmRunner != nil && finalStatus != d.RunFailed {
+	if finalStatus != d.RunFailed {
 		docsMini := d.CompactForDocsMini(&dossierFull, d.TargetMeta{
 			Name:        target.Name,
 			Description: target.Description,
-			SourcePath:  target.Source.Value,
 		})
 		docsMiniJSON, _ := json.Marshal(docsMini)
 		o.artifactSvc.Put(run.ID, shared.ArtifactDossierDocsMini, docsMiniJSON)
@@ -249,7 +248,9 @@ func (o *Orchestrator) Analyze(ctx context.Context, targetID string, lang string
 		auditLLMJSON, _ := json.Marshal(auditLLM)
 		o.artifactSvc.Put(run.ID, shared.ArtifactDossierLLM, auditLLMJSON)
 
-		go o.llmRunner.RunAsync(context.Background(), run.ID, docsMiniJSON, auditLLMJSON, lang)
+		if o.llmRunner != nil {
+			go o.llmRunner.RunAsync(context.Background(), run.ID, docsMiniJSON, auditLLMJSON, lang)
+		}
 	}
 
 	return AnalyzeResult{
@@ -301,13 +302,13 @@ func shortRunID(runID string) string {
 
 func (o *Orchestrator) buildRunSummary(state *PipelineState, status d.RunStatus, durationSec int, rmc d.RunModeClassification) d.RunSummary {
 	summary := d.RunSummary{
-		RunID:           state.RunID,
-		Status:          status,
-		RunMode:         rmc.Mode,
-		RunModeDetail:   &rmc,
-		DurationSeconds: durationSec,
+		RunID:             state.RunID,
+		Status:            status,
+		RunMode:           rmc.Mode,
+		RunModeDetail:     &rmc,
+		DurationSeconds:   durationSec,
 		EvidenceCountFull: state.Evidence.Count(),
-		BudgetUsage:     state.Budget.Usage(),
+		BudgetUsage:       state.Budget.Usage(),
 	}
 
 	authReady, authReason := o.evaluateAuthReadiness(state)
@@ -472,18 +473,18 @@ func (o *Orchestrator) buildDerivedMetrics(state *PipelineState) d.DerivedMetric
 	endpointsUseful, usefulCoverage := o.computeUsefulCoverage(state)
 
 	return d.DerivedMetrics{
-		TotalRequests:   total,
-		SuccessRate:     float64(successes) / float64(total),
-		ErrorRate:       float64(total-successes) / float64(total),
-		P50Ms:           percentile(latencies, 50),
-		P95Ms:           percentile(latencies, 95),
-		P99Ms:           percentile(latencies, 99),
-		CoveragePct:     covPct,
+		TotalRequests:     total,
+		SuccessRate:       float64(successes) / float64(total),
+		ErrorRate:         float64(total-successes) / float64(total),
+		P50Ms:             percentile(latencies, 50),
+		P95Ms:             percentile(latencies, 95),
+		P99Ms:             percentile(latencies, 99),
+		CoveragePct:       covPct,
 		UsefulCoveragePct: usefulCoverage,
-		EndpointsTested: len(tested),
-		EndpointsUseful: endpointsUseful,
-		EndpointsTotal:  endpointsTotal,
-		StatusHistogram: statusHist,
+		EndpointsTested:   len(tested),
+		EndpointsUseful:   endpointsUseful,
+		EndpointsTotal:    endpointsTotal,
+		StatusHistogram:   statusHist,
 		OpenAPIValidation: state.OpenAPIValidation,
 	}
 }

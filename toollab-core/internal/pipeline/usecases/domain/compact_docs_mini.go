@@ -7,17 +7,20 @@ import (
 	"strings"
 )
 
-const docsMiniSchemaVersion = "docs-mini-v4"
+const (
+	docsMiniSchemaVersion = "docs-mini-v5"
+	maxContractFields     = 10
+	maxResponseKeys       = 8
+)
 
 // TargetMeta holds minimal target info to enrich the dossier.
 type TargetMeta struct {
 	Name        string
 	Description string
-	SourcePath  string
 }
 
 // CompactForDocsMini builds a documentation-oriented dossier from the full pipeline output.
-// Focus: AST data (endpoints, DTOs) + selected runtime evidence (auth, errors, response shapes).
+// Focus: minimal endpoint contracts + selected runtime evidence (auth, errors).
 func CompactForDocsMini(full *DossierV2Full, meta TargetMeta) DocsMiniDossier {
 	d := DocsMiniDossier{
 		SchemaVersion: docsMiniSchemaVersion,
@@ -27,17 +30,15 @@ func CompactForDocsMini(full *DossierV2Full, meta TargetMeta) DocsMiniDossier {
 
 	d.Service = buildService(full, meta)
 	d.Endpoints = buildEndpoints(full)
-	d.DTOs = buildDTOs(full)
 	d.Auth = buildAuth(full)
 	d.CommonErrors = buildCommonErrors(full.Runtime.EvidenceSamples)
-	d.Findings = buildFindings(full.FindingsRaw)
 
 	confirmed := countConfirmed(full)
 	domains := countDomains(full)
+	d.Gaps = buildGaps(d.Endpoints, d.Auth, len(full.AST.EndpointCatalog.Endpoints), confirmed)
 	d.Stats = DocsMiniStats{
 		EndpointsTotal:     len(full.AST.EndpointCatalog.Endpoints),
 		EndpointsConfirmed: confirmed,
-		DTOsTotal:          len(d.DTOs),
 		DomainsCount:       domains,
 	}
 
@@ -61,8 +62,10 @@ func buildService(full *DossierV2Full, meta TargetMeta) DocsMiniService {
 	return svc
 }
 
-// buildEndpoints creates one entry per endpoint with handler, domain, and response shape.
+// buildEndpoints creates one entry per endpoint with domain, request fields and response keys.
 func buildEndpoints(full *DossierV2Full) []DocsMiniEndpoint {
+	domainRequestHints := buildDomainRequestFieldHints(full)
+
 	// Build response shape index from runtime evidence
 	bestByEP := map[string]EvidenceSample{}
 	for _, s := range full.Runtime.EvidenceSamples {
@@ -97,21 +100,10 @@ func buildEndpoints(full *DossierV2Full) []DocsMiniEndpoint {
 			Path:   ep.Path,
 		}
 		if ep.HandlerRef != nil {
-			e.Handler = ep.HandlerRef.Label
 			e.Domain = simplifyDomain(ep.HandlerRef.Location.Package)
-		}
-		for _, mw := range ep.Middlewares {
-			if mw.Label == "" {
-				continue
-			}
-			e.Middlewares = append(e.Middlewares, mw.Label)
-		}
-		if len(e.Middlewares) > 1 {
-			sort.Strings(e.Middlewares)
 		}
 
 		if c, ok := contractByEP[ep.EndpointID]; ok {
-			e.ContractConfidence = c.Confidence
 			if c.RequestSchema != nil {
 				for _, f := range c.RequestSchema.Fields {
 					if f.Name != "" {
@@ -119,31 +111,25 @@ func buildEndpoints(full *DossierV2Full) []DocsMiniEndpoint {
 					}
 				}
 			}
-			respSet := map[string]bool{}
-			for _, rs := range c.ResponseSchemas {
-				for _, f := range rs.Fields {
-					if f.Name != "" {
-						respSet[f.Name] = true
-					}
-				}
-			}
-			for k := range respSet {
-				e.ResponseFields = append(e.ResponseFields, k)
-			}
 			if len(e.RequestFields) > 1 {
 				sort.Strings(e.RequestFields)
 			}
-			if len(e.ResponseFields) > 1 {
-				sort.Strings(e.ResponseFields)
+			if len(e.RequestFields) > maxContractFields {
+				e.RequestFields = e.RequestFields[:maxContractFields]
 			}
+		}
+		if len(e.RequestFields) == 0 && isWriteMethod(e.Method) && len(domainRequestHints[e.Domain]) > 0 {
+			e.RequestFields = domainRequestHints[e.Domain]
 		}
 
 		if sample, ok := bestByEP[ep.EndpointID]; ok {
 			keys := extractTopLevelKeys(sample.Response.BodySnippet)
 			if len(keys) > 0 {
 				sort.Strings(keys)
+				if len(keys) > maxResponseKeys {
+					keys = keys[:maxResponseKeys]
+				}
 				e.ResponseKeys = keys
-				e.ResponseStatus = sample.Response.Status
 			}
 		}
 
@@ -160,38 +146,39 @@ func buildEndpoints(full *DossierV2Full) []DocsMiniEndpoint {
 	return endpoints
 }
 
-// buildDTOs extracts data transfer objects from AST entities, grouped by domain.
-// Deduplicates by name within each domain (handler/dto vs domain package).
-func buildDTOs(full *DossierV2Full) []DocsMiniDTO {
-	seen := map[string]bool{}
-	var dtos []DocsMiniDTO
-
+func buildDomainRequestFieldHints(full *DossierV2Full) map[string][]string {
+	byDomain := map[string]map[string]bool{}
 	for _, entity := range full.AST.ASTEntities {
 		if entity.Kind != "dto" || len(entity.Fields) == 0 {
 			continue
 		}
 		domain := simplifyDomain(entity.ASTRef.Location.Package)
-		key := domain + "/" + entity.Name
-		if seen[key] {
-			continue
+		if byDomain[domain] == nil {
+			byDomain[domain] = map[string]bool{}
 		}
-		seen[key] = true
-
-		dtos = append(dtos, DocsMiniDTO{
-			Name:   entity.Name,
-			Domain: domain,
-			Fields: entity.Fields,
-		})
+		for _, f := range entity.Fields {
+			if f == "" {
+				continue
+			}
+			byDomain[domain][f] = true
+		}
 	}
 
-	sort.Slice(dtos, func(i, j int) bool {
-		if dtos[i].Domain != dtos[j].Domain {
-			return dtos[i].Domain < dtos[j].Domain
+	hints := map[string][]string{}
+	for domain, fieldsSet := range byDomain {
+		fields := make([]string, 0, len(fieldsSet))
+		for f := range fieldsSet {
+			fields = append(fields, f)
 		}
-		return dtos[i].Name < dtos[j].Name
-	})
-
-	return dtos
+		if len(fields) > 1 {
+			sort.Strings(fields)
+		}
+		if len(fields) > maxContractFields {
+			fields = fields[:maxContractFields]
+		}
+		hints[domain] = fields
+	}
+	return hints
 }
 
 // simplifyDomain converts a full package path to a short domain name.
@@ -310,33 +297,6 @@ func buildAuth(full *DossierV2Full) DocsMiniAuth {
 	return auth
 }
 
-func buildFindings(findings []FindingRaw) DocsMiniFindings {
-	fs := DocsMiniFindings{Total: len(findings)}
-
-	sorted := make([]FindingRaw, len(findings))
-	copy(sorted, findings)
-	sort.Slice(sorted, func(i, j int) bool {
-		return severityPriority(sorted[i].Severity) < severityPriority(sorted[j].Severity)
-	})
-
-	limit := 5
-	if len(sorted) < limit {
-		limit = len(sorted)
-	}
-	for _, f := range sorted[:limit] {
-		desc := f.Description
-		if len(desc) > 200 {
-			desc = desc[:200]
-		}
-		fs.Highlights = append(fs.Highlights, DocsMiniHighlight{
-			Title:       f.Title,
-			Severity:    string(f.Severity),
-			Description: desc,
-		})
-	}
-	return fs
-}
-
 func countConfirmed(full *DossierV2Full) int {
 	samplesByEP := map[string]bool{}
 	for _, s := range full.Runtime.EvidenceSamples {
@@ -361,6 +321,20 @@ func countDomains(full *DossierV2Full) int {
 		}
 	}
 	return len(domains)
+}
+
+func buildGaps(endpoints []DocsMiniEndpoint, auth DocsMiniAuth, total, confirmed int) DocsMiniGaps {
+	noShape := 0
+	for _, ep := range endpoints {
+		if len(ep.ResponseKeys) == 0 {
+			noShape++
+		}
+	}
+	return DocsMiniGaps{
+		UnconfirmedEndpoints: total - confirmed,
+		EndpointsNoShape:     noShape,
+		EndpointsAuthUnknown: auth.Unknown,
+	}
 }
 
 // --- Shared helpers (unchanged) ---
@@ -517,19 +491,4 @@ func extractTopLevelKeys(body string) []string {
 		keys = append(keys, k)
 	}
 	return keys
-}
-
-func severityPriority(s FindingSeverity) int {
-	switch s {
-	case SeverityCritical:
-		return 0
-	case SeverityHigh:
-		return 1
-	case SeverityMedium:
-		return 2
-	case SeverityLow:
-		return 3
-	default:
-		return 4
-	}
 }

@@ -64,24 +64,23 @@ const docsPrompt = `You are a senior technical writer. Write an API integration 
 
 DATA YOU HAVE:
 - service: identity + optional description
-- endpoints: method/path/handler/domain + observed response_keys from real 2xx
-- dtos: DTO names and fields grouped by domain (AST-grounded contracts)
+- endpoints: method/path/domain + request_fields + response_keys from real 2xx
 - auth: observed headers, auth error fingerprints, proven_required/proven_not_required/unknown
 - common_errors: repeated error patterns
-- findings: security findings summary
-- stats: endpoints_total, endpoints_confirmed, dtos_total, domains_count
+- gaps: unconfirmed_endpoints, endpoints_no_shape, endpoints_auth_unknown
+- stats: endpoints_total, endpoints_confirmed, domains_count
 
 ONE RULE: never state something the data doesn't show.
 Allowed deductions:
 - route patterns can imply CRUD/lifecycle/state transitions
-- DTO field names define request/response contracts
+- request_fields define input contracts
 - nested paths imply parent-child resource relationships
 Forbidden:
 - inventing product purpose, internal architecture, or hidden entities
-- claiming request fields that do not appear in DTOs/errors
+- claiming request fields that do not appear in request_fields/common_errors
 - claiming response fields that do not appear in response_keys
 
-If service.description exists, use it as framing context. Otherwise describe only what endpoints + dtos reveal.
+If service.description exists, use it as framing context. Otherwise describe only what endpoints reveal.
 
 STRUCTURE:
 
@@ -92,24 +91,23 @@ STRUCTURE:
 Include: "Documentation is inferred from AST + runtime evidence."
 
 ## 2. Domain Map
-Table: | Domain | Endpoints | Main DTOs | Example Routes |
-Use endpoints + dtos only. Keep names as in data.
+Table: | Domain | Endpoints | Example Routes |
+Use endpoints only. Keep names as in data.
 
-## 3. Contracts (DTO-first)
+## 3. Contracts
 For each major domain:
-- DTOs with purpose inferred from route usage
-- Field list for key request DTOs
-- Field list for key response DTOs
-- Mention missing contracts explicitly if DTO evidence is weak
-This section is mandatory and concrete.
+- Key request_fields from endpoints
+- Observed response_keys from endpoints
+- Mention "no runtime shape" when response_keys are missing
+This section must be concrete and evidence-based.
 
 ## 4. Main Flows
 3-5 flows. Each flow:
 - Name
 - Ordered steps: METHOD PATH
-- Input contract references (DTO fields and/or common_errors)
+- Input contract references (request_fields and/or common_errors)
 - Observed output shape (response_keys) or "no runtime shape"
-State once: "Flows are deduced from endpoint patterns and DTO contracts."
+State once: "Flows are deduced from endpoint patterns and observed contracts."
 
 ## 5. Authentication
 Only auth data:
@@ -123,8 +121,7 @@ Table: | Status | Code | Message | Count | Likely Fix |
 Use only common_errors. If empty, say so.
 
 ## 7. Security Findings and Gaps
-- findings highlights (or "None reported")
-- coverage gaps: unconfirmed endpoints, domains without response_keys, missing DTO-link evidence
+- coverage gaps from gaps field (unconfirmed_endpoints, endpoints_no_shape, endpoints_auth_unknown)
 - next tests to improve certainty
 
 FORMATTING:

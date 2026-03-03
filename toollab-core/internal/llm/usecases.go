@@ -62,7 +62,7 @@ func (r *Runner) RunAsync(ctx context.Context, runID string, docsMiniJSON, audit
 				runID2 = meta.RunID
 			}
 			wrapped, _ := json.Marshal(map[string]string{
-				"schema_version": "docs-mini-v4",
+				"schema_version": "docs-mini-v5",
 				"run_id":         runID2,
 				"format":         "markdown",
 				"content":        md,

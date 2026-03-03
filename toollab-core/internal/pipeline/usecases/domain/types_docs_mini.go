@@ -1,17 +1,15 @@
 package domain
 
-// DocsMiniDossier is the curated dossier sent to the LLM for documentation generation.
-// Optimized for documentation: rich AST data (endpoints, DTOs) + selected runtime evidence.
+// DocsMiniDossier is the minimal dossier sent to the LLM for documentation generation.
 type DocsMiniDossier struct {
 	SchemaVersion string                `json:"schema_version"`
 	RunID         string                `json:"run_id"`
 	RunMode       RunMode               `json:"run_mode"`
 	Service       DocsMiniService       `json:"service"`
 	Endpoints     []DocsMiniEndpoint    `json:"endpoints"`
-	DTOs          []DocsMiniDTO         `json:"dtos,omitempty"`
 	Auth          DocsMiniAuth          `json:"auth"`
 	CommonErrors  []DocsMiniCommonError `json:"common_errors,omitempty"`
-	Findings      DocsMiniFindings      `json:"findings"`
+	Gaps          DocsMiniGaps          `json:"gaps"`
 	Stats         DocsMiniStats         `json:"stats"`
 }
 
@@ -23,25 +21,13 @@ type DocsMiniService struct {
 	BaseURL     string `json:"base_url"`
 }
 
-// DocsMiniEndpoint is a single API endpoint with all docs-relevant info.
+// DocsMiniEndpoint is a single API endpoint with minimal docs-relevant info.
 type DocsMiniEndpoint struct {
-	Method             string   `json:"method"`
-	Path               string   `json:"path"`
-	Handler            string   `json:"handler"`
-	Domain             string   `json:"domain"`
-	Middlewares        []string `json:"middlewares,omitempty"`
-	RequestFields      []string `json:"request_fields,omitempty"`
-	ResponseFields     []string `json:"response_fields,omitempty"`
-	ContractConfidence float64  `json:"contract_confidence,omitempty"`
-	ResponseKeys       []string `json:"response_keys,omitempty"`
-	ResponseStatus     int      `json:"response_status,omitempty"`
-}
-
-// DocsMiniDTO is a data transfer object discovered in the code.
-type DocsMiniDTO struct {
-	Name   string   `json:"name"`
-	Domain string   `json:"domain"`
-	Fields []string `json:"fields"`
+	Method        string   `json:"method"`
+	Path          string   `json:"path"`
+	Domain        string   `json:"domain"`
+	RequestFields []string `json:"request_fields,omitempty"`
+	ResponseKeys  []string `json:"response_keys,omitempty"`
 }
 
 // AuthClassification is the proven auth status for an endpoint.
@@ -88,21 +74,15 @@ type DocsMiniCommonError struct {
 	Count     int    `json:"count"`
 }
 
-// DocsMiniFindings is a compact findings summary.
-type DocsMiniFindings struct {
-	Total      int                 `json:"total"`
-	Highlights []DocsMiniHighlight `json:"highlights,omitempty"`
-}
-
-type DocsMiniHighlight struct {
-	Title       string `json:"title"`
-	Severity    string `json:"severity"`
-	Description string `json:"description"`
+// DocsMiniGaps summarizes what is still unknown.
+type DocsMiniGaps struct {
+	UnconfirmedEndpoints int `json:"unconfirmed_endpoints"`
+	EndpointsNoShape     int `json:"endpoints_no_shape"`
+	EndpointsAuthUnknown int `json:"endpoints_auth_unknown"`
 }
 
 type DocsMiniStats struct {
 	EndpointsTotal     int `json:"endpoints_total"`
 	EndpointsConfirmed int `json:"endpoints_confirmed"`
-	DTOsTotal          int `json:"dtos_total"`
 	DomainsCount       int `json:"domains_count"`
 }

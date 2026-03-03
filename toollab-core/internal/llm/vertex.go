@@ -24,7 +24,7 @@ type VertexProvider struct {
 
 func NewVertexProvider() *VertexProvider {
 	return &VertexProvider{
-		projectID: os.Getenv("GOOGLE_PROJECT_ID"),
+		projectID: firstNonEmptyEnv("GOOGLE_PROJECT_ID", "GOOGLE_CLOUD_PROJECT", "GCLOUD_PROJECT"),
 		region:    envOr("GOOGLE_REGION", "us-central1"),
 		model:     envOr("GOOGLE_LLM_MODEL", "gemini-2.5-flash"),
 		http:      &http.Client{Timeout: 8 * time.Minute},
@@ -32,7 +32,18 @@ func NewVertexProvider() *VertexProvider {
 }
 
 func (p *VertexProvider) Available() bool {
-	return p.projectID != "" && (os.Getenv("GOOGLE_ACCESS_TOKEN") != "" || os.Getenv("GOOGLE_APPLICATION_CREDENTIALS") != "")
+	if strings.TrimSpace(p.projectID) == "" {
+		return false
+	}
+	if strings.TrimSpace(os.Getenv("GOOGLE_ACCESS_TOKEN")) != "" {
+		return true
+	}
+	credPath := strings.TrimSpace(os.Getenv("GOOGLE_APPLICATION_CREDENTIALS"))
+	if credPath == "" {
+		return false
+	}
+	_, err := os.Stat(credPath)
+	return err == nil
 }
 
 func (p *VertexProvider) Name() string { return "vertex-" + p.model }
@@ -44,7 +55,7 @@ func (p *VertexProvider) RawPrompt(ctx context.Context, prompt string) ([]byte, 
 
 // TextPrompt sends a prompt expecting free-form text back (no JSON constraint).
 func (p *VertexProvider) TextPrompt(ctx context.Context, prompt string) (string, error) {
-	data, err := p.promptWithRetries(ctx, prompt, false, 8192)
+	data, err := p.promptWithRetries(ctx, prompt, false, 4096)
 	if err != nil {
 		return "", err
 	}
@@ -100,8 +111,8 @@ func (p *VertexProvider) doRequest(ctx context.Context, prompt string, jsonMode 
 	)
 
 	genConfig := vertexGenConfig{
-		Temperature:     0.2,
-		MaxOutputTokens: maxTokens,
+		Temperature:      0.2,
+		MaxOutputTokens:  maxTokens,
 		FrequencyPenalty: 0.5,
 	}
 	if jsonMode {
@@ -231,6 +242,15 @@ func envOr(key, fallback string) string {
 		return v
 	}
 	return fallback
+}
+
+func firstNonEmptyEnv(keys ...string) string {
+	for _, key := range keys {
+		if v := strings.TrimSpace(os.Getenv(key)); v != "" {
+			return v
+		}
+	}
+	return ""
 }
 
 func truncStr(s string, max int) string {
