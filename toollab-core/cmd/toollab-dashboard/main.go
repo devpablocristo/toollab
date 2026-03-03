@@ -75,11 +75,11 @@ func main() {
 
 	var llmRunner pipeline.LLMRunner
 	vertex := llm.NewVertexProvider()
+	llmRunner = llm.NewRunner(vertex, aSvc)
 	if vertex.Available() {
-		llmRunner = llm.NewRunner(vertex, aSvc)
 		log.Printf("LLM provider: %s", vertex.Name())
 	} else {
-		log.Printf("LLM provider: disabled (set GOOGLE_PROJECT_ID + GOOGLE_ACCESS_TOKEN for Vertex)")
+		log.Printf("LLM provider: %s (temporarily unavailable at startup; will retry on each run)", vertex.Name())
 	}
 
 	orch := pipeline.NewOrchestrator(tRepo, rRepo, aSvc, steps, llmRunner)

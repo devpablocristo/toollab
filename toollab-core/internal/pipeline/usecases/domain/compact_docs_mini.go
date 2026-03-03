@@ -1,3 +1,4 @@
+// Package domain defines pipeline dossier types and compaction helpers.
 package domain
 
 import (
@@ -65,7 +66,6 @@ func buildService(full *DossierV2Full, meta TargetMeta) DocsMiniService {
 
 // buildEndpoints creates one entry per endpoint with domain, request fields and response keys.
 func buildEndpoints(full *DossierV2Full) []DocsMiniEndpoint {
-	domainRequestHints := buildDomainRequestFieldHints(full)
 	statusByEP := buildPrimaryStatuses(full.Runtime.EvidenceSamples)
 
 	// Build response shape index from runtime evidence
@@ -122,10 +122,6 @@ func buildEndpoints(full *DossierV2Full) []DocsMiniEndpoint {
 				e.RequestFields = e.RequestFields[:maxContractFields]
 			}
 		}
-		if len(e.RequestFields) == 0 && isWriteMethod(e.Method) && len(domainRequestHints[e.Domain]) > 0 {
-			e.RequestFields = domainRequestHints[e.Domain]
-		}
-
 		if sample, ok := bestByEP[ep.EndpointID]; ok {
 			keys := extractTopLevelKeys(sample.Response.BodySnippet)
 			if len(keys) > 0 {
@@ -220,41 +216,6 @@ func inferOperationHint(method, path string) string {
 	default:
 		return "other"
 	}
-}
-
-func buildDomainRequestFieldHints(full *DossierV2Full) map[string][]string {
-	byDomain := map[string]map[string]bool{}
-	for _, entity := range full.AST.ASTEntities {
-		if entity.Kind != "dto" || len(entity.Fields) == 0 {
-			continue
-		}
-		domain := simplifyDomain(entity.ASTRef.Location.Package)
-		if byDomain[domain] == nil {
-			byDomain[domain] = map[string]bool{}
-		}
-		for _, f := range entity.Fields {
-			if f == "" {
-				continue
-			}
-			byDomain[domain][f] = true
-		}
-	}
-
-	hints := map[string][]string{}
-	for domain, fieldsSet := range byDomain {
-		fields := make([]string, 0, len(fieldsSet))
-		for f := range fieldsSet {
-			fields = append(fields, f)
-		}
-		if len(fields) > 1 {
-			sort.Strings(fields)
-		}
-		if len(fields) > maxContractFields {
-			fields = fields[:maxContractFields]
-		}
-		hints[domain] = fields
-	}
-	return hints
 }
 
 // simplifyDomain converts a full package path to a short domain name.

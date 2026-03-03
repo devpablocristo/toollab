@@ -1,3 +1,4 @@
+// Package llm provides providers and runners for docs/audit generation.
 package llm
 
 import (
@@ -23,8 +24,12 @@ type VertexProvider struct {
 }
 
 func NewVertexProvider() *VertexProvider {
+	projectID := firstNonEmptyEnv("GOOGLE_PROJECT_ID", "GOOGLE_CLOUD_PROJECT", "GCLOUD_PROJECT")
+	if projectID == "" {
+		projectID = projectIDFromADC()
+	}
 	return &VertexProvider{
-		projectID: firstNonEmptyEnv("GOOGLE_PROJECT_ID", "GOOGLE_CLOUD_PROJECT", "GCLOUD_PROJECT"),
+		projectID: projectID,
 		region:    envOr("GOOGLE_REGION", "us-central1"),
 		model:     envOr("GOOGLE_LLM_MODEL", "gemini-2.5-flash"),
 		http:      &http.Client{Timeout: 8 * time.Minute},
@@ -38,12 +43,14 @@ func (p *VertexProvider) Available() bool {
 	if strings.TrimSpace(os.Getenv("GOOGLE_ACCESS_TOKEN")) != "" {
 		return true
 	}
-	credPath := strings.TrimSpace(os.Getenv("GOOGLE_APPLICATION_CREDENTIALS"))
-	if credPath == "" {
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+	ts, err := google.DefaultTokenSource(ctx, cloudPlatformScope)
+	if err != nil {
 		return false
 	}
-	_, err := os.Stat(credPath)
-	return err == nil
+	tok, err := ts.Token()
+	return err == nil && tok != nil && strings.TrimSpace(tok.AccessToken) != ""
 }
 
 func (p *VertexProvider) Name() string { return "vertex-" + p.model }
@@ -188,20 +195,16 @@ func (p *VertexProvider) accessToken(ctx context.Context) (string, error) {
 		return token, nil
 	}
 
-	if os.Getenv("GOOGLE_APPLICATION_CREDENTIALS") == "" {
-		return "", fmt.Errorf("no Google auth configured: set GOOGLE_ACCESS_TOKEN or GOOGLE_APPLICATION_CREDENTIALS")
-	}
-
 	ts, err := google.DefaultTokenSource(ctx, cloudPlatformScope)
 	if err != nil {
-		return "", fmt.Errorf("loading Google default credentials: %w", err)
+		return "", fmt.Errorf("loading Google default credentials: %w (set GOOGLE_ACCESS_TOKEN or configure ADC via gcloud auth application-default login)", err)
 	}
 	tok, err := ts.Token()
 	if err != nil {
 		return "", fmt.Errorf("fetching Google access token from ADC: %w", err)
 	}
 	if tok == nil || strings.TrimSpace(tok.AccessToken) == "" {
-		return "", fmt.Errorf("Google ADC returned an empty access token")
+		return "", fmt.Errorf("google ADC returned an empty access token")
 	}
 	return tok.AccessToken, nil
 }
@@ -251,6 +254,28 @@ func firstNonEmptyEnv(keys ...string) string {
 		}
 	}
 	return ""
+}
+
+func projectIDFromADC() string {
+	credPath := strings.TrimSpace(os.Getenv("GOOGLE_APPLICATION_CREDENTIALS"))
+	if credPath == "" {
+		return ""
+	}
+	data, err := os.ReadFile(credPath)
+	if err != nil {
+		return ""
+	}
+	var adc struct {
+		QuotaProjectID string `json:"quota_project_id"`
+		ProjectID      string `json:"project_id"`
+	}
+	if err := json.Unmarshal(data, &adc); err != nil {
+		return ""
+	}
+	if strings.TrimSpace(adc.QuotaProjectID) != "" {
+		return strings.TrimSpace(adc.QuotaProjectID)
+	}
+	return strings.TrimSpace(adc.ProjectID)
 }
 
 func truncStr(s string, max int) string {

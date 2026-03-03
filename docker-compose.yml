@@ -17,8 +17,10 @@ services:
       - TOOLLAB_DATA_DIR=/app/data
       - TOOLLAB_HOST_REWRITE=localhost=host.docker.internal
       - GOOGLE_PROJECT_ID=${GOOGLE_PROJECT_ID:-toollab}
+      - GOOGLE_CLOUD_PROJECT=${GOOGLE_CLOUD_PROJECT:-toollab}
       - GOOGLE_REGION=${GOOGLE_REGION:-us-central1}
       - VERTEX_MODEL=${VERTEX_MODEL:-gemini-2.5-flash}
+      - GOOGLE_LLM_MODEL=${GOOGLE_LLM_MODEL:-gemini-2.5-flash}
       - GOOGLE_ACCESS_TOKEN=${GOOGLE_ACCESS_TOKEN:-}
       - GOOGLE_APPLICATION_CREDENTIALS=/root/.config/gcloud/application_default_credentials.json
     restart: unless-stopped
