@@ -8,18 +8,21 @@ alwaysApply: true
 Objetivo: mantener una estructura de servicio idéntica a Nexus en organización de directorios.
 
 - La división de `internal` se hace por dominio/capacidad del negocio.
-- Cada dominio usa exactamente esta estructura interna (como nexus-core):
+- Patrón obligatorio para cualquier servicio dentro de un dominio:
   ```
-  internal/{dominio}/
-      handler/          # HTTP handlers
-          dto/           # Request/response DTOs
-      usecases/          # Lógica de negocio
-          domain/        # Entidades, interfaces (ports), invariantes
-      repository/        # Persistencia (SQLite, filesystem, etc.)
-          models/        # Row models / DB models
+  internal/{dominio}/{servicio-x}/
+      dto/                # Opcional, solo si aplica
+
+  internal/{dominio}/{servicio-x}.go
   ```
-- NO usar nombres como `api/`, `app/`, `infra/`, `domain/` sueltos en la raíz del dominio.
-- Código compartido real va en `internal/shared/` (mínimo y estable).
-- Evitar dependencias circulares entre dominios.
-- Stubs de dominios futuros solo tienen `usecases/domain/` con interfaces.
-- Nuevos módulos deben respetar esta organización desde su creación.
+- El archivo principal `{servicio-x}.go` va en el root del dominio (NO dentro de subcarpetas `usecases/`, `handler/`, `repository/`).
+- La carpeta `{servicio-x}/` contiene archivos auxiliares del servicio; `dto/` es opcional.
+- `package` debe mantenerse como el del dominio (ej: `package exports`, `package llm`, etc.), no `package usecases`.
+- `internal/shared` sigue EXACTAMENTE el mismo patrón:
+  ```
+  internal/shared/{servicio-x}/
+      dto/                # Opcional
+
+  internal/shared/{servicio-x}.go
+  ```
+- No crear estructuras alternativas sin pedido explícito del usuario.

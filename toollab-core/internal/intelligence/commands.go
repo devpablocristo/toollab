@@ -8,12 +8,12 @@ import (
 )
 
 type commandContext struct {
-	baseURL       string
-	ep            d.EndpointEntry
-	authInfo      IntelAuthInfo
-	evidence      []d.EvidenceSample
-	contract      *d.InferredContract
-	annotations   *d.SemanticAnnotation
+	baseURL     string
+	ep          d.EndpointEntry
+	authInfo    IntelAuthInfo
+	evidence    []d.EvidenceSample
+	contract    *d.InferredContract
+	annotations *d.SemanticAnnotation
 }
 
 type IntelAuthInfo struct {

@@ -1,3 +1,4 @@
+// Package target contains target domain services and adapters.
 package target
 
 import (

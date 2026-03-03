@@ -75,7 +75,7 @@ func Generate(dossier *d.DossierV2Full) *d.EndpointIntelligence {
 		BaseURL:       baseURL,
 		GeneratedAt:   now,
 		Domains:       domains,
-		OpenQuestions:  openQuestions,
+		OpenQuestions: openQuestions,
 	}
 }
 

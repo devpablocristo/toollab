@@ -7,10 +7,10 @@ import (
 	"time"
 
 	artifactUC "toollab-core/internal/artifact"
-	"toollab-core/internal/shared"
-	d "toollab-core/internal/pipeline/usecases/domain"
 	"toollab-core/internal/exports"
 	"toollab-core/internal/pipeline"
+	d "toollab-core/internal/pipeline/usecases/domain"
+	"toollab-core/internal/shared"
 )
 
 // Step is the report builder (Step 9).

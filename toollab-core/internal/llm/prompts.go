@@ -64,7 +64,7 @@ const docsPrompt = `You are a senior technical writer. Write an API integration 
 
 DATA YOU HAVE:
 - service: identity + optional description
-- endpoints: method/path/domain + request_fields + response_keys from real 2xx
+- endpoints: method/path/domain + handler + operation_hint + primary_status + request_fields + response_keys from real runtime
 - auth: observed headers, auth error fingerprints, proven_required/proven_not_required/unknown
 - common_errors: repeated error patterns
 - gaps: unconfirmed_endpoints, endpoints_no_shape, endpoints_auth_unknown
@@ -73,6 +73,8 @@ DATA YOU HAVE:
 ONE RULE: never state something the data doesn't show.
 Allowed deductions:
 - route patterns can imply CRUD/lifecycle/state transitions
+- operation_hint should guide endpoint intent (list/create/update/delete/get_by_id/action)
+- primary_status should be used to describe typical outcomes per endpoint/flow
 - request_fields define input contracts
 - nested paths imply parent-child resource relationships
 Forbidden:
@@ -93,11 +95,14 @@ Include: "Documentation is inferred from AST + runtime evidence."
 ## 2. Domain Map
 Table: | Domain | Endpoints | Example Routes |
 Use endpoints only. Keep names as in data.
+When useful, mention dominant operation_hint per domain.
 
 ## 3. Contracts
 For each major domain:
 - Key request_fields from endpoints
 - Observed response_keys from endpoints
+- Mention handler names for the most important write/read endpoints
+- Mention typical primary_status for those endpoints
 - Mention "no runtime shape" when response_keys are missing
 This section must be concrete and evidence-based.
 
@@ -107,7 +112,9 @@ This section must be concrete and evidence-based.
 - Ordered steps: METHOD PATH
 - Input contract references (request_fields and/or common_errors)
 - Observed output shape (response_keys) or "no runtime shape"
+- Typical status profile from primary_status
 State once: "Flows are deduced from endpoint patterns and observed contracts."
+Prefer flows that mix read + write operations, using operation_hint and handler continuity.
 
 ## 5. Authentication
 Only auth data:
@@ -129,6 +136,7 @@ FORMATTING:
 - No line > 200 chars.
 - Prefer bullets over wide tables.
 - Do not output JSON.
+- Avoid dumping all domains/endpoints in detail; prioritize the 5-8 most integration-relevant domains by operation diversity and evidence.
 
 OUTPUT: Markdown. Start with H1.`
 

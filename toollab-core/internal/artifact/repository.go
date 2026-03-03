@@ -1,4 +1,4 @@
-package repository
+package artifact
 
 import (
 	"database/sql"

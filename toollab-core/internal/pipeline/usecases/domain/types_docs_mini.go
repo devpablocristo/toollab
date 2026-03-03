@@ -26,6 +26,9 @@ type DocsMiniEndpoint struct {
 	Method        string   `json:"method"`
 	Path          string   `json:"path"`
 	Domain        string   `json:"domain"`
+	Handler       string   `json:"handler,omitempty"`
+	OperationHint string   `json:"operation_hint,omitempty"`
+	PrimaryStatus []int    `json:"primary_status,omitempty"`
 	RequestFields []string `json:"request_fields,omitempty"`
 	ResponseKeys  []string `json:"response_keys,omitempty"`
 }

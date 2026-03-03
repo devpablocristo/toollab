@@ -170,7 +170,7 @@ export default function TargetDetail() {
             {summary ? 'Re-analyze' : 'Analyze'}
           </button>
         )}
-      </div>
+        </div>
 
       {!running && !summary && !error && (
         <div className="card p-8 text-center mb-8">
@@ -179,7 +179,7 @@ export default function TargetDetail() {
             className="px-4 py-2 rounded bg-accent/20 text-accent font-mono text-sm hover:bg-accent/30 transition-colors">
             Start Analysis
           </button>
-        </div>
+      </div>
       )}
 
       {running && (
@@ -372,7 +372,7 @@ function ScoreHeader({ summary }: { summary: RunSummary }) {
                 <p className="text-[10px] font-display font-semibold tracking-wider text-ghost uppercase">Dimensional Scores (0-5)</p>
                 {summary.run_mode === 'online_partial' && <Badge color="warn">Low Confidence</Badge>}
               </div>
-              <div className="space-y-2">
+        <div className="space-y-2">
                 {dims.map(([dim, score]) => (
                   <div key={dim} className="flex items-center gap-2">
                     <span className="text-sm w-5 text-center">{SCORE_ICONS[dim] ?? '?'}</span>
@@ -1575,7 +1575,7 @@ function EndpointDetail({ endpointId, runId }: { endpointId: string; runId: stri
       </div>
 
       {/* Auth */}
-      <div className="flex items-center gap-3">
+                <div className="flex items-center gap-3">
         <p className="text-[10px] font-display font-semibold tracking-wider text-ghost uppercase">Auth</p>
         <AuthBadge auth={ep.auth.required} />
         <span className="text-[10px] font-mono text-ghost">from: {ep.auth.from}</span>
@@ -1585,7 +1585,7 @@ function EndpointDetail({ endpointId, runId }: { endpointId: string; runId: stri
 
       {/* Inputs */}
       {((ep.inputs.path_params ?? []).length > 0 || (ep.inputs.query_params ?? []).length > 0 || (ep.inputs.headers ?? []).length > 0 || ep.inputs.body) && (
-        <div>
+                  <div>
           <p className="text-[10px] font-display font-semibold tracking-wider text-ghost uppercase mb-2">Inputs</p>
           <div className="grid grid-cols-2 gap-3">
             {(ep.inputs.path_params ?? []).length > 0 && (
@@ -1598,7 +1598,7 @@ function EndpointDetail({ endpointId, runId }: { endpointId: string; runId: stri
                     <span className="text-ghost truncate">{p.meaning}</span>
                   </div>
                 ))}
-              </div>
+                </div>
             )}
             {(ep.inputs.query_params ?? []).length > 0 && (
               <div className="p-3 bg-surface rounded-sm border border-edge/50">
@@ -1607,7 +1607,7 @@ function EndpointDetail({ endpointId, runId }: { endpointId: string; runId: stri
                   <div key={i} className="flex items-center gap-2 text-xs">
                     <span className="font-mono text-info">{p.name}</span>
                     <span className="text-ghost-faint">{p.type}</span>
-                  </div>
+              </div>
                 ))}
               </div>
             )}
@@ -1820,7 +1820,7 @@ function RequestBuilder({ endpointId, runId, endpoint }: { endpointId: string; r
         <svg xmlns="http://www.w3.org/2000/svg" className={`h-3 w-3 text-ghost transition-transform ${expanded ? 'rotate-180' : ''}`} viewBox="0 0 20 20" fill="currentColor">
           <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
         </svg>
-      </button>
+            </button>
 
       {expanded && (
         <div className="p-4 space-y-4 bg-obsidian/40 animate-fade-in">
@@ -1850,7 +1850,7 @@ function RequestBuilder({ endpointId, runId, endpoint }: { endpointId: string; r
                       authMode === m ? 'border-accent text-accent bg-surface' : 'border-edge text-ghost bg-surface/50 hover:border-ghost'
                     }`}>{m === 'none' ? 'None' : m === 'bearer' ? 'Bearer' : m === 'api_key' ? 'API Key' : 'Cookie'}</button>
                 ))}
-              </div>
+        </div>
               {authMode !== 'none' && (
                 <input type="password" value={authValue} onChange={e => setAuthValue(e.target.value)}
                   placeholder={authMode === 'bearer' ? 'Token value' : authMode === 'api_key' ? 'API key value' : 'Cookie string'}

@@ -1,4 +1,4 @@
-package handler
+package target
 
 import (
 	"encoding/json"
@@ -8,13 +8,12 @@ import (
 
 	"toollab-core/internal/shared"
 	"toollab-core/internal/target/handler/dto"
-	target "toollab-core/internal/target"
 	"toollab-core/internal/target/usecases/domain"
 )
 
-type Handler struct{ svc *target.Service }
+type Handler struct{ svc *Service }
 
-func New(svc *target.Service) *Handler { return &Handler{svc: svc} }
+func New(svc *Service) *Handler { return &Handler{svc: svc} }
 
 func (h *Handler) Routes() chi.Router {
 	r := chi.NewRouter()

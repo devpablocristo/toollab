@@ -1,3 +1,4 @@
+// Package run contains run lifecycle services and adapters.
 package run
 
 import (

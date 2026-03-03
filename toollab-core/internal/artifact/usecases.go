@@ -1,3 +1,4 @@
+// Package artifact contains artifact services, storage, and indexing adapters.
 package artifact
 
 import (

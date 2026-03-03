@@ -11,6 +11,7 @@ const (
 	docsMiniSchemaVersion = "docs-mini-v5"
 	maxContractFields     = 10
 	maxResponseKeys       = 8
+	maxPrimaryStatuses    = 3
 )
 
 // TargetMeta holds minimal target info to enrich the dossier.
@@ -65,6 +66,7 @@ func buildService(full *DossierV2Full, meta TargetMeta) DocsMiniService {
 // buildEndpoints creates one entry per endpoint with domain, request fields and response keys.
 func buildEndpoints(full *DossierV2Full) []DocsMiniEndpoint {
 	domainRequestHints := buildDomainRequestFieldHints(full)
+	statusByEP := buildPrimaryStatuses(full.Runtime.EvidenceSamples)
 
 	// Build response shape index from runtime evidence
 	bestByEP := map[string]EvidenceSample{}
@@ -101,7 +103,9 @@ func buildEndpoints(full *DossierV2Full) []DocsMiniEndpoint {
 		}
 		if ep.HandlerRef != nil {
 			e.Domain = simplifyDomain(ep.HandlerRef.Location.Package)
+			e.Handler = ep.HandlerRef.Label
 		}
+		e.OperationHint = inferOperationHint(e.Method, e.Path)
 
 		if c, ok := contractByEP[ep.EndpointID]; ok {
 			if c.RequestSchema != nil {
@@ -132,6 +136,9 @@ func buildEndpoints(full *DossierV2Full) []DocsMiniEndpoint {
 				e.ResponseKeys = keys
 			}
 		}
+		if statuses, ok := statusByEP[ep.EndpointID]; ok {
+			e.PrimaryStatus = statuses
+		}
 
 		endpoints = append(endpoints, e)
 	}
@@ -144,6 +151,75 @@ func buildEndpoints(full *DossierV2Full) []DocsMiniEndpoint {
 	})
 
 	return endpoints
+}
+
+func buildPrimaryStatuses(samples []EvidenceSample) map[string][]int {
+	countsByEP := map[string]map[int]int{}
+	for _, s := range samples {
+		if s.EndpointID == "" || s.Response == nil {
+			continue
+		}
+		if countsByEP[s.EndpointID] == nil {
+			countsByEP[s.EndpointID] = map[int]int{}
+		}
+		countsByEP[s.EndpointID][s.Response.Status]++
+	}
+
+	out := map[string][]int{}
+	for epID, statusCounts := range countsByEP {
+		type pair struct {
+			status int
+			count  int
+		}
+		top := make([]pair, 0, len(statusCounts))
+		for st, c := range statusCounts {
+			top = append(top, pair{status: st, count: c})
+		}
+		sort.Slice(top, func(i, j int) bool {
+			if top[i].count != top[j].count {
+				return top[i].count > top[j].count
+			}
+			return top[i].status < top[j].status
+		})
+		limit := maxPrimaryStatuses
+		if len(top) < limit {
+			limit = len(top)
+		}
+		statuses := make([]int, 0, limit)
+		for _, p := range top[:limit] {
+			statuses = append(statuses, p.status)
+		}
+		out[epID] = statuses
+	}
+	return out
+}
+
+func inferOperationHint(method, path string) string {
+	m := strings.ToUpper(method)
+	p := strings.ToLower(path)
+	last := p
+	if i := strings.LastIndex(last, "/"); i >= 0 && i+1 < len(last) {
+		last = last[i+1:]
+	}
+	if strings.HasPrefix(last, ":") {
+		last = ""
+	}
+	switch {
+	case m == "GET" && strings.Contains(p, ":"):
+		return "get_by_id"
+	case m == "GET":
+		return "list"
+	case m == "POST" && (strings.Contains(p, "/close") || strings.Contains(p, "/approve") || strings.Contains(p, "/reject") || strings.Contains(p, "/rollback") || strings.Contains(p, "/apply") || strings.Contains(p, "/create") || strings.Contains(p, "/replay") || strings.Contains(p, "/simulate")):
+		return "action"
+	case m == "POST":
+		return "create"
+	case m == "PUT" || m == "PATCH":
+		return "update"
+	case m == "DELETE":
+		return "delete"
+	default:
+		return "other"
+	}
 }
 
 func buildDomainRequestFieldHints(full *DossierV2Full) map[string][]string {

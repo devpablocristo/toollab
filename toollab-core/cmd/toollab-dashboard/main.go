@@ -9,14 +9,9 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 
-	artifactRepo "toollab-core/internal/artifact/repository"
 	artifactUC "toollab-core/internal/artifact"
-	runHandler "toollab-core/internal/run/handler"
-	runRepo "toollab-core/internal/run/repository"
 	runUC "toollab-core/internal/run"
 	"toollab-core/internal/shared"
-	targetHandler "toollab-core/internal/target/handler"
-	targetRepo "toollab-core/internal/target/repository"
 	targetUC "toollab-core/internal/target"
 
 	"toollab-core/internal/abuse"
@@ -56,10 +51,10 @@ func main() {
 		log.Fatalf("running migrations: %v", err)
 	}
 
-	tRepo := targetRepo.NewSQLite(db)
-	rRepo := runRepo.NewSQLite(db)
-	aIdxRepo := artifactRepo.NewSQLite(db)
-	aStorage := artifactRepo.NewFSStorage(dataDir)
+	tRepo := targetUC.NewSQLite(db)
+	rRepo := runUC.NewSQLite(db)
+	aIdxRepo := artifactUC.NewSQLite(db)
+	aStorage := artifactUC.NewFSStorage(dataDir)
 
 	tSvc := targetUC.NewService(tRepo)
 	rSvc := runUC.NewService(rRepo, tRepo)
@@ -90,8 +85,8 @@ func main() {
 	orch := pipeline.NewOrchestrator(tRepo, rRepo, aSvc, steps, llmRunner)
 	azH := pipeline.NewHandler(orch)
 
-	tH := targetHandler.New(tSvc)
-	rH := runHandler.New(rSvc, aSvc)
+	tH := targetUC.New(tSvc)
+	rH := runUC.New(rSvc, aSvc)
 	pgH := playground.NewHandler(aSvc)
 
 	r := chi.NewRouter()
