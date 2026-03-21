@@ -1,59 +1,53 @@
 # ToolLab UI
 
-Web interface for the ToolLab v3 laboratory loop.
+Frontend React/TypeScript del laboratorio ToolLab. Consume `toollab-core` y ofrece un workspace para lanzar análisis, revisar evidencia, navegar endpoints y leer documentación derivada del run.
 
 ## Quickstart
 
 ```bash
-# 1. Start the backend (from toollab-core/)
-make run
+# 1. Levantar backend
+cd ../toollab-core
+CGO_ENABLED=1 go run ./cmd/toollab-dashboard
 
-# 2. Install UI dependencies
-cd ui
+# 2. Instalar dependencias del frontend
+cd ../toollab-ui
 npm install
 
-# 3. Start dev server (proxies API to localhost:8090)
+# 3. Levantar Vite
 npm run dev
 ```
 
-Open [http://localhost:5173](http://localhost:5173)
+Abrir [http://localhost:5173](http://localhost:5173)
 
-## Configuration
+## Configuración
 
-| Variable | Default | Description |
+| Variable | Default | Descripción |
 |---|---|---|
-| `VITE_API_BASE_URL` | (empty, uses proxy) | Backend URL. In dev, Vite proxies `/api` to `localhost:8090`. |
+| `VITE_API_BASE_URL` | vacío | Base URL del backend. En dev, Vite proxea `/api` a `localhost:8090`. |
 
-## Lab Loop (6 steps)
+## Superficie actual
 
-1. **Create Target** — Set name, source path, and base URL
-2. **Create Run** — Opens the Run Workspace
-3. **Discover** — AST analysis generates `service_model` + `scenario_plan`
-4. **Execute** — Runs scenarios against the target, captures `evidence_pack`
-5. **Audit** — Deterministic rule engine produces `audit_report` with anchored findings
-6. **Interpret** — LLM-bounded interpretation with facts, inferences, and guided tour
+- `/targets`: listado y creación de targets
+- `/targets/:targetId`: vista principal del target con último run y re-analyze
+- `Dashboard`: scores, `run_mode`, findings y métricas agregadas
+- `Endpoints`: `endpoint_intelligence` e instrucciones por endpoint
+- `Raw QA`: artifacts crudos y exploración operativa
+- `Documentation`: render de `llm_docs`
+- `Audit`: render de `llm_audit` cuando exista
 
-## Screens
+## Comportamiento relevante
 
-- `/targets` — List and create targets
-- `/targets/:id` — Target detail + runs list
-- `/runs/:id` — **Run Workspace** with tabs:
-  - **Overview** — Stepper showing loop progress + next step CTA
-  - **Model** — Endpoint explorer with handler refs (file:line)
-  - **Scenario** — Plan editor (table + JSON modes) with save
-  - **Execute** — Run controls with tag/case filtering
-  - **Evidence** — Evidence pack viewer with item detail + full bodies
-  - **Audit** — Findings list with severity badges + cross-links to evidence/model
-  - **Interpret** — Guided tour, facts, inferences, open questions, scenario suggestions
-
-## Deep Links
-
-Navigate across tabs with query params:
-
-- `/runs/:id?tab=evidence&eid=...` — Open evidence item
-- `/runs/:id?tab=audit&fid=...` — Open finding detail
-- `/runs/:id?tab=model&ek=...` — Open endpoint
+- `Analyze` usa SSE contra `POST /api/v1/targets/{target_id}/analyze`
+- el idioma `EN/ES` afecta el output narrativo del runtime LLM
+- documentación y auditoría se consultan por polling hasta que el artifact exista o falle
+- la UI consume `run_summary`, `endpoint_intelligence_index`, `endpoint_queries` y artifacts tipados
 
 ## Stack
 
-React 18 + TypeScript + Vite 5 + TailwindCSS 3 + React Router 6 + TanStack Query 5
+React 18 + TypeScript + Vite 5 + TailwindCSS 3 + React Router 6 + TanStack Query 5 + React Markdown
+
+## Build
+
+```bash
+npm run build
+```

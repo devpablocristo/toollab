@@ -2,6 +2,7 @@ import { Routes, Route, Navigate } from 'react-router-dom'
 import { useState, createContext, useContext } from 'react'
 import Targets from './pages/Targets'
 import TargetDetail from './pages/TargetDetail'
+import { appStorage } from './lib/storage'
 
 type Lang = 'en' | 'es'
 export const LangContext = createContext<{ lang: Lang; setLang: (l: Lang) => void }>({ lang: 'en', setLang: () => {} })
@@ -24,8 +25,8 @@ function LangToggle() {
 }
 
 export default function App() {
-  const [lang, setLang] = useState<Lang>(() => (localStorage.getItem('toollab_lang') as Lang) || 'en')
-  const setAndPersist = (l: Lang) => { setLang(l); localStorage.setItem('toollab_lang', l) }
+  const [lang, setLang] = useState<Lang>(() => (appStorage.getString('lang') as Lang) || 'en')
+  const setAndPersist = (l: Lang) => { setLang(l); appStorage.setString('lang', l) }
 
   return (
     <LangContext.Provider value={{ lang, setLang: setAndPersist }}>
