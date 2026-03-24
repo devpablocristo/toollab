@@ -7,7 +7,7 @@ import (
 	"time"
 
 	artifactUC "toollab-core/internal/artifact"
-	"toollab-core/internal/shared"
+	artDomain "toollab-core/internal/artifact/usecases/domain"
 )
 
 // Runner generates LLM docs and audit reports asynchronously.
@@ -92,9 +92,9 @@ func (r *Runner) RunAsync(ctx context.Context, runID string, docsMiniJSON, audit
 
 	for i := 0; i < expected; i++ {
 		res := <-ch
-		artType := shared.ArtifactLLMDocs
+		artType := artDomain.ArtifactLLMDocs
 		if res.kind == "audit" {
-			artType = shared.ArtifactLLMAudit
+			artType = artDomain.ArtifactLLMAudit
 		}
 
 		if res.err != nil {
@@ -110,7 +110,7 @@ func (r *Runner) RunAsync(ctx context.Context, runID string, docsMiniJSON, audit
 	}
 }
 
-func (r *Runner) saveFailure(runID string, artType shared.ArtifactType, msg string) {
+func (r *Runner) saveFailure(runID string, artType artDomain.ArtifactType, msg string) {
 	errJSON, _ := json.Marshal(map[string]string{"status": "failed", "error": msg})
 	if _, err := r.artifactSvc.Put(runID, artType, errJSON); err != nil {
 		log.Printf("LLM failure artifact save failed (run %s, type %s): %v", runID, artType, err)

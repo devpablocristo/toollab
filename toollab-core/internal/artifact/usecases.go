@@ -4,10 +4,14 @@ package artifact
 import (
 	"encoding/json"
 	"fmt"
+	"time"
+
+	"github.com/devpablocristo/core/backend/go/domainerr"
+	"github.com/devpablocristo/core/backend/go/hashutil"
+	"github.com/google/uuid"
 
 	"toollab-core/internal/artifact/usecases/domain"
 	runDomain "toollab-core/internal/run/usecases/domain"
-	"toollab-core/internal/shared"
 )
 
 const maxArtifactSize = 10 * 1024 * 1024
@@ -24,7 +28,7 @@ func NewService(indexRepo domain.IndexRepository, storage domain.ContentStorage,
 
 type PutResult struct {
 	RunID         string              `json:"run_id"`
-	Type          shared.ArtifactType `json:"type"`
+	Type          domain.ArtifactType `json:"type"`
 	SchemaVersion string              `json:"schema_version"`
 	Revision      int                 `json:"revision"`
 	ContentHash   string              `json:"content_hash"`
@@ -32,27 +36,27 @@ type PutResult struct {
 	CreatedAt     string              `json:"created_at"`
 }
 
-func (s *Service) Put(runID string, artType shared.ArtifactType, rawJSON []byte) (PutResult, error) {
+func (s *Service) Put(runID string, artType domain.ArtifactType, rawJSON []byte) (PutResult, error) {
 	if !json.Valid(rawJSON) {
-		return PutResult{}, fmt.Errorf("%w: body is not valid JSON", shared.ErrInvalidInput)
+		return PutResult{}, domainerr.Validation("body is not valid JSON")
 	}
 	return s.putBytes(runID, artType, rawJSON)
 }
 
 // PutRaw stores any byte payload (CSV, YAML, plain text, etc.) without JSON validation.
-func (s *Service) PutRaw(runID string, artType shared.ArtifactType, data []byte) (PutResult, error) {
+func (s *Service) PutRaw(runID string, artType domain.ArtifactType, data []byte) (PutResult, error) {
 	return s.putBytes(runID, artType, data)
 }
 
-func (s *Service) putBytes(runID string, artType shared.ArtifactType, data []byte) (PutResult, error) {
+func (s *Service) putBytes(runID string, artType domain.ArtifactType, data []byte) (PutResult, error) {
 	if _, err := s.runRepo.GetByID(runID); err != nil {
 		return PutResult{}, err
 	}
 	if !artType.Valid() {
-		return PutResult{}, fmt.Errorf("%w: invalid artifact type %q", shared.ErrInvalidInput, artType)
+		return PutResult{}, domainerr.Validation(fmt.Sprintf("invalid artifact type %q", artType))
 	}
 	if int64(len(data)) > maxArtifactSize {
-		return PutResult{}, fmt.Errorf("%w: artifact exceeds max size (%d bytes)", shared.ErrInvalidInput, maxArtifactSize)
+		return PutResult{}, domainerr.Validation(fmt.Sprintf("artifact exceeds max size (%d bytes)", maxArtifactSize))
 	}
 
 	rev, err := s.indexRepo.NextRevision(runID, artType)
@@ -61,11 +65,11 @@ func (s *Service) putBytes(runID string, artType shared.ArtifactType, data []byt
 	}
 
 	storagePath := StoragePath(runID, string(artType), rev)
-	contentHash := shared.SHA256Bytes(data)
-	now := shared.Now()
+	contentHash := hashutil.SHA256BytesHex(data)
+	now := time.Now().UTC()
 
 	idx := domain.Index{
-		ID:            shared.NewID(),
+		ID:            uuid.New().String(),
 		RunID:         runID,
 		Type:          artType,
 		SchemaVersion: "v1",
@@ -90,11 +94,11 @@ func (s *Service) putBytes(runID string, artType shared.ArtifactType, data []byt
 		Revision:      rev,
 		ContentHash:   contentHash,
 		SizeBytes:     idx.SizeBytes,
-		CreatedAt:     now.Format(shared.TimeFormat),
+		CreatedAt:     now.Format(time.RFC3339),
 	}, nil
 }
 
-func (s *Service) GetLatest(runID string, artType shared.ArtifactType) ([]byte, domain.Index, error) {
+func (s *Service) GetLatest(runID string, artType domain.ArtifactType) ([]byte, domain.Index, error) {
 	idx, err := s.indexRepo.GetLatest(runID, artType)
 	if err != nil {
 		return nil, domain.Index{}, err
@@ -103,7 +107,7 @@ func (s *Service) GetLatest(runID string, artType shared.ArtifactType) ([]byte, 
 	return data, idx, err
 }
 
-func (s *Service) GetByRevision(runID string, artType shared.ArtifactType, revision int) ([]byte, domain.Index, error) {
+func (s *Service) GetByRevision(runID string, artType domain.ArtifactType, revision int) ([]byte, domain.Index, error) {
 	idx, err := s.indexRepo.GetByRevision(runID, artType, revision)
 	if err != nil {
 		return nil, domain.Index{}, err
@@ -112,15 +116,15 @@ func (s *Service) GetByRevision(runID string, artType shared.ArtifactType, revis
 	return data, idx, err
 }
 
-func (s *Service) GetLatestMeta(runID string, artType shared.ArtifactType) (domain.Index, error) {
+func (s *Service) GetLatestMeta(runID string, artType domain.ArtifactType) (domain.Index, error) {
 	return s.indexRepo.GetLatest(runID, artType)
 }
 
-func (s *Service) GetRevisionMeta(runID string, artType shared.ArtifactType, revision int) (domain.Index, error) {
+func (s *Service) GetRevisionMeta(runID string, artType domain.ArtifactType, revision int) (domain.Index, error) {
 	return s.indexRepo.GetByRevision(runID, artType, revision)
 }
 
-func (s *Service) ListRevisions(runID string, artType shared.ArtifactType) ([]domain.Index, error) {
+func (s *Service) ListRevisions(runID string, artType domain.ArtifactType) ([]domain.Index, error) {
 	return s.indexRepo.ListRevisions(runID, artType)
 }
 

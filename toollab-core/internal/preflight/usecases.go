@@ -5,12 +5,12 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"os"
 	"strings"
 	"time"
 
 	d "toollab-core/internal/pipeline/usecases/domain"
 	"toollab-core/internal/pipeline"
-	"toollab-core/internal/shared"
 )
 
 type Step struct{}
@@ -32,7 +32,7 @@ func (s *Step) Run(ctx context.Context, state *pipeline.PipelineState) d.StepRes
 		}
 	}
 
-	baseURL = shared.RewriteHost(baseURL)
+	baseURL = rewriteHost(baseURL)
 
 	profile := &d.TargetProfile{
 		SchemaVersion: "v2",
@@ -149,6 +149,20 @@ func (s *Step) Run(ctx context.Context, state *pipeline.PipelineState) d.StepRes
 		DurationMs: ms(start),
 		BudgetUsed: budgetUsed,
 	}
+}
+
+// rewriteHost applies TOOLLAB_HOST_REWRITE env var to URLs.
+// Format: "from=to" e.g. "localhost=host.docker.internal"
+func rewriteHost(u string) string {
+	rewrite := os.Getenv("TOOLLAB_HOST_REWRITE")
+	if rewrite == "" {
+		return u
+	}
+	parts := strings.SplitN(rewrite, "=", 2)
+	if len(parts) != 2 {
+		return u
+	}
+	return strings.Replace(u, parts[0], parts[1], 1)
 }
 
 func ms(start time.Time) int64 { return time.Since(start).Milliseconds() }

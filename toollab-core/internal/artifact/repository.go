@@ -2,9 +2,11 @@ package artifact
 
 import (
 	"database/sql"
+	"time"
+
+	"github.com/devpablocristo/core/backend/go/domainerr"
 
 	"toollab-core/internal/artifact/usecases/domain"
-	"toollab-core/internal/shared"
 )
 
 type SQLite struct{ db *sql.DB }
@@ -17,26 +19,26 @@ func (r *SQLite) Insert(idx domain.Index) error {
 		 VALUES (?,?,?,?,?,?,?,?,?)`,
 		idx.ID, idx.RunID, idx.Type, idx.SchemaVersion, idx.Revision,
 		idx.ContentHash, idx.SizeBytes, idx.StoragePath,
-		idx.CreatedAt.Format(shared.TimeFormat),
+		idx.CreatedAt.Format(time.RFC3339),
 	)
 	return err
 }
 
-func (r *SQLite) GetLatest(runID string, artType shared.ArtifactType) (domain.Index, error) {
+func (r *SQLite) GetLatest(runID string, artType domain.ArtifactType) (domain.Index, error) {
 	row := r.db.QueryRow(
 		`SELECT id,run_id,type,schema_version,revision,content_hash,size_bytes,storage_path,created_at
 		 FROM artifacts WHERE run_id=? AND type=? ORDER BY revision DESC LIMIT 1`, runID, artType)
 	return scanIndex(row)
 }
 
-func (r *SQLite) GetByRevision(runID string, artType shared.ArtifactType, revision int) (domain.Index, error) {
+func (r *SQLite) GetByRevision(runID string, artType domain.ArtifactType, revision int) (domain.Index, error) {
 	row := r.db.QueryRow(
 		`SELECT id,run_id,type,schema_version,revision,content_hash,size_bytes,storage_path,created_at
 		 FROM artifacts WHERE run_id=? AND type=? AND revision=?`, runID, artType, revision)
 	return scanIndex(row)
 }
 
-func (r *SQLite) ListRevisions(runID string, artType shared.ArtifactType) ([]domain.Index, error) {
+func (r *SQLite) ListRevisions(runID string, artType domain.ArtifactType) ([]domain.Index, error) {
 	rows, err := r.db.Query(
 		`SELECT id,run_id,type,schema_version,revision,content_hash,size_bytes,storage_path,created_at
 		 FROM artifacts WHERE run_id=? AND type=? ORDER BY revision DESC`, runID, artType)
@@ -58,7 +60,7 @@ func (r *SQLite) ListByRun(runID string) ([]domain.Index, error) {
 	return collectIndices(rows)
 }
 
-func (r *SQLite) NextRevision(runID string, artType shared.ArtifactType) (int, error) {
+func (r *SQLite) NextRevision(runID string, artType domain.ArtifactType) (int, error) {
 	var maxRev sql.NullInt64
 	err := r.db.QueryRow(
 		`SELECT MAX(revision) FROM artifacts WHERE run_id=? AND type=?`, runID, artType,
@@ -78,12 +80,12 @@ func scanIndex(row *sql.Row) (domain.Index, error) {
 	err := row.Scan(&idx.ID, &idx.RunID, &idx.Type, &idx.SchemaVersion,
 		&idx.Revision, &idx.ContentHash, &idx.SizeBytes, &idx.StoragePath, &ca)
 	if err == sql.ErrNoRows {
-		return idx, shared.ErrNotFound
+		return idx, domainerr.NotFound("not found")
 	}
 	if err != nil {
 		return idx, err
 	}
-	idx.CreatedAt, _ = shared.ParseTime(ca)
+	idx.CreatedAt, _ = time.Parse(time.RFC3339, ca)
 	return idx, nil
 }
 
@@ -97,7 +99,7 @@ func collectIndices(rows *sql.Rows) ([]domain.Index, error) {
 		if err != nil {
 			return nil, err
 		}
-		idx.CreatedAt, _ = shared.ParseTime(ca)
+		idx.CreatedAt, _ = time.Parse(time.RFC3339, ca)
 		out = append(out, idx)
 	}
 	return out, rows.Err()

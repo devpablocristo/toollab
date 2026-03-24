@@ -6,8 +6,11 @@ import (
 
 	"github.com/go-chi/chi/v5"
 
+	"github.com/devpablocristo/core/backend/go/domainerr"
+	"github.com/devpablocristo/core/backend/go/httpjson"
+
 	artifactUC "toollab-core/internal/artifact"
-	"toollab-core/internal/shared"
+	artDomain "toollab-core/internal/artifact/usecases/domain"
 )
 
 type Handler struct {
@@ -35,56 +38,56 @@ func (h *Handler) LatestRunForTarget(w http.ResponseWriter, r *http.Request) {
 	targetID := chi.URLParam(r, "target_id")
 	run, err := h.svc.LatestCompleted(targetID)
 	if err != nil {
-		shared.WriteError(w, shared.ErrorStatus(err), err.Error())
+		writeError(w, err)
 		return
 	}
-	data, _, artErr := h.artifactSvc.GetLatest(run.ID, shared.ArtifactRunSummary)
+	data, _, artErr := h.artifactSvc.GetLatest(run.ID, artDomain.ArtifactRunSummary)
 	if artErr != nil {
-		shared.WriteJSON(w, http.StatusOK, map[string]any{"run": run, "run_summary": nil})
+		httpjson.WriteJSON(w, http.StatusOK, map[string]any{"run": run, "run_summary": nil})
 		return
 	}
 	var summary json.RawMessage = data
-	shared.WriteJSON(w, http.StatusOK, map[string]any{"run": run, "run_summary": summary})
+	httpjson.WriteJSON(w, http.StatusOK, map[string]any{"run": run, "run_summary": summary})
 }
 
 func (h *Handler) get(w http.ResponseWriter, r *http.Request) {
 	run, err := h.svc.Get(chi.URLParam(r, "run_id"))
 	if err != nil {
-		shared.WriteError(w, shared.ErrorStatus(err), err.Error())
+		writeError(w, err)
 		return
 	}
-	shared.WriteJSON(w, http.StatusOK, run)
+	httpjson.WriteJSON(w, http.StatusOK, run)
 }
 
 func (h *Handler) getAudit(w http.ResponseWriter, r *http.Request) {
-	h.serveArtifact(w, chi.URLParam(r, "run_id"), shared.ArtifactLLMAudit)
+	h.serveArtifact(w, chi.URLParam(r, "run_id"), artDomain.ArtifactLLMAudit)
 }
 
 func (h *Handler) getDocs(w http.ResponseWriter, r *http.Request) {
-	h.serveArtifact(w, chi.URLParam(r, "run_id"), shared.ArtifactLLMDocs)
+	h.serveArtifact(w, chi.URLParam(r, "run_id"), artDomain.ArtifactLLMDocs)
 }
 
 func (h *Handler) getArtifact(w http.ResponseWriter, r *http.Request) {
 	runID := chi.URLParam(r, "run_id")
-	artType, err := shared.ParseArtifactType(chi.URLParam(r, "artifact_type"))
+	artType, err := artDomain.ParseArtifactType(chi.URLParam(r, "artifact_type"))
 	if err != nil {
-		shared.WriteError(w, http.StatusBadRequest, err.Error())
+		httpjson.WriteError(w, http.StatusBadRequest, "VALIDATION_ERROR", err.Error())
 		return
 	}
 	h.serveArtifact(w, runID, artType)
 }
 
 func (h *Handler) getEndpointIndex(w http.ResponseWriter, r *http.Request) {
-	h.serveArtifact(w, chi.URLParam(r, "run_id"), shared.ArtifactEndpointIntelIndex)
+	h.serveArtifact(w, chi.URLParam(r, "run_id"), artDomain.ArtifactEndpointIntelIndex)
 }
 
 func (h *Handler) getEndpointDetail(w http.ResponseWriter, r *http.Request) {
 	runID := chi.URLParam(r, "run_id")
 	endpointID := chi.URLParam(r, "endpoint_id")
 
-	data, _, err := h.artifactSvc.GetLatest(runID, shared.ArtifactEndpointIntelligence)
+	data, _, err := h.artifactSvc.GetLatest(runID, artDomain.ArtifactEndpointIntelligence)
 	if err != nil {
-		shared.WriteError(w, shared.ErrorStatus(err), err.Error())
+		writeError(w, err)
 		return
 	}
 
@@ -95,7 +98,7 @@ func (h *Handler) getEndpointDetail(w http.ResponseWriter, r *http.Request) {
 		} `json:"domains"`
 	}
 	if err := json.Unmarshal(data, &intel); err != nil {
-		shared.WriteError(w, http.StatusInternalServerError, "parse intelligence: "+err.Error())
+		httpjson.WriteError(w, http.StatusInternalServerError, "INTERNAL", "internal error")
 		return
 	}
 
@@ -121,16 +124,16 @@ func (h *Handler) getEndpointDetail(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	shared.WriteError(w, http.StatusNotFound, "endpoint not found")
+	httpjson.WriteError(w, http.StatusNotFound, "NOT_FOUND", "endpoint not found")
 }
 
 func (h *Handler) getEndpointScripts(w http.ResponseWriter, r *http.Request) {
 	runID := chi.URLParam(r, "run_id")
 	endpointID := chi.URLParam(r, "endpoint_id")
 
-	data, _, err := h.artifactSvc.GetLatest(runID, shared.ArtifactEndpointQueries)
+	data, _, err := h.artifactSvc.GetLatest(runID, artDomain.ArtifactEndpointQueries)
 	if err != nil {
-		shared.WriteError(w, shared.ErrorStatus(err), err.Error())
+		writeError(w, err)
 		return
 	}
 
@@ -138,13 +141,13 @@ func (h *Handler) getEndpointScripts(w http.ResponseWriter, r *http.Request) {
 		Scripts map[string]json.RawMessage `json:"scripts"`
 	}
 	if err := json.Unmarshal(data, &scripts); err != nil {
-		shared.WriteError(w, http.StatusInternalServerError, "parse scripts: "+err.Error())
+		httpjson.WriteError(w, http.StatusInternalServerError, "INTERNAL", "internal error")
 		return
 	}
 
 	epScripts, ok := scripts.Scripts[endpointID]
 	if !ok {
-		shared.WriteError(w, http.StatusNotFound, "scripts not found for endpoint")
+		httpjson.WriteError(w, http.StatusNotFound, "NOT_FOUND", "scripts not found for endpoint")
 		return
 	}
 
@@ -153,10 +156,10 @@ func (h *Handler) getEndpointScripts(w http.ResponseWriter, r *http.Request) {
 	w.Write(epScripts)
 }
 
-func (h *Handler) serveArtifact(w http.ResponseWriter, runID string, artType shared.ArtifactType) {
+func (h *Handler) serveArtifact(w http.ResponseWriter, runID string, artType artDomain.ArtifactType) {
 	data, _, err := h.artifactSvc.GetLatest(runID, artType)
 	if err != nil {
-		shared.WriteError(w, shared.ErrorStatus(err), err.Error())
+		writeError(w, err)
 		return
 	}
 
@@ -165,11 +168,23 @@ func (h *Handler) serveArtifact(w http.ResponseWriter, runID string, artType sha
 		Error  string `json:"error"`
 	}
 	if json.Unmarshal(data, &probe) == nil && probe.Status == "failed" {
-		shared.WriteError(w, http.StatusServiceUnavailable, probe.Error)
+		httpjson.WriteError(w, http.StatusServiceUnavailable, "UNAVAILABLE", probe.Error)
 		return
 	}
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	_, _ = w.Write(data)
+}
+
+func writeError(w http.ResponseWriter, err error) {
+	if domainerr.IsNotFound(err) {
+		httpjson.WriteError(w, http.StatusNotFound, "NOT_FOUND", "not found")
+		return
+	}
+	if domainerr.IsValidation(err) {
+		httpjson.WriteError(w, http.StatusBadRequest, "VALIDATION_ERROR", err.Error())
+		return
+	}
+	httpjson.WriteError(w, http.StatusInternalServerError, "INTERNAL", "internal error")
 }

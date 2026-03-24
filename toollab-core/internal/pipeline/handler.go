@@ -6,7 +6,8 @@ import (
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
-	"toollab-core/internal/shared"
+
+	"github.com/devpablocristo/core/backend/go/httpjson"
 )
 
 type Handler struct {
@@ -26,13 +27,13 @@ func (h *Handler) Routes() chi.Router {
 func (h *Handler) analyzeSSE(w http.ResponseWriter, r *http.Request) {
 	targetID := chi.URLParam(r, "target_id")
 	if targetID == "" {
-		shared.WriteError(w, http.StatusBadRequest, "target_id is required")
+		httpjson.WriteError(w, http.StatusBadRequest, "VALIDATION_ERROR", "target_id is required")
 		return
 	}
 
 	flusher, ok := w.(http.Flusher)
 	if !ok {
-		shared.WriteError(w, http.StatusInternalServerError, "streaming not supported")
+		httpjson.WriteError(w, http.StatusInternalServerError, "INTERNAL", "streaming not supported")
 		return
 	}
 

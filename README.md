@@ -29,6 +29,10 @@ Sobre ese loop, ToolLab genera:
 - `docker-compose.yml`: stack local completo
 - `docs/prompts/`: suite documental para diseñar, extender y mantener ToolLab
 
+## Nota — ecosistema Pablo y `core`
+
+ToolLab vive junto a otros repos bajo `~/Projects/Pablo` (pymes, nexus, ponti, …). Hoy **no** declara dependencia de [`github.com/devpablocristo/core`](https://github.com/devpablocristo/core). Al agregar o refactorizar **código agnóstico** (cliente HTTP con timeouts, helpers de transporte, patrones ya resueltos en `core/backend/go`, etc.), **preferir reutilizar `core`** en lugar de duplicar lo mismo en `toollab-core`. El producto ToolLab (pipeline, AST, artifacts) sigue siendo exclusivo de este repo; solo la capa portable encaja en `core`.
+
 ## Uso rápido
 
 ```bash

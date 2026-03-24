@@ -3,8 +3,10 @@ package target
 import (
 	"database/sql"
 	"encoding/json"
+	"time"
 
-	"toollab-core/internal/shared"
+	"github.com/devpablocristo/core/backend/go/domainerr"
+
 	"toollab-core/internal/target/usecases/domain"
 )
 
@@ -17,7 +19,7 @@ func (r *SQLite) Insert(t domain.Target) error {
 	_, err := r.db.Exec(
 		`INSERT INTO targets (id,name,source_type,source_value,runtime_hint,created_at,updated_at) VALUES (?,?,?,?,?,?,?)`,
 		t.ID, t.Name, t.Source.Type, t.Source.Value, string(hint),
-		t.CreatedAt.Format(shared.TimeFormat), t.UpdatedAt.Format(shared.TimeFormat),
+		t.CreatedAt.Format(time.RFC3339), t.UpdatedAt.Format(time.RFC3339),
 	)
 	return err
 }
@@ -68,7 +70,7 @@ func (r *SQLite) Delete(id string) error {
 	}
 	n, _ := res.RowsAffected()
 	if n == 0 {
-		return shared.ErrNotFound
+		return domainerr.NotFound("not found")
 	}
 	return tx.Commit()
 }
@@ -78,14 +80,14 @@ func scanTarget(row *sql.Row) (domain.Target, error) {
 	var hint, ca, ua string
 	err := row.Scan(&t.ID, &t.Name, &t.Source.Type, &t.Source.Value, &hint, &ca, &ua)
 	if err == sql.ErrNoRows {
-		return t, shared.ErrNotFound
+		return t, domainerr.NotFound("not found")
 	}
 	if err != nil {
 		return t, err
 	}
 	_ = json.Unmarshal([]byte(hint), &t.RuntimeHint)
-	t.CreatedAt, _ = shared.ParseTime(ca)
-	t.UpdatedAt, _ = shared.ParseTime(ua)
+	t.CreatedAt, _ = time.Parse(time.RFC3339, ca)
+	t.UpdatedAt, _ = time.Parse(time.RFC3339, ua)
 	return t, nil
 }
 
@@ -97,7 +99,7 @@ func scanTargetRow(rows *sql.Rows) (domain.Target, error) {
 		return t, err
 	}
 	_ = json.Unmarshal([]byte(hint), &t.RuntimeHint)
-	t.CreatedAt, _ = shared.ParseTime(ca)
-	t.UpdatedAt, _ = shared.ParseTime(ua)
+	t.CreatedAt, _ = time.Parse(time.RFC3339, ca)
+	t.UpdatedAt, _ = time.Parse(time.RFC3339, ua)
 	return t, nil
 }

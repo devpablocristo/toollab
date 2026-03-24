@@ -7,10 +7,10 @@ import (
 	"time"
 
 	artifactUC "toollab-core/internal/artifact"
+	artDomain "toollab-core/internal/artifact/usecases/domain"
 	"toollab-core/internal/exports"
 	"toollab-core/internal/pipeline"
 	d "toollab-core/internal/pipeline/usecases/domain"
-	"toollab-core/internal/shared"
 )
 
 // Step is the report builder (Step 9).
@@ -34,21 +34,21 @@ func (s *Step) Run(ctx context.Context, state *pipeline.PipelineState) d.StepRes
 	// Generate exports
 	if state.Catalog != nil {
 		data := exports.GenerateEndpointCatalogCSV(state.Catalog)
-		if s.saveExport(state.RunID, shared.ArtifactEndpointCatalog, "endpoint_catalog.csv", data) {
+		if s.saveExport(state.RunID, artDomain.ArtifactEndpointCatalog, "endpoint_catalog.csv", data) {
 			exportsIndex.EndpointCSV = "endpoint_catalog.csv"
 		}
 	}
 
 	if state.AuthMatrix != nil {
 		data := exports.GenerateAuthMatrixCSV(state.AuthMatrix)
-		if s.saveExport(state.RunID, shared.ArtifactAuthMatrix, "auth_matrix.csv", data) {
+		if s.saveExport(state.RunID, artDomain.ArtifactAuthMatrix, "auth_matrix.csv", data) {
 			exportsIndex.AuthMatrixCSV = "auth_matrix.csv"
 		}
 	}
 
 	if len(state.Contracts) > 0 {
 		data := exports.GenerateContractMatrixCSV(state.Contracts)
-		if s.saveExport(state.RunID, shared.ArtifactInferredContracts, "contract_matrix.csv", data) {
+		if s.saveExport(state.RunID, artDomain.ArtifactInferredContracts, "contract_matrix.csv", data) {
 			exportsIndex.ContractMatrixCSV = "contract_matrix.csv"
 		}
 	}
@@ -75,7 +75,7 @@ func (s *Step) Run(ctx context.Context, state *pipeline.PipelineState) d.StepRes
 	return d.StepResult{Step: d.StepReport, Status: "ok", DurationMs: ms(start)}
 }
 
-func (s *Step) saveExport(runID string, artType shared.ArtifactType, name string, data []byte) bool {
+func (s *Step) saveExport(runID string, artType artDomain.ArtifactType, name string, data []byte) bool {
 	if _, err := s.artifactSvc.PutRaw(runID, artType, data); err != nil {
 		log.Printf("save export %s: %v", name, err)
 		return false

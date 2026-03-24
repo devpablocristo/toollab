@@ -1,17 +1,21 @@
 package main
 
 import (
+	"database/sql"
 	"embed"
+	"fmt"
 	"log"
 	"net/http"
 	"os"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	_ "github.com/mattn/go-sqlite3"
+
+	"github.com/devpablocristo/core/backend/go/httpjson"
 
 	artifactUC "toollab-core/internal/artifact"
 	runUC "toollab-core/internal/run"
-	"toollab-core/internal/shared"
 	targetUC "toollab-core/internal/target"
 
 	"toollab-core/internal/abuse"
@@ -37,7 +41,7 @@ func main() {
 	dataDir := env("TOOLLAB_DATA_DIR", "./data")
 	addr := env("TOOLLAB_ADDR", ":8090")
 
-	db, err := shared.OpenDB(dbPath)
+	db, err := openDB(dbPath)
 	if err != nil {
 		log.Fatalf("opening database: %v", err)
 	}
@@ -47,7 +51,7 @@ func main() {
 	if err != nil {
 		log.Fatalf("reading migration: %v", err)
 	}
-	if err := shared.Migrate(db, []string{string(migSQL)}); err != nil {
+	if err := migrate(db, []string{string(migSQL)}); err != nil {
 		log.Fatalf("running migrations: %v", err)
 	}
 
@@ -95,7 +99,7 @@ func main() {
 	r.Use(cors)
 
 	r.Get("/healthz", func(w http.ResponseWriter, _ *http.Request) {
-		shared.WriteJSON(w, http.StatusOK, map[string]bool{"ok": true})
+		httpjson.WriteJSON(w, http.StatusOK, map[string]bool{"ok": true})
 	})
 
 	r.Route("/api/v1", func(r chi.Router) {
@@ -118,6 +122,27 @@ func main() {
 	if err := http.ListenAndServe(addr, r); err != nil {
 		log.Fatal(err)
 	}
+}
+
+func openDB(dsn string) (*sql.DB, error) {
+	db, err := sql.Open("sqlite3", dsn+"?_journal_mode=WAL&_foreign_keys=on")
+	if err != nil {
+		return nil, fmt.Errorf("opening db: %w", err)
+	}
+	if err := db.Ping(); err != nil {
+		return nil, fmt.Errorf("pinging db: %w", err)
+	}
+	return db, nil
+}
+
+func migrate(db *sql.DB, statements []string) error {
+	for i, stmt := range statements {
+		log.Printf("applying migration %d", i+1)
+		if _, err := db.Exec(stmt); err != nil {
+			return fmt.Errorf("migration %d: %w", i+1, err)
+		}
+	}
+	return nil
 }
 
 func cors(next http.Handler) http.Handler {

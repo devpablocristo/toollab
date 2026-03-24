@@ -2,9 +2,11 @@
 package target
 
 import (
-	"fmt"
+	"time"
 
-	"toollab-core/internal/shared"
+	"github.com/devpablocristo/core/backend/go/domainerr"
+	"github.com/google/uuid"
+
 	"toollab-core/internal/target/usecases/domain"
 )
 
@@ -14,14 +16,14 @@ func NewService(repo domain.Repository) *Service { return &Service{repo: repo} }
 
 func (s *Service) Create(name, description string, source domain.Source, hint domain.RuntimeHint) (domain.Target, error) {
 	if name == "" {
-		return domain.Target{}, fmt.Errorf("%w: name is required", shared.ErrInvalidInput)
+		return domain.Target{}, domainerr.Validation("name is required")
 	}
 	if source.Value == "" {
-		return domain.Target{}, fmt.Errorf("%w: source.value is required", shared.ErrInvalidInput)
+		return domain.Target{}, domainerr.Validation("source.value is required")
 	}
-	now := shared.Now()
+	now := time.Now().UTC()
 	t := domain.Target{
-		ID:          shared.NewID(),
+		ID:          uuid.New().String(),
 		Name:        name,
 		Description: description,
 		Source:      source,
@@ -45,7 +47,7 @@ func (s *Service) List() ([]domain.Target, error) {
 
 func (s *Service) Delete(id string) error {
 	if id == "" {
-		return fmt.Errorf("%w: id is required", shared.ErrInvalidInput)
+		return domainerr.Validation("id is required")
 	}
 	return s.repo.Delete(id)
 }

@@ -7,9 +7,9 @@ import (
 	"strings"
 
 	artifactUC "toollab-core/internal/artifact"
+	artDomain "toollab-core/internal/artifact/usecases/domain"
 	"toollab-core/internal/intelligence"
 	d "toollab-core/internal/pipeline/usecases/domain"
-	"toollab-core/internal/shared"
 )
 
 // GeneratePostmanCollection creates an enriched Postman collection from endpoint intelligence.
@@ -498,7 +498,7 @@ func GenerateEndpointCatalogCSV(catalog *d.EndpointCatalog) []byte {
 	return []byte(sb.String())
 }
 
-// GenerateContractMatrixCSV creates a CSV of endpoint × status × schema_ref.
+// GenerateContractMatrixCSV creates a CSV of endpoint x status x schema_ref.
 func GenerateContractMatrixCSV(contracts []d.InferredContract) []byte {
 	var sb strings.Builder
 	sb.WriteString("endpoint_id,method,path,status,schema_ref,content_type\n")
@@ -559,58 +559,58 @@ func GenerateExportsPost(artifactSvc *artifactUC.Service, runID string, dossier 
 
 	intel := intelligence.Generate(dossier)
 
-	saveJSON := func(artType shared.ArtifactType, data []byte) {
+	saveJSON := func(artType artDomain.ArtifactType, data []byte) {
 		if _, err := artifactSvc.Put(runID, artType, data); err != nil {
 			log.Printf("save export %s: %v", artType, err)
 		}
 	}
-	saveRaw := func(artType shared.ArtifactType, data []byte) {
+	saveRaw := func(artType artDomain.ArtifactType, data []byte) {
 		if _, err := artifactSvc.PutRaw(runID, artType, data); err != nil {
 			log.Printf("save export %s: %v", artType, err)
 		}
 	}
 
 	if intelJSON, err := json.Marshal(intel); err == nil {
-		saveJSON(shared.ArtifactEndpointIntelligence, intelJSON)
+		saveJSON(artDomain.ArtifactEndpointIntelligence, intelJSON)
 	}
 
 	intelIdx := intelligence.GenerateIndex(intel)
 	if idxJSON, err := json.Marshal(intelIdx); err == nil {
-		saveJSON(shared.ArtifactEndpointIntelIndex, idxJSON)
+		saveJSON(artDomain.ArtifactEndpointIntelIndex, idxJSON)
 	}
 
 	queryScripts := intelligence.GenerateQueryScripts(intel)
 	if qsJSON, err := json.Marshal(queryScripts); err == nil {
-		saveJSON(shared.ArtifactEndpointQueries, qsJSON)
+		saveJSON(artDomain.ArtifactEndpointQueries, qsJSON)
 	}
 
 	postmanData := GeneratePostmanCollection(dossier, intel)
-	saveJSON(shared.ArtifactPostmanCollection, postmanData)
+	saveJSON(artDomain.ArtifactPostmanCollection, postmanData)
 	idx.PostmanCollection = "postman_collection.json"
 
 	curlData := GenerateCurlBook(dossier, intel)
-	saveJSON(shared.ArtifactCurlBook, curlData)
+	saveJSON(artDomain.ArtifactCurlBook, curlData)
 	idx.CurlBook = "curl_book.json"
 
 	openapiData := GenerateOpenAPIInferred(dossier, intel)
-	saveRaw(shared.ArtifactOpenAPIInferred, openapiData)
+	saveRaw(artDomain.ArtifactOpenAPIInferred, openapiData)
 	idx.OpenAPIInferred = "openapi_inferred.yaml"
 
 	openapiAST := GenerateOpenAPIAST(dossier)
-	saveRaw(shared.ArtifactOpenAPIAST, openapiAST)
+	saveRaw(artDomain.ArtifactOpenAPIAST, openapiAST)
 
 	if len(dossier.Scoring.Hotspots) > 0 {
 		data := GenerateHotspotsCSV(dossier.Scoring.Hotspots)
-		saveRaw(shared.ArtifactScoring, data)
+		saveRaw(artDomain.ArtifactScoring, data)
 		idx.HotspotsCSV = "endpoint_hotspots.csv"
 	}
 
 	envExample := GenerateEnvExample(dossier)
-	saveRaw(shared.ArtifactEnvExample, envExample)
+	saveRaw(artDomain.ArtifactEnvExample, envExample)
 	idx.EnvExample = ".env.example"
 
 	runSummaryJSON, _ := json.Marshal(dossier.RunSummary)
-	saveJSON(shared.ArtifactRunSummaryExport, runSummaryJSON)
+	saveJSON(artDomain.ArtifactRunSummaryExport, runSummaryJSON)
 
 	return idx
 }

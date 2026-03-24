@@ -6,7 +6,9 @@ import (
 
 	"github.com/go-chi/chi/v5"
 
-	"toollab-core/internal/shared"
+	"github.com/devpablocristo/core/backend/go/domainerr"
+	"github.com/devpablocristo/core/backend/go/httpjson"
+
 	"toollab-core/internal/target/handler/dto"
 	"toollab-core/internal/target/usecases/domain"
 )
@@ -27,42 +29,54 @@ func (h *Handler) Routes() chi.Router {
 func (h *Handler) create(w http.ResponseWriter, r *http.Request) {
 	var req dto.CreateRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		shared.WriteError(w, http.StatusBadRequest, "invalid JSON body")
+		httpjson.WriteError(w, http.StatusBadRequest, "VALIDATION_ERROR", "invalid JSON body")
 		return
 	}
 	t, err := h.svc.Create(req.Name, req.Description, req.Source, req.RuntimeHint)
 	if err != nil {
-		shared.WriteError(w, shared.ErrorStatus(err), err.Error())
+		writeError(w, err)
 		return
 	}
-	shared.WriteJSON(w, http.StatusCreated, t)
+	httpjson.WriteJSON(w, http.StatusCreated, t)
 }
 
 func (h *Handler) list(w http.ResponseWriter, r *http.Request) {
 	items, err := h.svc.List()
 	if err != nil {
-		shared.WriteError(w, http.StatusInternalServerError, err.Error())
+		httpjson.WriteError(w, http.StatusInternalServerError, "INTERNAL", "internal error")
 		return
 	}
 	if items == nil {
 		items = []domain.Target{}
 	}
-	shared.WriteJSON(w, http.StatusOK, map[string]any{"items": items})
+	httpjson.WriteJSON(w, http.StatusOK, map[string]any{"items": items})
 }
 
 func (h *Handler) get(w http.ResponseWriter, r *http.Request) {
 	t, err := h.svc.Get(chi.URLParam(r, "target_id"))
 	if err != nil {
-		shared.WriteError(w, shared.ErrorStatus(err), err.Error())
+		writeError(w, err)
 		return
 	}
-	shared.WriteJSON(w, http.StatusOK, t)
+	httpjson.WriteJSON(w, http.StatusOK, t)
 }
 
 func (h *Handler) delete(w http.ResponseWriter, r *http.Request) {
 	if err := h.svc.Delete(chi.URLParam(r, "target_id")); err != nil {
-		shared.WriteError(w, shared.ErrorStatus(err), err.Error())
+		writeError(w, err)
 		return
 	}
 	w.WriteHeader(http.StatusNoContent)
+}
+
+func writeError(w http.ResponseWriter, err error) {
+	if domainerr.IsNotFound(err) {
+		httpjson.WriteError(w, http.StatusNotFound, "NOT_FOUND", "not found")
+		return
+	}
+	if domainerr.IsValidation(err) {
+		httpjson.WriteError(w, http.StatusBadRequest, "VALIDATION_ERROR", err.Error())
+		return
+	}
+	httpjson.WriteError(w, http.StatusInternalServerError, "INTERNAL", "internal error")
 }

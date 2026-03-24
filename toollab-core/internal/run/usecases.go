@@ -2,8 +2,12 @@
 package run
 
 import (
+	"time"
+
+	"github.com/devpablocristo/core/backend/go/domainerr"
+	"github.com/google/uuid"
+
 	"toollab-core/internal/run/usecases/domain"
-	"toollab-core/internal/shared"
 	targetDomain "toollab-core/internal/target/usecases/domain"
 )
 
@@ -21,12 +25,12 @@ func (s *Service) Create(targetID, seed, notes string) (domain.Run, error) {
 		return domain.Run{}, err
 	}
 	run := domain.Run{
-		ID:        shared.NewID(),
+		ID:        uuid.New().String(),
 		TargetID:  targetID,
 		Status:    domain.StatusCreated,
 		Seed:      seed,
 		Notes:     notes,
-		CreatedAt: shared.Now(),
+		CreatedAt: time.Now().UTC(),
 	}
 	if err := s.repo.Insert(run); err != nil {
 		return domain.Run{}, err
@@ -52,5 +56,5 @@ func (s *Service) LatestCompleted(targetID string) (domain.Run, error) {
 			return r, nil
 		}
 	}
-	return domain.Run{}, shared.ErrNotFound
+	return domain.Run{}, domainerr.NotFound("not found")
 }

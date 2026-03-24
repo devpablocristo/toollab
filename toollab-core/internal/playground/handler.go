@@ -12,9 +12,12 @@ import (
 	"time"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/google/uuid"
+
+	"github.com/devpablocristo/core/backend/go/httpjson"
 
 	artifactUC "toollab-core/internal/artifact"
-	"toollab-core/internal/shared"
+	artDomain "toollab-core/internal/artifact/usecases/domain"
 	d "toollab-core/internal/pipeline/usecases/domain"
 )
 
@@ -58,18 +61,18 @@ func (h *Handler) send(w http.ResponseWriter, r *http.Request) {
 
 	var req d.PlaygroundRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		shared.WriteError(w, http.StatusBadRequest, "invalid request body: "+err.Error())
+		httpjson.WriteError(w, http.StatusBadRequest, "VALIDATION_ERROR", "invalid request body: "+err.Error())
 		return
 	}
 
 	allowedHost, err := h.getAllowedHost(runID)
 	if err != nil {
-		shared.WriteError(w, http.StatusInternalServerError, "cannot determine allowed host: "+err.Error())
+		httpjson.WriteError(w, http.StatusInternalServerError, "INTERNAL", "cannot determine allowed host")
 		return
 	}
 
 	if err := validateSSRF(req.URL, allowedHost); err != nil {
-		shared.WriteError(w, http.StatusForbidden, "SSRF blocked: "+err.Error())
+		httpjson.WriteError(w, http.StatusForbidden, "FORBIDDEN", "SSRF blocked: "+err.Error())
 		return
 	}
 
@@ -110,7 +113,7 @@ func (h *Handler) send(w http.ResponseWriter, r *http.Request) {
 			LatencyMs:  latency,
 		}
 		h.saveEvidence(runID, evidenceSample)
-		shared.WriteJSON(w, http.StatusOK, pgResp)
+		httpjson.WriteJSON(w, http.StatusOK, pgResp)
 		return
 	}
 	defer resp.Body.Close()
@@ -145,7 +148,7 @@ func (h *Handler) send(w http.ResponseWriter, r *http.Request) {
 		Size:        int64(len(bodyBytes)),
 	}
 
-	shared.WriteJSON(w, http.StatusOK, pgResp)
+	httpjson.WriteJSON(w, http.StatusOK, pgResp)
 }
 
 func (h *Handler) replay(w http.ResponseWriter, r *http.Request) {
@@ -155,19 +158,19 @@ func (h *Handler) replay(w http.ResponseWriter, r *http.Request) {
 		EvidenceID string `json:"evidence_id"`
 	}
 	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
-		shared.WriteError(w, http.StatusBadRequest, "invalid body")
+		httpjson.WriteError(w, http.StatusBadRequest, "VALIDATION_ERROR", "invalid body")
 		return
 	}
 
-	data, _, err := h.artifactSvc.GetLatest(runID, shared.ArtifactRawEvidence)
+	data, _, err := h.artifactSvc.GetLatest(runID, artDomain.ArtifactRawEvidence)
 	if err != nil {
-		shared.WriteError(w, http.StatusNotFound, "evidence not found")
+		httpjson.WriteError(w, http.StatusNotFound, "NOT_FOUND", "evidence not found")
 		return
 	}
 
 	var rawEvidence d.RawEvidence
 	if err := json.Unmarshal(data, &rawEvidence); err != nil {
-		shared.WriteError(w, http.StatusInternalServerError, "parse evidence: "+err.Error())
+		httpjson.WriteError(w, http.StatusInternalServerError, "INTERNAL", "internal error")
 		return
 	}
 
@@ -180,7 +183,7 @@ func (h *Handler) replay(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if original == nil {
-		shared.WriteError(w, http.StatusNotFound, "evidence sample not found")
+		httpjson.WriteError(w, http.StatusNotFound, "NOT_FOUND", "evidence sample not found")
 		return
 	}
 
@@ -195,7 +198,7 @@ func (h *Handler) replay(w http.ResponseWriter, r *http.Request) {
 
 	allowedHost, _ := h.getAllowedHost(runID)
 	if err := validateSSRF(replayReq.URL, allowedHost); err != nil {
-		shared.WriteError(w, http.StatusForbidden, "SSRF blocked: "+err.Error())
+		httpjson.WriteError(w, http.StatusForbidden, "FORBIDDEN", "SSRF blocked: "+err.Error())
 		return
 	}
 
@@ -210,7 +213,7 @@ func (h *Handler) replay(w http.ResponseWriter, r *http.Request) {
 			LatencyMs:  latency,
 		}
 		h.saveEvidence(runID, evidenceSample)
-		shared.WriteJSON(w, http.StatusOK, pgResp)
+		httpjson.WriteJSON(w, http.StatusOK, pgResp)
 		return
 	}
 	defer resp.Body.Close()
@@ -246,7 +249,7 @@ func (h *Handler) replay(w http.ResponseWriter, r *http.Request) {
 		Size:        int64(len(bodyBytes)),
 	}
 
-	shared.WriteJSON(w, http.StatusOK, pgResp)
+	httpjson.WriteJSON(w, http.StatusOK, pgResp)
 }
 
 func (h *Handler) listAuthProfiles(w http.ResponseWriter, r *http.Request) {
@@ -256,7 +259,7 @@ func (h *Handler) listAuthProfiles(w http.ResponseWriter, r *http.Request) {
 	for _, p := range profiles {
 		masked = append(masked, p.ToMasked())
 	}
-	shared.WriteJSON(w, http.StatusOK, map[string]interface{}{"profiles": masked})
+	httpjson.WriteJSON(w, http.StatusOK, map[string]interface{}{"profiles": masked})
 }
 
 func (h *Handler) createAuthProfile(w http.ResponseWriter, r *http.Request) {
@@ -264,16 +267,16 @@ func (h *Handler) createAuthProfile(w http.ResponseWriter, r *http.Request) {
 
 	var profile d.AuthProfile
 	if err := json.NewDecoder(r.Body).Decode(&profile); err != nil {
-		shared.WriteError(w, http.StatusBadRequest, "invalid body")
+		httpjson.WriteError(w, http.StatusBadRequest, "VALIDATION_ERROR", "invalid body")
 		return
 	}
 
-	profile.ID = shared.NewID()
+	profile.ID = uuid.New().String()
 	profile.RunID = runID
 	profile.CreatedAt = time.Now().UTC().Format(time.RFC3339)
 
 	h.authStore.Put(profile)
-	shared.WriteJSON(w, http.StatusCreated, profile.ToMasked())
+	httpjson.WriteJSON(w, http.StatusCreated, profile.ToMasked())
 }
 
 func (h *Handler) deleteAuthProfile(w http.ResponseWriter, r *http.Request) {
@@ -340,11 +343,11 @@ func (h *Handler) saveEvidence(runID string, sample d.EvidenceSample) {
 	if err != nil {
 		return
 	}
-	h.artifactSvc.Put(runID, shared.ArtifactType("playground_evidence_"+sample.EvidenceID), data)
+	h.artifactSvc.Put(runID, artDomain.ArtifactType("playground_evidence_"+sample.EvidenceID), data)
 }
 
 func (h *Handler) getAllowedHost(runID string) (string, error) {
-	data, _, err := h.artifactSvc.GetLatest(runID, shared.ArtifactTargetProfile)
+	data, _, err := h.artifactSvc.GetLatest(runID, artDomain.ArtifactTargetProfile)
 	if err != nil {
 		return "", err
 	}

@@ -10,11 +10,13 @@ import (
 	"sync"
 	"time"
 
+	"github.com/google/uuid"
+
 	artifactUC "toollab-core/internal/artifact"
+	artDomain "toollab-core/internal/artifact/usecases/domain"
 	"toollab-core/internal/exports"
 	d "toollab-core/internal/pipeline/usecases/domain"
 	runDomain "toollab-core/internal/run/usecases/domain"
-	"toollab-core/internal/shared"
 	targetDomain "toollab-core/internal/target/usecases/domain"
 )
 
@@ -133,11 +135,11 @@ func (o *Orchestrator) Analyze(ctx context.Context, targetID string, lang string
 	config := d.DefaultRunConfig(seed)
 
 	run := runDomain.Run{
-		ID:        shared.NewID(),
+		ID:        uuid.New().String(),
 		TargetID:  targetID,
 		Status:    runDomain.StatusRunning,
 		Seed:      seed,
-		CreatedAt: shared.Now(),
+		CreatedAt: time.Now().UTC(),
 	}
 	if err := o.runRepo.Insert(run); err != nil {
 		return AnalyzeResult{}, fmt.Errorf("creating run: %w", err)
@@ -232,7 +234,7 @@ func (o *Orchestrator) Analyze(ctx context.Context, targetID string, lang string
 	if finalStatus == d.RunFailed {
 		runStatus = runDomain.StatusFailed
 	}
-	_ = o.runRepo.UpdateStatusCompleted(run.ID, runStatus, shared.Now())
+	_ = o.runRepo.UpdateStatusCompleted(run.ID, runStatus, time.Now().UTC())
 
 	emit(ProgressEvent{Step: d.StepReport, Phase: "done", Message: "Pipeline complete. LLM reports generating in background..."})
 
@@ -242,11 +244,11 @@ func (o *Orchestrator) Analyze(ctx context.Context, targetID string, lang string
 			Description: target.Description,
 		})
 		docsMiniJSON, _ := json.Marshal(docsMini)
-		o.artifactSvc.Put(run.ID, shared.ArtifactDossierDocsMini, docsMiniJSON)
+		o.artifactSvc.Put(run.ID, artDomain.ArtifactDossierDocsMini, docsMiniJSON)
 
 		auditLLM := d.CompactForLLM(&dossierFull, d.DefaultCompactConfig())
 		auditLLMJSON, _ := json.Marshal(auditLLM)
-		o.artifactSvc.Put(run.ID, shared.ArtifactDossierLLM, auditLLMJSON)
+		o.artifactSvc.Put(run.ID, artDomain.ArtifactDossierLLM, auditLLMJSON)
 
 		if o.llmRunner != nil {
 			go o.llmRunner.RunAsync(context.Background(), run.ID, docsMiniJSON, auditLLMJSON, lang)
@@ -288,7 +290,7 @@ func (o *Orchestrator) markRunKilled(runID string) {
 	if runID == "" {
 		return
 	}
-	if err := o.runRepo.UpdateStatusCompleted(runID, runDomain.StatusFailed, shared.Now()); err != nil {
+	if err := o.runRepo.UpdateStatusCompleted(runID, runDomain.StatusFailed, time.Now().UTC()); err != nil {
 		log.Printf("mark previous run failed (%s): %v", runID, err)
 	}
 }
@@ -490,7 +492,7 @@ func (o *Orchestrator) buildDerivedMetrics(state *PipelineState) d.DerivedMetric
 }
 
 func (o *Orchestrator) saveArtifacts(state *PipelineState, dossier *d.DossierV2Full, summary *d.RunSummary) {
-	save := func(artType shared.ArtifactType, v any) {
+	save := func(artType artDomain.ArtifactType, v any) {
 		data, err := json.Marshal(v)
 		if err != nil {
 			log.Printf("marshal %s: %v", artType, err)
@@ -502,54 +504,54 @@ func (o *Orchestrator) saveArtifacts(state *PipelineState, dossier *d.DossierV2F
 	}
 
 	if state.TargetProfile != nil {
-		save(shared.ArtifactTargetProfile, state.TargetProfile)
+		save(artDomain.ArtifactTargetProfile, state.TargetProfile)
 	}
 	if state.Catalog != nil {
-		save(shared.ArtifactEndpointCatalog, state.Catalog)
+		save(artDomain.ArtifactEndpointCatalog, state.Catalog)
 	}
 	if state.RouterGraph != nil {
-		save(shared.ArtifactRouterGraph, state.RouterGraph)
+		save(artDomain.ArtifactRouterGraph, state.RouterGraph)
 	}
 	if len(state.ASTEntities) > 0 {
-		save(shared.ArtifactASTEntities, state.ASTEntities)
+		save(artDomain.ArtifactASTEntities, state.ASTEntities)
 	}
 	if len(state.ASTCodePatterns) > 0 {
-		save(shared.ArtifactASTCodePatterns, state.ASTCodePatterns)
+		save(artDomain.ArtifactASTCodePatterns, state.ASTCodePatterns)
 	}
 	if len(state.Contracts) > 0 {
-		save(shared.ArtifactInferredContracts, state.Contracts)
+		save(artDomain.ArtifactInferredContracts, state.Contracts)
 	}
 	if state.SchemaRegistry != nil {
-		save(shared.ArtifactSchemaRegistry, state.SchemaRegistry)
+		save(artDomain.ArtifactSchemaRegistry, state.SchemaRegistry)
 	}
 	if len(state.SemanticAnnotations) > 0 {
-		save(shared.ArtifactSemanticAnnot, state.SemanticAnnotations)
+		save(artDomain.ArtifactSemanticAnnot, state.SemanticAnnotations)
 	}
 	if len(state.SmokeResults) > 0 {
-		save(shared.ArtifactSmokeResults, state.SmokeResults)
+		save(artDomain.ArtifactSmokeResults, state.SmokeResults)
 	}
 	if state.AuthMatrix != nil {
-		save(shared.ArtifactAuthMatrix, state.AuthMatrix)
+		save(artDomain.ArtifactAuthMatrix, state.AuthMatrix)
 	}
 	if len(state.FuzzResults) > 0 {
-		save(shared.ArtifactFuzzResults, state.FuzzResults)
+		save(artDomain.ArtifactFuzzResults, state.FuzzResults)
 	}
 	if len(state.LogicResults) > 0 {
-		save(shared.ArtifactLogicResults, state.LogicResults)
+		save(artDomain.ArtifactLogicResults, state.LogicResults)
 	}
 	if len(state.AbuseResults) > 0 {
-		save(shared.ArtifactAbuseResults, state.AbuseResults)
+		save(artDomain.ArtifactAbuseResults, state.AbuseResults)
 	}
 	if len(state.Confirmations) > 0 {
-		save(shared.ArtifactConfirmations, state.Confirmations)
+		save(artDomain.ArtifactConfirmations, state.Confirmations)
 	}
 	if len(state.FindingsRaw) > 0 {
-		save(shared.ArtifactFindingsRaw, state.FindingsRaw)
+		save(artDomain.ArtifactFindingsRaw, state.FindingsRaw)
 	}
 
 	sigs := state.ErrSigBuilder.Build()
 	if len(sigs) > 0 {
-		save(shared.ArtifactErrorSignatures, sigs)
+		save(artDomain.ArtifactErrorSignatures, sigs)
 	}
 
 	evidence := d.RawEvidence{
@@ -560,11 +562,11 @@ func (o *Orchestrator) saveArtifacts(state *PipelineState, dossier *d.DossierV2F
 		ErrorSignatures: sigs,
 		TotalCount:      state.Evidence.Count(),
 	}
-	save(shared.ArtifactRawEvidence, evidence)
+	save(artDomain.ArtifactRawEvidence, evidence)
 
-	save(shared.ArtifactScoring, dossier.Scoring)
-	save(shared.ArtifactRunSummary, summary)
-	save(shared.ArtifactDossierFull, dossier)
+	save(artDomain.ArtifactScoring, dossier.Scoring)
+	save(artDomain.ArtifactRunSummary, summary)
+	save(artDomain.ArtifactDossierFull, dossier)
 }
 
 func sortInt64s(s []int64) {
@@ -851,7 +853,7 @@ func (o *Orchestrator) loadPreviousRunSummary(targetID, currentRunID string) (d.
 	if prev == nil {
 		return d.RunSummary{}, false
 	}
-	data, _, err := o.artifactSvc.GetLatest(prev.ID, shared.ArtifactRunSummary)
+	data, _, err := o.artifactSvc.GetLatest(prev.ID, artDomain.ArtifactRunSummary)
 	if err != nil {
 		return d.RunSummary{}, false
 	}
