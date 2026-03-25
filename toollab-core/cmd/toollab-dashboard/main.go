@@ -12,7 +12,7 @@ import (
 	"github.com/go-chi/chi/v5/middleware"
 	_ "github.com/mattn/go-sqlite3"
 
-	"github.com/devpablocristo/core/backend/go/httpjson"
+	"github.com/devpablocristo/core/http/go/httpjson"
 
 	artifactUC "toollab-core/internal/artifact"
 	runUC "toollab-core/internal/run"

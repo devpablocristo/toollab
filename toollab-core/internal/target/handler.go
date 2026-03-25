@@ -6,8 +6,8 @@ import (
 
 	"github.com/go-chi/chi/v5"
 
-	"github.com/devpablocristo/core/backend/go/domainerr"
-	"github.com/devpablocristo/core/backend/go/httpjson"
+	"github.com/devpablocristo/core/errors/go/domainerr"
+	"github.com/devpablocristo/core/http/go/httpjson"
 
 	"toollab-core/internal/target/handler/dto"
 	"toollab-core/internal/target/usecases/domain"

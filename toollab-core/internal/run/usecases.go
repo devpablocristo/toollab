@@ -4,7 +4,7 @@ package run
 import (
 	"time"
 
-	"github.com/devpablocristo/core/backend/go/domainerr"
+	"github.com/devpablocristo/core/errors/go/domainerr"
 	"github.com/google/uuid"
 
 	"toollab-core/internal/run/usecases/domain"

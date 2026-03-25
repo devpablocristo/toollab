@@ -7,7 +7,7 @@ import (
 
 	"github.com/go-chi/chi/v5"
 
-	"github.com/devpablocristo/core/backend/go/httpjson"
+	"github.com/devpablocristo/core/http/go/httpjson"
 )
 
 type Handler struct {

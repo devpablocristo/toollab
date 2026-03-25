@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/devpablocristo/core/backend/go/domainerr"
-	"github.com/devpablocristo/core/backend/go/hashutil"
+	"github.com/devpablocristo/core/errors/go/domainerr"
+	"github.com/devpablocristo/core/security/go/hashutil"
 	"github.com/google/uuid"
 
 	"toollab-core/internal/artifact/usecases/domain"
