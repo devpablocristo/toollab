@@ -13,8 +13,9 @@ on:
         description: "Discovery source (toollab|openapi)"
         default: "toollab"
 
-  schedule:
-    - cron: "0 6 * * 1"
+concurrency:
+  group: toollab-audit-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   audit:
