@@ -3,10 +3,10 @@ module toollab-core
 go 1.26.1
 
 require (
-	github.com/devpablocristo/core/ai/go v0.0.0
-	github.com/devpablocristo/core/errors/go v0.0.0
-	github.com/devpablocristo/core/http/go v0.0.0
-	github.com/devpablocristo/core/security/go v0.0.0
+	github.com/devpablocristo/core/ai/go v0.0.0-20260328151810-084828e80b26
+	github.com/devpablocristo/core/errors/go v0.1.0
+	github.com/devpablocristo/core/http/go v0.1.0
+	github.com/devpablocristo/core/security/go v0.1.0
 	github.com/go-chi/chi/v5 v5.2.5
 	github.com/google/uuid v1.6.0
 	github.com/mattn/go-sqlite3 v1.14.34
@@ -19,11 +19,3 @@ require (
 	golang.org/x/mod v0.33.0 // indirect
 	golang.org/x/sync v0.19.0 // indirect
 )
-
-replace github.com/devpablocristo/core/ai/go => ../../core/ai/go
-
-replace github.com/devpablocristo/core/errors/go => ../../core/errors/go
-
-replace github.com/devpablocristo/core/http/go => ../../core/http/go
-
-replace github.com/devpablocristo/core/security/go => ../../core/security/go

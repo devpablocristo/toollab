@@ -17,11 +17,7 @@
     "noFallthroughCasesInSwitch": true,
     "baseUrl": ".",
     "paths": {
-      "@/*": ["src/*"],
-      "@devpablocristo/core-http": ["./.deps/core/http/ts/src/index.ts", "../../core/http/ts/src/index.ts"],
-      "@devpablocristo/core-http/*": ["./.deps/core/http/ts/src/*", "../../core/http/ts/src/*"],
-      "@devpablocristo/core-browser": ["./.deps/core/browser/ts/src/index.ts", "../../core/browser/ts/src/index.ts"],
-      "@devpablocristo/core-browser/*": ["./.deps/core/browser/ts/src/*", "../../core/browser/ts/src/*"]
+      "@/*": ["src/*"]
     }
   },
   "include": ["src"]

@@ -1,5 +1,13 @@
 cloud.google.com/go/compute/metadata v0.3.0 h1:Tz+eQXMEqDIKRsmY3cHTL6FVaynIjX2QxYC4trgAKZc=
 cloud.google.com/go/compute/metadata v0.3.0/go.mod h1:zFmK7XCadkQkj6TtorcaGlCW1hT1fIilQDwofLpJ20k=
+github.com/devpablocristo/core/ai/go v0.0.0-20260328151810-084828e80b26 h1:pLs/3s69vBhjKBCU1uwgNGsfyL8E/zKu6WhgEJfw86k=
+github.com/devpablocristo/core/ai/go v0.0.0-20260328151810-084828e80b26/go.mod h1:yixhr0luK+6a7vSJs0fKxBFInKxnz1yGc6w41JHXtpI=
+github.com/devpablocristo/core/errors/go v0.1.0 h1:AGcc9fPrlymjOhrh/rtFx+gqWcRdZJkUff1qivVNjkY=
+github.com/devpablocristo/core/errors/go v0.1.0/go.mod h1:Ju3mqSVdV7FlIf4/FtQt8U8+nd0EC+erBj+Kk9xjx+c=
+github.com/devpablocristo/core/http/go v0.1.0 h1:90jYeCjE3JkM3UU6NFww3GaTLRFDUnFJX5yHh5q12gA=
+github.com/devpablocristo/core/http/go v0.1.0/go.mod h1:z4xQjIs6RFYQ0DdKZPi7N/0aWkOJFdBVTSPpf5kHcYA=
+github.com/devpablocristo/core/security/go v0.1.0 h1:cG1y35bN2RFF2NAnCtDho0kTF8zBjYEOx9fKnHzjjmw=
+github.com/devpablocristo/core/security/go v0.1.0/go.mod h1:iwFHt1JZ4bRwnqysUasQBGCnHsMTJowvMJBgbnqrDAE=
 github.com/go-chi/chi/v5 v5.2.5 h1:Eg4myHZBjyvJmAFjFvWgrqDTXFyOzjj7YIm3L3mu6Ug=
 github.com/go-chi/chi/v5 v5.2.5/go.mod h1:X7Gx4mteadT3eDOMTsXzmI4/rwUpOwBHLpAfupzFJP0=
 github.com/google/go-cmp v0.6.0 h1:ofyhxvXcZhMsU5ulbFiLKl/XBFqE1GSq7atu8tAmTRI=

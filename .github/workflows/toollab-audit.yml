@@ -25,11 +25,13 @@ jobs:
 
       - uses: actions/setup-go@v5
         with:
-          go-version: "1.22"
+          go-version-file: toollab-core/go.mod
 
       - name: Build toollab
         working-directory: toollab-core
-        run: go build -o ../toollab ./cmd/toollab
+        run: |
+          go mod download
+          go build -o ../toollab ./cmd/toollab
 
       - name: Generate scenario
         run: |
