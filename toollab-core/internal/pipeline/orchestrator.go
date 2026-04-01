@@ -74,7 +74,8 @@ func (s *PipelineState) AddFindings(findings ...d.FindingRaw) {
 	s.FindingsRaw = append(s.FindingsRaw, findings...)
 }
 
-// Orchestrator runs the analysis pipeline.
+// Orchestrator runs the deterministic analysis pipeline and
+// dispatches post-run `IntelligenceService` and `SynthesisService` artifacts.
 type Orchestrator struct {
 	targetRepo  targetDomain.Repository
 	runRepo     runDomain.Repository
@@ -90,7 +91,7 @@ type activeRun struct {
 	cancel context.CancelFunc
 }
 
-// LLMRunner generates LLM reports asynchronously.
+// LLMRunner representa la etapa batch de `SynthesisService`.
 type LLMRunner interface {
 	RunAsync(ctx context.Context, runID string, docsMiniJSON, auditLLMJSON []byte, lang string)
 }

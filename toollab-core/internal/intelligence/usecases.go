@@ -8,7 +8,8 @@ import (
 	d "toollab-core/internal/pipeline/usecases/domain"
 )
 
-// Generate builds the full EndpointIntelligence artifact from a dossier.
+// Generate implementa la derivación principal de `IntelligenceService`
+// a partir del dossier consolidado del run.
 func Generate(dossier *d.DossierV2Full) *d.EndpointIntelligence {
 	baseURL := dossier.TargetProfile.BaseURL
 	now := time.Now().UTC()
@@ -79,7 +80,7 @@ func Generate(dossier *d.DossierV2Full) *d.EndpointIntelligence {
 	}
 }
 
-// GenerateIndex builds a lightweight index for the frontend table.
+// GenerateIndex construye un índice liviano derivado del artefacto de inteligencia.
 func GenerateIndex(intel *d.EndpointIntelligence) *d.IntelIndex {
 	idx := &d.IntelIndex{
 		SchemaVersion: "v1",
@@ -112,7 +113,7 @@ func GenerateIndex(intel *d.EndpointIntelligence) *d.IntelIndex {
 	return idx
 }
 
-// GenerateQueryScripts builds all shell scripts as a single artifact.
+// GenerateQueryScripts genera scripts operativos derivados de la inteligencia consolidada.
 func GenerateQueryScripts(intel *d.EndpointIntelligence) *d.EndpointQueryScripts {
 	scripts := &d.EndpointQueryScripts{
 		SchemaVersion: "v1",

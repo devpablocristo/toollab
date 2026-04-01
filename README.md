@@ -2,6 +2,13 @@
 
 ToolLab es un laboratorio de análisis asistido por evidencia para APIs y servicios. Toma un target compuesto por un repo local y un `base_url`, inspecciona el código fuente, ejecuta probes HTTP controlados y produce artifacts reutilizables para documentación, auditoría técnica, comprensión de endpoints y exportes operativos.
 
+En la taxonomía canónica del ecosistema, ToolLab se clasifica principalmente como:
+
+- `SynthesisService`: generación batch de artefactos LLM acotados sobre evidencia ya recolectada
+- `IntelligenceService`: derivaciones determinísticas sobre dossier, endpoints y evidencia runtime
+
+No es un `ProductAgent`, `DomainAgent` ni `CopilotAgent`.
+
 No es solo un generador de prompts ni solo un scanner. El núcleo del producto es un loop reproducible:
 
 1. `preflight`
@@ -19,12 +26,12 @@ Sobre ese loop, ToolLab genera:
 
 - `run_summary`, `dossier_full`, `dossier_docs_mini` y `dossier_llm`
 - `endpoint_intelligence`, `endpoint_queries`, `postman_collection`, `curl_book`
-- documentación LLM bounded y, cuando se habilite, auditoría LLM
+- documentación LLM bounded y, cuando se habilite, auditoría LLM (`SynthesisService`)
 - un workspace UI para navegar evidencia, endpoints, documentación y QA crudo
 
 ## Componentes
 
-- `toollab-core`: backend Go que orquesta runs, artifacts, pipeline, exports y runtime LLM
+- `toollab-core`: backend Go que orquesta runs, artifacts, pipeline, exports, `IntelligenceService` y `SynthesisService`
 - `toollab-ui`: frontend React/TypeScript para operar el laboratorio
 - `docker-compose.yml`: stack local completo
 - `docs/prompts/`: suite documental para diseñar, extender y mantener ToolLab

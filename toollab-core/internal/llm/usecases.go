@@ -10,7 +10,8 @@ import (
 	artDomain "toollab-core/internal/artifact/usecases/domain"
 )
 
-// Runner generates LLM docs and audit reports asynchronously.
+// Runner implementa la capa batch de `SynthesisService`:
+// genera documentación y auditoría LLM sobre evidencia ya consolidada.
 type Runner struct {
 	vertex      *VertexProvider
 	artifactSvc *artifactUC.Service
@@ -20,7 +21,8 @@ func NewRunner(vertex *VertexProvider, artifactSvc *artifactUC.Service) *Runner 
 	return &Runner{vertex: vertex, artifactSvc: artifactSvc}
 }
 
-// RunAsync generates LLM reports. Currently only docs is active; audit is skipped to save tokens.
+// RunAsync genera artefactos LLM batch. Actualmente solo docs está activo;
+// audit sigue deshabilitado para controlar costo/tokens.
 // Set auditEnabled = true below to re-enable audit generation.
 func (r *Runner) RunAsync(ctx context.Context, runID string, docsMiniJSON, auditLLMJSON []byte, lang string) {
 	const auditEnabled = false

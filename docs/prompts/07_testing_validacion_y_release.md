@@ -19,7 +19,8 @@ Definir cómo validar cambios en ToolLab antes de considerarlos consistentes.
 ### Backend
 
 - `go test ./...`
-- `go build ./cmd/toollab-dashboard`
+- `CGO_ENABLED=1 go build ./cmd/toollab-dashboard`
+- si el cambio toca Docker o toolchain, validar también `docker compose build backend`
 
 ### Frontend
 
@@ -29,12 +30,14 @@ Definir cómo validar cambios en ToolLab antes de considerarlos consistentes.
 
 - revisar que nombres, pipeline, artifacts, rutas y estados runtime coincidan con el código
 - si se externalizan prompts, validar que el backend siga compilando y cargándolos
+- verificar que la taxonomía siga consistente: `IntelligenceService` en `internal/intelligence`, `SynthesisService` en `internal/llm`, sin reintroducir lenguaje de assistant conversacional
 
 ## Reglas obligatorias
 
 - no afirmar que una capability está activa si el código no la genera
 - no cerrar trabajo de docs/prompts con drift factual
 - todo cambio que toque runtime LLM debe validar build/test del backend
+- no asumir que un build host sin toolchain C reemplaza la validación real cuando `toollab-core` requiere CGO
 
 ## Criterios de éxito
 

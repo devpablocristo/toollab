@@ -1,6 +1,6 @@
 # toollab-core
 
-Backend Go de ToolLab. Orquesta `targets`, `runs`, pipeline de análisis, artifacts, exports y runtime LLM bounded.
+Backend Go de ToolLab. Orquesta `targets`, `runs`, pipeline de análisis, artifacts, exports, `IntelligenceService` determinístico y `SynthesisService` LLM bounded.
 
 ## Requisitos
 
@@ -83,6 +83,13 @@ Artifacts relevantes:
 - `endpoint_intelligence`, `endpoint_intelligence_index`, `endpoint_queries`
 - `postman_collection`, `curl_book`, `openapi_inferred`, `openapi_ast`
 - `llm_docs` y `llm_audit`
+
+## Categorías canónicas del ecosistema
+
+- `IntelligenceService`: `internal/intelligence`, `endpoint_intelligence`, `endpoint_queries` y derivaciones determinísticas post-run
+- `SynthesisService`: `internal/llm`, `llm_docs` y `llm_audit` como artefactos batch sobre evidencia ya consolidada
+
+ToolLab no modela un agente conversacional del producto.
 
 ## Runtime LLM
 

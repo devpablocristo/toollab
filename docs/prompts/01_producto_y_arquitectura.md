@@ -13,6 +13,8 @@ Dejar inequívoco qué es `toollab`, qué problema resuelve y cómo se divide en
 - definir a ToolLab como laboratorio de análisis para APIs/servicios/repos
 - explicar la relación entre `target`, `run`, `artifact` y `workspace`
 - aclarar ownership de `toollab-core` y `toollab-ui`
+- fijar la taxonomía canónica: `IntelligenceService` + `SynthesisService`
+- dejar explícito que ToolLab no es un agente conversacional del producto
 
 ## Modelo del producto
 
@@ -28,8 +30,8 @@ Dejar inequívoco qué es `toollab`, qué problema resuelve y cómo se divide en
 - `toollab-core` expone HTTP API en `:8090`
 - persiste metadatos en SQLite
 - guarda artifacts en filesystem
-- orquesta pipeline determinista y generación de exports
-- ejecuta runtime LLM bounded sobre dossiers compactados
+- orquesta pipeline determinista y generación de exports (`IntelligenceService`)
+- ejecuta runtime LLM bounded sobre dossiers compactados (`SynthesisService`)
 
 ### Frontend
 
@@ -42,6 +44,12 @@ Dejar inequívoco qué es `toollab`, qué problema resuelve y cómo se divide en
 - `toollab-core` es dueño de los artifacts y del significado del pipeline
 - `toollab-ui` es dueño de la experiencia de exploración y operación del laboratorio
 - la documentación raíz describe el producto completo, no solo una app individual
+
+## Taxonomía del ecosistema
+
+- `IntelligenceService`: derivaciones determinísticas post-run como `endpoint_intelligence`, índices y query scripts
+- `SynthesisService`: artefactos LLM batch como `llm_docs` y `llm_audit`
+- ToolLab no se modela como `ProductAgent`, `DomainAgent`, `CopilotAgent` ni assistant multi-turn
 
 ## Drift a evitar
 

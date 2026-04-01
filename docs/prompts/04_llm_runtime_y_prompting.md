@@ -8,6 +8,8 @@ Leer `00_base_transversal.md`, `02_pipeline_de_analisis.md` y `03_artifacts_doss
 
 Formalizar cómo ToolLab usa LLM sin romper el principio `evidence-first`.
 
+En la taxonomía del ecosistema, este runtime LLM implementa `SynthesisService`, no un agente conversacional del producto.
+
 ## Alcance obligatorio
 
 - documentar prompts de documentación y auditoría
@@ -40,6 +42,7 @@ Formalizar cómo ToolLab usa LLM sin romper el principio `evidence-first`.
 - la documentación LLM está activa
 - el prompt de auditoría existe y debe mantenerse actualizado
 - la generación de `llm_audit` sigue deshabilitada por default en el runtime actual para controlar costo/token usage
+- el runtime es batch post-run: genera artifacts sobre evidencia consolidada, no respuestas multi-turn para usuarios finales
 
 ## Criterios de éxito
 
