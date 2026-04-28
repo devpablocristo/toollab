@@ -7,6 +7,8 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"sort"
+	"strings"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
@@ -28,6 +30,7 @@ import (
 	"toollab-core/internal/pipeline"
 	"toollab-core/internal/playground"
 	preflightUC "toollab-core/internal/preflight"
+	"toollab-core/internal/repoaudit"
 	"toollab-core/internal/report"
 	"toollab-core/internal/schema"
 	"toollab-core/internal/smoke"
@@ -47,11 +50,11 @@ func main() {
 	}
 	defer db.Close()
 
-	migSQL, err := migrationsFS.ReadFile("migrations/001_init.sql")
+	statements, err := migrationStatements()
 	if err != nil {
-		log.Fatalf("reading migration: %v", err)
+		log.Fatalf("reading migrations: %v", err)
 	}
-	if err := migrate(db, []string{string(migSQL)}); err != nil {
+	if err := migrate(db, statements); err != nil {
 		log.Fatalf("running migrations: %v", err)
 	}
 
@@ -92,6 +95,9 @@ func main() {
 	tH := targetUC.New(tSvc)
 	rH := runUC.New(rSvc, aSvc)
 	pgH := playground.NewHandler(aSvc)
+	v2Store := repoaudit.NewStore(db)
+	v2Engine := repoaudit.NewEngine(v2Store, dataDir)
+	v2H := repoaudit.NewHandler(v2Store, v2Engine)
 
 	r := chi.NewRouter()
 	r.Use(middleware.Logger)
@@ -117,11 +123,36 @@ func main() {
 			})
 		})
 	})
+	r.Mount("/api/v2", v2H.Routes())
 
 	log.Printf("toollab-core listening on %s", addr)
 	if err := http.ListenAndServe(addr, r); err != nil {
 		log.Fatal(err)
 	}
+}
+
+func migrationStatements() ([]string, error) {
+	entries, err := migrationsFS.ReadDir("migrations")
+	if err != nil {
+		return nil, err
+	}
+	names := make([]string, 0, len(entries))
+	for _, entry := range entries {
+		if entry.IsDir() {
+			continue
+		}
+		names = append(names, entry.Name())
+	}
+	sort.Strings(names)
+	statements := make([]string, 0, len(names))
+	for _, name := range names {
+		data, err := migrationsFS.ReadFile("migrations/" + name)
+		if err != nil {
+			return nil, err
+		}
+		statements = append(statements, string(data))
+	}
+	return statements, nil
 }
 
 func openDB(dsn string) (*sql.DB, error) {
@@ -138,11 +169,25 @@ func openDB(dsn string) (*sql.DB, error) {
 func migrate(db *sql.DB, statements []string) error {
 	for i, stmt := range statements {
 		log.Printf("applying migration %d", i+1)
-		if _, err := db.Exec(stmt); err != nil {
-			return fmt.Errorf("migration %d: %w", i+1, err)
+		for _, part := range strings.Split(stmt, ";") {
+			part = strings.TrimSpace(part)
+			if part == "" {
+				continue
+			}
+			if _, err := db.Exec(part); err != nil {
+				if isBenignMigrationError(err) {
+					continue
+				}
+				return fmt.Errorf("migration %d: %w", i+1, err)
+			}
 		}
 	}
 	return nil
+}
+
+func isBenignMigrationError(err error) bool {
+	msg := strings.ToLower(err.Error())
+	return strings.Contains(msg, "duplicate column name")
 }
 
 func cors(next http.Handler) http.Handler {

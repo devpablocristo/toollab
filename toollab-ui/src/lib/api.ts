@@ -17,6 +17,24 @@ function del<T>(path: string) { return apiRequest<T>('DELETE', path) }
 import type * as T from './types'
 
 export const api = {
+  v2: {
+    repos: {
+      list: () => get<{ items: T.RepoV2[] }>('/api/v2/repos').then(r => r.items ?? []),
+      create: (data: { name: string; source_type: 'path'; source_path: string; doc_policy?: string }) =>
+        post<T.RepoV2>('/api/v2/repos', data),
+      audits: (repoId: string) => get<{ items: T.AuditRunV2[] }>(`/api/v2/repos/${repoId}/audits`).then(r => r.items ?? []),
+      createAudit: (repoId: string, config: T.AuditConfigV2) =>
+        post<T.AuditResultV2>(`/api/v2/repos/${repoId}/audits`, config),
+    },
+    audits: {
+      get: (auditId: string) => get<T.AuditRunV2>(`/api/v2/audits/${auditId}`),
+      findings: (auditId: string) => get<{ items: T.FindingV2[] }>(`/api/v2/audits/${auditId}/findings`).then(r => r.items ?? []),
+      docs: (auditId: string) => get<{ items: T.GeneratedDocV2[] }>(`/api/v2/audits/${auditId}/docs`).then(r => r.items ?? []),
+      tests: (auditId: string) => get<{ items: T.TestResultV2[] }>(`/api/v2/audits/${auditId}/tests`).then(r => r.items ?? []),
+      evidence: (auditId: string) => get<{ items: T.EvidenceV2[] }>(`/api/v2/audits/${auditId}/evidence`).then(r => r.items ?? []),
+      score: (auditId: string) => get<{ items: T.ScoreItemV2[] }>(`/api/v2/audits/${auditId}/score`).then(r => r.items ?? []),
+    },
+  },
   targets: {
     list: () => get<{ items: T.Target[] }>('/api/v1/targets').then(r => r.items ?? []),
     get: (id: string) => get<T.Target>(`/api/v1/targets/${id}`),

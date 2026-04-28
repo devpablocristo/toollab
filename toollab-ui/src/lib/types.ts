@@ -95,6 +95,118 @@ export interface AuthProfile {
   env?: string
 }
 
+// --- ToolLab V2 Repo Audit ---
+
+export interface RepoV2 {
+  id: string
+  name: string
+  source_type: 'path'
+  source_path: string
+  doc_policy: 'ignore_existing_docs' | 'allow_existing_docs'
+  created_at: string
+  updated_at: string
+}
+
+export interface AuditConfigV2 {
+  generate_tests: boolean
+  run_existing_tests: boolean
+  allow_docs_read: boolean
+  allow_dependency_install: boolean
+}
+
+export interface AuditRunV2 {
+  id: string
+  repo_id: string
+  status: string
+  score: number
+  score_breakdown: Record<string, number>
+  summary: string
+  stack: Record<string, string>
+  created_at: string
+  completed_at?: string
+}
+
+export interface EvidenceV2 {
+  id: string
+  audit_id: string
+  kind: string
+  ref?: string
+  summary: string
+  command?: string
+  file_path?: string
+  line?: number
+  created_at: string
+}
+
+export interface FindingV2 {
+  id: string
+  audit_id: string
+  rule_id?: string
+  severity: string
+  priority: string
+  state: string
+  category: string
+  title: string
+  description: string
+  confidence: string
+  file_path?: string
+  line?: number
+  evidence_refs: EvidenceV2[]
+  details: FindingDetailsV2
+  created_at: string
+}
+
+export interface FindingDetailsV2 {
+  why_problem?: string
+  impact?: string
+  risk_of_change?: string
+  minimum_recommendation?: string
+  avoid?: string
+  validation?: string
+}
+
+export interface ScoreItemV2 {
+  id: string
+  audit_id: string
+  category: string
+  max_points: number
+  awarded_points: number
+  deducted_points: number
+  reason: string
+  evidence_refs: EvidenceV2[]
+  created_at: string
+}
+
+export interface GeneratedDocV2 {
+  id: string
+  audit_id: string
+  title: string
+  content: string
+  source_policy: string
+  created_at: string
+}
+
+export interface TestResultV2 {
+  id: string
+  audit_id: string
+  kind: string
+  name: string
+  command?: string
+  status: string
+  output?: string
+  generated_path?: string
+  created_at: string
+}
+
+export interface AuditResultV2 {
+  run: AuditRunV2
+  findings: FindingV2[]
+  docs: GeneratedDocV2[]
+  tests: TestResultV2[]
+  evidence: EvidenceV2[]
+  score_items: ScoreItemV2[]
+}
+
 export interface BudgetUsage {
   requests_total: number
   duration_seconds: number
