@@ -16,7 +16,7 @@ dev:
 	@$(MAKE) -j2 be fe
 
 be:
-	@cd toollab-core && mkdir -p data && CGO_ENABLED=1 go run ./cmd/toollab-dashboard
+	@cd toollab-core && mkdir -p data && CGO_ENABLED=1 go run ./cmd/api
 
 fe:
 	@cd toollab-ui && npm run dev
@@ -30,7 +30,7 @@ test-quick:
 
 # Build
 build:
-	@cd toollab-core && CGO_ENABLED=1 go build -o ../bin/toollab-dashboard ./cmd/toollab-dashboard
+	@cd toollab-core && CGO_ENABLED=1 go build -o ../bin/api ./cmd/api
 	@cd toollab-ui && npm run build
 
 # Install deps

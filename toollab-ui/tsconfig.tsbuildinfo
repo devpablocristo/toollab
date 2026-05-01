@@ -1,1 +1,0 @@
-{"root":["./src/App.tsx","./src/main.tsx","./src/vite-env.d.ts","./src/components/Charts.tsx","./src/components/Spinner.tsx","./src/lib/api.ts","./src/lib/storage.ts","./src/lib/types.ts","./src/pages/ReposV2.tsx","./src/pages/TargetDetail.tsx","./src/pages/Targets.tsx"],"version":"5.9.3"}

@@ -1,90 +1,55 @@
 # ToolLab
 
-ToolLab es un laboratorio de análisis asistido por evidencia para APIs y servicios. Toma un target compuesto por un repo local y un `base_url`, inspecciona el código fuente, ejecuta probes HTTP controlados y produce artifacts reutilizables para documentación, auditoría técnica, comprensión de endpoints y exportes operativos.
+ToolLab is an AI Project Auditor.
 
-En la taxonomía canónica del ecosistema, ToolLab se clasifica principalmente como:
+It audits projects created or modified with AI and helps decide whether the work is safe to continue, needs changes, or should not be accepted yet.
 
-- `SynthesisService`: generación batch de artefactos LLM acotados sobre evidencia ya recolectada
-- `IntelligenceService`: derivaciones determinísticas sobre dossier, endpoints y evidencia runtime
+## MVP Scope
 
-No es un `ProductAgent`, `DomainAgent` ni `CopilotAgent`.
+The first version focuses on one simple flow:
 
-No es solo un generador de prompts ni solo un scanner. El núcleo del producto es un loop reproducible:
+```text
+Load project -> Start analysis -> Review results
+```
 
-1. `preflight`
-2. `astdiscovery`
-3. `schema`
-4. `smoke`
-5. `authmatrix`
-6. `fuzz`
-7. `logic`
-8. `abuse`
-9. `confirm`
-10. `report`
+ToolLab currently:
 
-Sobre ese loop, ToolLab genera:
+- loads a local project path;
+- starts a deterministic project audit;
+- inventories files, manifests, tests, CI, and migrations;
+- creates findings with severity and priority;
+- stores audit runs, findings, evidence, tests, docs, and score in SQLite;
+- shows score, findings, evidence, docs, and tests in a simple UI.
 
-- `run_summary`, `dossier_full`, `dossier_docs_mini` y `dossier_llm`
-- `endpoint_intelligence`, `endpoint_queries`, `postman_collection`, `curl_book`
-- documentación LLM bounded y, cuando se habilite, auditoría LLM (`SynthesisService`)
-- un workspace UI para navegar evidencia, endpoints, documentación y QA crudo
+## Out Of Scope For The MVP
 
-## Componentes
+- PR review.
+- PR diff analysis.
+- Advanced e2e generation.
+- Markdown export.
+- AI-assisted audit reasoning.
 
-- `toollab-core`: backend Go que orquesta runs, artifacts, pipeline, exports, `IntelligenceService` y `SynthesisService`
-- `toollab-ui`: frontend React/TypeScript para operar el laboratorio
-- `docker-compose.yml`: stack local completo
-- `docs/prompts/`: suite documental para diseñar, extender y mantener ToolLab
-
-## Nota — ecosistema Pablo y `core`
-
-ToolLab vive junto a otros repos bajo `~/Projects/Pablo` (pymes, nexus, ponti, …). Hoy **no** declara dependencia de [`github.com/devpablocristo/core`](https://github.com/devpablocristo/core). Al agregar o refactorizar **código agnóstico** (cliente HTTP con timeouts, helpers de transporte, patrones ya resueltos en `core/backend/go`, etc.), **preferir reutilizar `core`** en lugar de duplicar lo mismo en `toollab-core`. El producto ToolLab (pipeline, AST, artifacts) sigue siendo exclusivo de este repo; solo la capa portable encaja en `core`.
-
-## Uso rápido
+## Quick Start
 
 ```bash
 make up
 ```
 
-Endpoints locales:
+Local services:
 
 - UI: [http://localhost:5173](http://localhost:5173)
 - API: [http://localhost:8090](http://localhost:8090)
 
-Modo desarrollo sin Docker:
+Development mode:
 
 ```bash
 make install
 make dev
 ```
 
-## Qué problema resuelve
+## Validation
 
-ToolLab reduce el trabajo manual de entender una API desconocida o un servicio heredado. En vez de depender solo de OpenAPI, README o intuición, combina AST, runtime evidence y outputs derivados para responder preguntas como:
-
-- qué endpoints existen realmente
-- cuáles responden y con qué contratos
-- dónde hay auth, drift, errores, leaks o inconsistencias
-- cómo consultar un endpoint con `curl`, `http` file o Postman
-- cómo documentar un servicio sin inventar comportamiento no observado
-
-Como línea avanzada, ToolLab también puede crecer hacia simulación conductual: sandbox reproducible para actores autónomos, servicios y policies, orientado a detectar comportamiento emergente y riesgo sistémico.
-
-La forma recomendada de implementarlo, si se avanza, es como un `run kind` adicional dentro del mismo ToolLab, no como otro producto separado.
-
-## Modo de evidencia
-
-Cada run queda clasificado como:
-
-- `offline`: no hubo runtime útil; solo hay AST y preflight
-- `online_partial`: hubo evidencia limitada; la confianza debe ser conservadora
-- `online_good` / `online_strong`: evidencia suficiente para documentación y scoring más útiles
-
-Ese modo impacta documentación, findings, scores y la interpretación LLM.
-
-## Mapa documental
-
-- `docs/DOC.md`: explicación corta del producto, arquitectura y flujo operativo
-- `docs/prompts/README.md`: índice de la suite oficial de prompts
-- `toollab-core/README.md`: referencia técnica del backend
-- `toollab-ui/README.md`: referencia técnica del frontend
+```bash
+make test
+make build
+```
