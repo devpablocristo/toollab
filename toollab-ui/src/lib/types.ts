@@ -102,3 +102,88 @@ export interface AuditResult {
   tests: TestResult[]
   score_items: ScoreItem[]
 }
+
+export interface TaskSpec {
+  id: string
+  project_id: string
+  module: string
+  title: string
+  slug: string
+  task_description: string
+  spec_md: string
+  spec_status: string
+  created_at: string
+  updated_at: string
+}
+
+export interface CreateTaskSpecRequest {
+  module: string
+  title: string
+  task_description: string
+  spec_md: string
+  spec_status: string
+}
+
+export interface PRReview {
+  id: string
+  project_id: string
+  task_spec_id?: string
+  title: string
+  description: string
+  diff_text?: string
+  project_rules: string
+  test_output: string
+  review_prompt: string
+  summary: string
+  score: number
+  decision: string
+  confidence: string
+  spec_status: string
+  sdd_context_md: string
+  created_at: string
+  updated_at: string
+}
+
+export interface CreatePRReviewRequest {
+  task_spec_id: string
+  title: string
+  description: string
+  diff_text: string
+  project_rules: string
+  test_output: string
+}
+
+export interface PRReviewFile {
+  id: string
+  review_id: string
+  path: string
+  change_type: string
+  risk_area: string
+  risk_level: string
+  additions: number
+  deletions: number
+}
+
+export interface PRReviewFinding {
+  id: string
+  review_id: string
+  code: string
+  severity: string
+  status: string
+  title: string
+  files: string[]
+  spec_rule_affected: string
+  problem: string
+  evidence: string
+  impact: string
+  suggested_fix: string
+  ai_correction_prompt: string
+  sort_order: number
+  created_at: string
+}
+
+export interface PRReviewResult {
+  review: PRReview
+  files: PRReviewFile[]
+  findings: PRReviewFinding[]
+}

@@ -67,8 +67,10 @@ func newTestDB(t *testing.T) *sql.DB {
 	if len(migrations) == 0 {
 		t.Fatal("expected migrations")
 	}
-	if _, err := db.Exec(migrations[0]); err != nil {
-		t.Fatal(err)
+	for _, migration := range migrations {
+		if _, err := db.Exec(migration); err != nil {
+			t.Fatal(err)
+		}
 	}
 	return db
 }

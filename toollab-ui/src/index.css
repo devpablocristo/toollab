@@ -19,7 +19,9 @@ body {
 }
 
 button,
-input {
+input,
+select,
+textarea {
   font: inherit;
 }
 
@@ -38,13 +40,20 @@ button:disabled {
   opacity: 0.55;
 }
 
-input {
+input,
+select,
+textarea {
   width: 100%;
   border: 1px solid #293241;
   border-radius: 8px;
   background: #111827;
   color: #f4f4f5;
   padding: 0.75rem;
+}
+
+textarea {
+  min-height: 5rem;
+  resize: vertical;
 }
 
 pre {
@@ -95,9 +104,27 @@ pre {
   margin-bottom: 1rem;
 }
 
+.tabs {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.tab,
+.secondary {
+  background: #0f172a;
+  color: #f4f4f5;
+}
+
 .layout {
   display: grid;
   grid-template-columns: 340px minmax(0, 1fr);
+  gap: 1rem;
+}
+
+.guard-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
   gap: 1rem;
 }
 
@@ -208,6 +235,24 @@ pre {
   background: #0f172a;
 }
 
+.diff-input,
+.prompt-box textarea {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.85rem;
+}
+
+.prompt-box {
+  border-top: 1px solid #293241;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding-top: 1rem;
+}
+
+.prompt-box.compact h2 {
+  font-size: 1rem;
+}
+
 .score {
   min-width: 8rem;
   text-align: center;
@@ -245,6 +290,7 @@ pre {
   font-size: 0.8rem;
 }
 
+.critical,
 .high,
 .failed,
 .timeout {
@@ -294,6 +340,7 @@ pre {
 @media (max-width: 980px) {
   .steps,
   .layout,
+  .guard-layout,
   .grid {
     grid-template-columns: 1fr;
   }
